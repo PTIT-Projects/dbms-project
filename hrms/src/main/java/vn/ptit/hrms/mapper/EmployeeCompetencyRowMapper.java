@@ -1,0 +1,60 @@
+package vn.ptit.hrms.mapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.springframework.jdbc.core.RowMapper;
+import vn.ptit.hrms.constant.EmployeeCompetencyLevelEnum;
+import vn.ptit.hrms.domain.Competency;
+import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.domain.EmployeeCompetency;
+import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.CompetencyDAO; // Assuming you have a CompetencyDAO to fetch Competency
+
+public class EmployeeCompetencyRowMapper implements RowMapper<EmployeeCompetency> {
+
+    private final EmployeeDAO employeeDAO;
+    private final CompetencyDAO competencyDAO;
+
+    public EmployeeCompetencyRowMapper(EmployeeDAO employeeDAO, CompetencyDAO competencyDAO) {
+        this.employeeDAO = employeeDAO;
+        this.competencyDAO = competencyDAO;
+    }
+
+    @Override
+    public EmployeeCompetency mapRow(ResultSet rs, int rowNum) throws SQLException {
+        EmployeeCompetency employeeCompetency = new EmployeeCompetency();
+
+        // Map EmployeeCompetency id
+        employeeCompetency.setId(rs.getInt("id"));
+
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
+        int employeeId = rs.getInt("employee_id");
+        Employee employee = employeeDAO.findById(employeeId);
+        employeeCompetency.setEmployee(employee);
+
+        // Retrieve competency id from ResultSet and fetch the full Competency using CompetencyDAO.
+        int competencyId = rs.getInt("competency_id");
+        Competency competency = competencyDAO.findById(competencyId);
+        employeeCompetency.setCompetency(competency);
+
+        // Map EmployeeCompetencyLevelEnum field
+        String levelValue = rs.getString("level");
+        if (levelValue != null) {
+            employeeCompetency.setLevel(getEmployeeCompetencyLevelEnum(levelValue));
+        }
+
+        return employeeCompetency;
+    }
+
+    /**
+     * Converts a string value from the database into the corresponding EmployeeCompetencyLevelEnum.
+     */
+    private EmployeeCompetencyLevelEnum getEmployeeCompetencyLevelEnum(String value) {
+        for (EmployeeCompetencyLevelEnum level : EmployeeCompetencyLevelEnum.values()) {
+            if (level.name().equalsIgnoreCase(value)) {
+                return level;
+            }
+        }
+        throw new IllegalArgumentException("Unknown competency level value: " + value);
+    }
+}

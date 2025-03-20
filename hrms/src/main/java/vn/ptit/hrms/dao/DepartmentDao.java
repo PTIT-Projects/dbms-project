@@ -1,0 +1,52 @@
+package vn.ptit.hrms.dao;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import vn.ptit.hrms.domain.Department;
+import vn.ptit.hrms.mapper.DepartmentRowMapper;
+
+import java.util.List;
+
+@Repository
+public class DepartmentDao {
+    private final JdbcTemplate jdbcTemplate;
+    private final DepartmentRowMapper departmentRowMapper;
+
+    public DepartmentDao(JdbcTemplate jdbcTemplate, DepartmentRowMapper departmentRowMapper) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.departmentRowMapper = departmentRowMapper;
+    }
+
+    // Method to create a new department
+    public void createDepartment(Department department) {
+        String sql = "INSERT INTO departments (department_name, manager_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, department.getDepartmentName(),
+                department.getManager() != null ? department.getManager().getId() : null);
+    }
+
+    // Method to get a department by ID
+    public Department getDepartmentById(Integer id) {
+        String sql = "SELECT * FROM departments WHERE id = ?";
+        return jdbcTemplate.queryForObject(sql, departmentRowMapper, id);
+    }
+
+    // Method to get all departments
+    public List<Department> getAllDepartments() {
+        String sql = "SELECT * FROM departments";
+        return jdbcTemplate.query(sql, departmentRowMapper);
+    }
+
+    // Method to update a department
+    public void updateDepartment(Department department) {
+        String sql = "UPDATE departments SET department_name = ?, manager_id = ? WHERE id = ?";
+        jdbcTemplate.update(sql, department.getDepartmentName(),
+                department.getManager() != null ? department.getManager().getId() : null,
+                department.getId());
+    }
+
+    // Method to delete a department
+    public void deleteDepartment(Integer id) {
+        String sql = "DELETE FROM departments WHERE id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+}

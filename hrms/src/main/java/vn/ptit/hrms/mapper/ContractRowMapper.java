@@ -5,10 +5,17 @@ import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.ContractStatusEnum;
+import vn.ptit.hrms.dao.EmployeeDAO;
 import vn.ptit.hrms.domain.Contract;
 import vn.ptit.hrms.domain.Employee;
 
 public class ContractRowMapper implements RowMapper<Contract> {
+
+    private final EmployeeDAO employeeDAO;
+
+    public ContractRowMapper(EmployeeDAO employeeDAO) {
+        this.employeeDAO = employeeDAO;
+    }
 
     @Override
     public Contract mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -17,21 +24,20 @@ public class ContractRowMapper implements RowMapper<Contract> {
         // Map Contract id
         contract.setId(rs.getInt("id"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using a method
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
-        Employee employee = findEmployeeById(employeeId); // Implement this method as needed
+        Employee employee = employeeDAO.findById(employeeId);
         contract.setEmployee(employee);
 
         // Map contract type
         contract.setContractType(rs.getString("contract_type"));
 
-        // Map start date
+        // Map LocalDate fields from SQL Date
         Date sqlStartDate = rs.getDate("start_date");
         if (sqlStartDate != null) {
             contract.setStartDate(sqlStartDate.toLocalDate());
         }
 
-        // Map end date
         Date sqlEndDate = rs.getDate("end_date");
         if (sqlEndDate != null) {
             contract.setEndDate(sqlEndDate.toLocalDate());
@@ -40,7 +46,7 @@ public class ContractRowMapper implements RowMapper<Contract> {
         // Map salary
         contract.setSalary(rs.getDouble("salary"));
 
-        // Map ContractStatusEnum
+        // Map ContractStatusEnum field using a helper method.
         String statusValue = rs.getString("status");
         if (statusValue != null) {
             contract.setStatus(getContractStatus(statusValue));
@@ -60,12 +66,5 @@ public class ContractRowMapper implements RowMapper<Contract> {
             }
         }
         throw new IllegalArgumentException("Unknown contract status value: " + value);
-    }
-
-    // Placeholder for a method to retrieve Employee by ID
-    private Employee findEmployeeById(int employeeId) {
-        // Implement the logic to retrieve an Employee object by its ID
-        // This could involve calling an EmployeeDAO or similar service
-        return null; // Replace with actual implementation
     }
 }
