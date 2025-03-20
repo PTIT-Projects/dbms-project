@@ -6,13 +6,13 @@ import java.sql.Timestamp;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.Notification;
-import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
 
 public class NotificationRowMapper implements RowMapper<Notification> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public NotificationRowMapper(EmployeeDAO employeeDAO) {
+    public NotificationRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -38,7 +38,7 @@ public class NotificationRowMapper implements RowMapper<Notification> {
         // Retrieve created by employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int createdById = rs.getInt("created_by");
         if (createdById > 0) { // Assuming employee ID is positive
-            Employee createdBy = employeeDAO.findById(createdById);
+            Employee createdBy = employeeDAO.getEmployeeById(createdById);
             notification.setCreatedBy(createdBy);
         }
 

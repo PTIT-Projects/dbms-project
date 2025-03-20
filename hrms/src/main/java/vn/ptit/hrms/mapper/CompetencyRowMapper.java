@@ -4,15 +4,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.CompetencyTypeEnum;
-import vn.ptit.hrms.dao.PositionDAO;
+import vn.ptit.hrms.dao.PositionDao;
 import vn.ptit.hrms.domain.Competency;
 import vn.ptit.hrms.domain.Position;
 
 public class CompetencyRowMapper implements RowMapper<Competency> {
 
-    private final PositionDAO positionDAO;
+    private final PositionDao positionDAO;
 
-    public CompetencyRowMapper(PositionDAO positionDAO) {
+    public CompetencyRowMapper(PositionDao positionDAO) {
         this.positionDAO = positionDAO;
     }
 
@@ -25,7 +25,7 @@ public class CompetencyRowMapper implements RowMapper<Competency> {
 
         // Retrieve position id from ResultSet and fetch the full Position using PositionDAO.
         int positionId = rs.getInt("position_id");
-        Position position = positionDAO.findById(positionId);
+        Position position = positionDAO.getPositionById(positionId);
         competency.setPosition(position);
 
         // Map CompetencyTypeEnum field using a helper method.

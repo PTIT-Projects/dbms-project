@@ -6,15 +6,15 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
 
 import vn.ptit.hrms.constant.ApplicantStatusEnum;
-import vn.ptit.hrms.dao.RecruitmentPlanDAO;
+import vn.ptit.hrms.dao.RecruitmentPlanDao;
 import vn.ptit.hrms.domain.Applicant;
 import vn.ptit.hrms.domain.RecruitmentPlan;
 
 public class ApplicantRowMapper implements RowMapper<Applicant> {
 
-    private final RecruitmentPlanDAO recruitmentPlanDAO;
+    private final RecruitmentPlanDao recruitmentPlanDAO;
 
-    public ApplicantRowMapper(RecruitmentPlanDAO recruitmentPlanDAO) {
+    public ApplicantRowMapper(RecruitmentPlanDao recruitmentPlanDAO) {
         this.recruitmentPlanDAO = recruitmentPlanDAO;
     }
 
@@ -26,7 +26,7 @@ public class ApplicantRowMapper implements RowMapper<Applicant> {
 
         // Fetch RecruitmentPlan using DAO
         int planId = rs.getInt("plan_id");
-        RecruitmentPlan plan = recruitmentPlanDAO.findById(planId);
+        RecruitmentPlan plan = recruitmentPlanDAO.getRecruitmentPlanById(planId);
         applicant.setPlan(plan);
 
         applicant.setFullName(rs.getString("full_name"));

@@ -3,15 +3,15 @@ package vn.ptit.hrms.mapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
-import vn.ptit.hrms.dao.EmployeeDAO;
+import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Department;
 import vn.ptit.hrms.domain.Employee;
 
 public class DepartmentRowMapper implements RowMapper<Department> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public DepartmentRowMapper(EmployeeDAO employeeDAO) {
+    public DepartmentRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -28,7 +28,7 @@ public class DepartmentRowMapper implements RowMapper<Department> {
         // Retrieve manager id from ResultSet and fetch the full Employee using EmployeeDAO.
         int managerId = rs.getInt("manager_id");
         if (managerId > 0) { // Assuming manager_id is nullable and 0 means no manager
-            Employee manager = employeeDAO.findById(managerId);
+            Employee manager = employeeDAO.getEmployeeById(managerId);
             department.setManager(manager);
         }
 

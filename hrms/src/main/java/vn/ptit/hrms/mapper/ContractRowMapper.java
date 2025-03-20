@@ -5,15 +5,15 @@ import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.ContractStatusEnum;
-import vn.ptit.hrms.dao.EmployeeDAO;
+import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Contract;
 import vn.ptit.hrms.domain.Employee;
 
 public class ContractRowMapper implements RowMapper<Contract> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public ContractRowMapper(EmployeeDAO employeeDAO) {
+    public ContractRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -26,7 +26,7 @@ public class ContractRowMapper implements RowMapper<Contract> {
 
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
-        Employee employee = employeeDAO.findById(employeeId);
+        Employee employee = employeeDAO.getEmployeeById(employeeId);
         contract.setEmployee(employee);
 
         // Map contract type

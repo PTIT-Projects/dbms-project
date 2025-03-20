@@ -6,13 +6,13 @@ import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Department;
 import vn.ptit.hrms.domain.RecruitmentPlan;
-import vn.ptit.hrms.dao.DepartmentDAO; // Assuming you have a DepartmentDAO to fetch Department
+import vn.ptit.hrms.dao.DepartmentDao; // Assuming you have a DepartmentDAO to fetch Department
 
 public class RecruitmentPlanRowMapper implements RowMapper<RecruitmentPlan> {
 
-    private final DepartmentDAO departmentDAO;
+    private final DepartmentDao departmentDAO;
 
-    public RecruitmentPlanRowMapper(DepartmentDAO departmentDAO) {
+    public RecruitmentPlanRowMapper(DepartmentDao departmentDAO) {
         this.departmentDAO = departmentDAO;
     }
 
@@ -29,7 +29,7 @@ public class RecruitmentPlanRowMapper implements RowMapper<RecruitmentPlan> {
         // Retrieve department id from ResultSet and fetch the full Department using DepartmentDAO.
         int departmentId = rs.getInt("department_id"); // Assuming the column name is department_id
         if (departmentId > 0) { // Assuming department ID is positive
-            Department department = departmentDAO.findById(departmentId);
+            Department department = departmentDAO.getDepartmentById(departmentId);
             recruitmentPlan.setDepartment(department);
         }
 

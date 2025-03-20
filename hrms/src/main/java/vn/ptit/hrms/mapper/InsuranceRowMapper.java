@@ -6,13 +6,13 @@ import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.Insurance;
-import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
 
 public class InsuranceRowMapper implements RowMapper<Insurance> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public InsuranceRowMapper(EmployeeDAO employeeDAO) {
+    public InsuranceRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -25,7 +25,7 @@ public class InsuranceRowMapper implements RowMapper<Insurance> {
 
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
-        Employee employee = employeeDAO.findById(employeeId);
+        Employee employee = employeeDAO.getEmployeeById(employeeId);
         insurance.setEmployee(employee);
 
         // Map Insurance number

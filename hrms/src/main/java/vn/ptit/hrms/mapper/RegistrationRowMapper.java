@@ -8,13 +8,13 @@ import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.Registration;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
 import vn.ptit.hrms.constant.RegistrationTypeEnum;
-import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
 
 public class RegistrationRowMapper implements RowMapper<Registration> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public RegistrationRowMapper(EmployeeDAO employeeDAO) {
+    public RegistrationRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -28,7 +28,7 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
         if (employeeId > 0) { // Assuming employee ID is positive
-            Employee employee = employeeDAO.findById(employeeId);
+            Employee employee = employeeDAO.getEmployeeById(employeeId);
             registration.setEmployee(employee);
         }
 
@@ -56,7 +56,7 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
         // Retrieve approved by employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int approvedById = rs.getInt("approved_by");
         if (approvedById > 0) { // Assuming employee ID is positive
-            Employee approvedBy = employeeDAO.findById(approvedById);
+            Employee approvedBy = employeeDAO.EmployeeDao(approvedById);
             registration.setApprovedBy(approvedBy);
         }
 

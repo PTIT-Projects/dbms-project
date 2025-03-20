@@ -7,15 +7,15 @@ import vn.ptit.hrms.constant.EmployeeCompetencyLevelEnum;
 import vn.ptit.hrms.domain.Competency;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.EmployeeCompetency;
-import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
-import vn.ptit.hrms.dao.CompetencyDAO; // Assuming you have a CompetencyDAO to fetch Competency
+import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.CompetencyDao; // Assuming you have a CompetencyDAO to fetch Competency
 
 public class EmployeeCompetencyRowMapper implements RowMapper<EmployeeCompetency> {
 
-    private final EmployeeDAO employeeDAO;
-    private final CompetencyDAO competencyDAO;
+    private final EmployeeDao employeeDAO;
+    private final CompetencyDao competencyDAO;
 
-    public EmployeeCompetencyRowMapper(EmployeeDAO employeeDAO, CompetencyDAO competencyDAO) {
+    public EmployeeCompetencyRowMapper(EmployeeDao employeeDAO, CompetencyDao competencyDAO) {
         this.employeeDAO = employeeDAO;
         this.competencyDAO = competencyDAO;
     }
@@ -29,12 +29,12 @@ public class EmployeeCompetencyRowMapper implements RowMapper<EmployeeCompetency
 
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
-        Employee employee = employeeDAO.findById(employeeId);
+        Employee employee = employeeDAO.getEmployeeById(employeeId);
         employeeCompetency.setEmployee(employee);
 
         // Retrieve competency id from ResultSet and fetch the full Competency using CompetencyDAO.
         int competencyId = rs.getInt("competency_id");
-        Competency competency = competencyDAO.findById(competencyId);
+        Competency competency = competencyDAO.getCompetencyById(competencyId);
         employeeCompetency.setCompetency(competency);
 
         // Map EmployeeCompetencyLevelEnum field

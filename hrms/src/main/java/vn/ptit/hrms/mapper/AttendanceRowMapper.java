@@ -8,14 +8,15 @@ import java.time.LocalTime;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.AttendanceStatus;
 import vn.ptit.hrms.dao.EmployeeDAO;
+import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Attendance;
 import vn.ptit.hrms.domain.Employee;
 
 public class AttendanceRowMapper implements RowMapper<Attendance> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public AttendanceRowMapper(EmployeeDAO employeeDAO) {
+    public AttendanceRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -28,7 +29,7 @@ public class AttendanceRowMapper implements RowMapper<Attendance> {
 
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
-        Employee employee = employeeDAO.findById(employeeId);
+        Employee employee = employeeDAO.getEmployeeById(employeeId);
         attendance.setEmployee(employee);
 
         // Map LocalDate field from SQL Date

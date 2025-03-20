@@ -5,15 +5,15 @@ import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.DecisionTypeEnum;
-import vn.ptit.hrms.dao.EmployeeDAO;
+import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Decision;
 import vn.ptit.hrms.domain.Employee;
 
 public class DecisionRowMapper implements RowMapper<Decision> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public DecisionRowMapper(EmployeeDAO employeeDAO) {
+    public DecisionRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -26,7 +26,7 @@ public class DecisionRowMapper implements RowMapper<Decision> {
 
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
         int employeeId = rs.getInt("employee_id");
-        Employee employee = employeeDAO.findById(employeeId);
+        Employee employee = employeeDAO.getEmployeeById(employeeId);
         decision.setEmployee(employee);
 
         // Map DecisionTypeEnum field using a helper method.
