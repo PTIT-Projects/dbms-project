@@ -73,4 +73,3 @@ public class AttendanceRowMapper implements RowMapper<Attendance> {
         throw new IllegalArgumentException("Unknown attendance status value: " + value);
     }
 }
-```
