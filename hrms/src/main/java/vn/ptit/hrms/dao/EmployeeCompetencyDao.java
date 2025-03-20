@@ -17,7 +17,6 @@ public class EmployeeCompetencyDao {
         this.employeeCompetencyRowMapper = employeeCompetencyRowMapper;
     }
 
-    // Method to create a new employee competency
     public void createEmployeeCompetency(EmployeeCompetency employeeCompetency) {
         String sql = "INSERT INTO EmployeeCompetencies (EmployeeID, CompetencyID, Level) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -26,19 +25,16 @@ public class EmployeeCompetencyDao {
                 employeeCompetency.getLevel() != null ? employeeCompetency.getLevel().getValue() : null);
     }
 
-    // Method to get an employee competency by ID
     public EmployeeCompetency getEmployeeCompetencyById(Integer id) {
         String sql = "SELECT * FROM EmployeeCompetencies WHERE EmployeeCompetencyID = ?";
         return jdbcTemplate.queryForObject(sql, employeeCompetencyRowMapper, id);
     }
 
-    // Method to get all employee competencies
     public List<EmployeeCompetency> getAllEmployeeCompetencies() {
         String sql = "SELECT * FROM EmployeeCompetencies";
         return jdbcTemplate.query(sql, employeeCompetencyRowMapper);
     }
 
-    // Method to update an employee competency
     public void updateEmployeeCompetency(EmployeeCompetency employeeCompetency) {
         String sql = "UPDATE EmployeeCompetencies SET EmployeeID = ?, CompetencyID = ?, Level = ? WHERE EmployeeCompetencyID = ?";
         jdbcTemplate.update(sql,
@@ -48,7 +44,6 @@ public class EmployeeCompetencyDao {
                 employeeCompetency.getId());
     }
 
-    // Method to delete an employee competency
     public void deleteEmployeeCompetency(Integer id) {
         String sql = "DELETE FROM EmployeeCompetencies WHERE EmployeeCompetencyID = ?";
         jdbcTemplate.update(sql, id);

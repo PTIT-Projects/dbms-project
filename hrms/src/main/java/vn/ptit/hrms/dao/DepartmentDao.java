@@ -17,26 +17,22 @@ public class DepartmentDao {
         this.departmentRowMapper = departmentRowMapper;
     }
 
-    // Method to create a new department
     public void createDepartment(Department department) {
         String sql = "INSERT INTO departments (department_name, manager_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, department.getDepartmentName(),
                 department.getManager() != null ? department.getManager().getId() : null);
     }
 
-    // Method to get a department by ID
     public Department getDepartmentById(Integer id) {
         String sql = "SELECT * FROM Departments WHERE DepartmentID = ?";
         return jdbcTemplate.queryForObject(sql, departmentRowMapper, id);
     }
 
-    // Method to get all departments
     public List<Department> getAllDepartments() {
         String sql = "SELECT * FROM departments";
         return jdbcTemplate.query(sql, departmentRowMapper);
     }
 
-    // Method to update a department
     public void updateDepartment(Department department) {
         String sql = "UPDATE departments SET DepartmentName = ?, ManagerID = ? WHERE DepartmentID = ?";
         jdbcTemplate.update(sql, department.getDepartmentName(),
@@ -44,7 +40,6 @@ public class DepartmentDao {
                 department.getId());
     }
 
-    // Method to delete a department
     public void deleteDepartment(Integer id) {
         String sql = "DELETE FROM departments WHERE id = ?";
         jdbcTemplate.update(sql, id);

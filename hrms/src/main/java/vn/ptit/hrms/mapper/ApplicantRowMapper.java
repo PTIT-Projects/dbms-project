@@ -24,7 +24,7 @@ public class ApplicantRowMapper implements RowMapper<Applicant> {
 
         applicant.setId(rs.getInt("ApplicantID"));
 
-        // Fetch RecruitmentPlan using DAO
+       
         int planId = rs.getInt("PlanID");
         RecruitmentPlan plan = recruitmentPlanDAO.getRecruitmentPlanById(planId);
         applicant.setPlan(plan);

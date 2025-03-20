@@ -19,15 +19,15 @@ public class PositionRowMapper implements RowMapper<Position> {
     public Position mapRow(ResultSet rs, int rowNum) throws SQLException {
         Position position = new Position();
 
-        // Map Position id
+       
         position.setId(rs.getInt("PositionID"));
 
-        // Map Position name
+       
         position.setPositionName(rs.getString("PositionName"));
 
-        // Retrieve department id from ResultSet and fetch the full Department using DepartmentDAO.
+       
         int departmentId = rs.getInt("DepartmentID");
-        if (departmentId > 0) { // Assuming department ID is positive
+        if (departmentId > 0) {
             Department department = departmentDAO.getDepartmentById(departmentId);
             position.setDepartment(department);
         }

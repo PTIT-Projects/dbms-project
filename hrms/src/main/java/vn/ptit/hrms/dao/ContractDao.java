@@ -17,7 +17,6 @@ public class ContractDao {
         this.contractRowMapper = contractRowMapper;
     }
 
-    // Method to create a new contract
     public void createContract(Contract contract) {
         String sql = "INSERT INTO Contracts (EmployeeID, ContractType, StartDate, EndDate, Salary, Status) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -29,19 +28,16 @@ public class ContractDao {
                 contract.getStatus().getValue());
     }
 
-    // Method to get a contract by ID
     public Contract getContractById(Integer id) {
         String sql = "SELECT * FROM Contracts WHERE ContractID = ?";
         return jdbcTemplate.queryForObject(sql, contractRowMapper, id);
     }
 
-    // Method to get all contracts
     public List<Contract> getAllContracts() {
         String sql = "SELECT * FROM Contracts";
         return jdbcTemplate.query(sql, contractRowMapper);
     }
 
-    // Method to update a contract
     public void updateContract(Contract contract) {
         String sql = "UPDATE Contracts SET EmployeeID = ?, ContractType = ?, StartDate = ?, EndDate = ?, Salary = ?, Status = ? WHERE ContractID = ?";
         jdbcTemplate.update(sql,
@@ -54,7 +50,6 @@ public class ContractDao {
                 contract.getId());
     }
 
-    // Method to delete a contract
     public void deleteContract(Integer id) {
         String sql = "DELETE FROM Contracts WHERE ContractID = ?";
         jdbcTemplate.update(sql, id);

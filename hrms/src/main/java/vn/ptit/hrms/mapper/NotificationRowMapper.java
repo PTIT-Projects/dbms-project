@@ -20,24 +20,24 @@ public class NotificationRowMapper implements RowMapper<Notification> {
     public Notification mapRow(ResultSet rs, int rowNum) throws SQLException {
         Notification notification = new Notification();
 
-        // Map Notification id
+       
         notification.setId(rs.getInt("NotificationID"));
 
-        // Map Notification title
+       
         notification.setTitle(rs.getString("Title"));
 
-        // Map Notification content
+       
         notification.setContent(rs.getString("Content"));
 
-        // Map LocalDateTime field from SQL Timestamp for created date
+       
         Timestamp sqlCreatedDate = rs.getTimestamp("CreatedDate");
         if (sqlCreatedDate != null) {
             notification.setCreatedDate(sqlCreatedDate.toLocalDateTime());
         }
 
-        // Retrieve created by employee id from ResultSet and fetch the full Employee using EmployeeDAO.
+       
         int createdById = rs.getInt("CreatedBy");
-        if (createdById > 0) { // Assuming employee ID is positive
+        if (createdById > 0) {
             Employee createdBy = employeeDAO.getEmployeeById(createdById);
             notification.setCreatedBy(createdBy);
         }

@@ -24,41 +24,39 @@ public class TrainingResultRowMapper implements RowMapper<TrainingResult> {
     public TrainingResult mapRow(ResultSet rs, int rowNum) throws SQLException {
         TrainingResult trainingResult = new TrainingResult();
 
-        // Map TrainingResult id
+       
         trainingResult.setId(rs.getInt("ResultID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+       
         int employeeId = rs.getInt("EmployeeID");
         if (employeeId > 0) {
             Employee employee = employeeDAO.getEmployeeById(employeeId);
             trainingResult.setEmployee(employee);
         }
 
-        // Retrieve course id from ResultSet and fetch the full TrainingCourse using TrainingCourseDAO
+       
         int courseId = rs.getInt("CourseID");
         if (courseId > 0) {
             TrainingCourse course = trainingCourseDAO.getTrainingCourseById(courseId);
             trainingResult.setCourse(course);
         }
 
-        // Map TrainingCompletionStatusEnum field
+       
         String completionStatusValue = rs.getString("CompletionStatus");
         if (completionStatusValue != null) {
             trainingResult.setCompletionStatus(getTrainingCompletionStatusEnum(completionStatusValue));
         }
 
-        // Map score
+       
         trainingResult.setScore(rs.getDouble("Score"));
 
         return trainingResult;
     }
 
-    /**
-     * Converts a string value from the database into the corresponding TrainingCompletionStatusEnum.
-     */
+
     private TrainingCompletionStatusEnum getTrainingCompletionStatusEnum(String value) {
         for (TrainingCompletionStatusEnum status : TrainingCompletionStatusEnum.values()) {
-            if (status.getValue().equalsIgnoreCase(value)) { // Changed from name() to getValue()
+            if (status.getValue().equalsIgnoreCase(value)) {
                 return status;
             }
         }

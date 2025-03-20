@@ -21,38 +21,36 @@ public class DecisionRowMapper implements RowMapper<Decision> {
     public Decision mapRow(ResultSet rs, int rowNum) throws SQLException {
         Decision decision = new Decision();
 
-        // Map Decision id with correct column name
+       
         decision.setId(rs.getInt("DecisionID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+       
         int employeeId = rs.getInt("EmployeeID");
         Employee employee = employeeDAO.getEmployeeById(employeeId);
         decision.setEmployee(employee);
 
-        // Map DecisionTypeEnum field using a helper method
+       
         String decisionTypeValue = rs.getString("DecisionType");
         if (decisionTypeValue != null) {
             decision.setDecisionType(getDecisionType(decisionTypeValue));
         }
 
-        // Map decision date
+       
         Date sqlDecisionDate = rs.getDate("DecisionDate");
         if (sqlDecisionDate != null) {
             decision.setDecisionDate(sqlDecisionDate.toLocalDate());
         }
 
-        // Map details
+       
         decision.setDetails(rs.getString("Details"));
 
         return decision;
     }
 
-    /**
-     * Converts a string value from the database into the corresponding DecisionTypeEnum.
-     */
+
     private DecisionTypeEnum getDecisionType(String value) {
         for (DecisionTypeEnum type : DecisionTypeEnum.values()) {
-            // Compare with getValue() instead of name() to match database values
+           
             if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }

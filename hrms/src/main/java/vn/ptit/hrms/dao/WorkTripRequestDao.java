@@ -17,7 +17,7 @@ public class WorkTripRequestDao {
         this.workTripRequestRowMapper = workTripRequestRowMapper;
     }
 
-    // Method to create a new work trip request record
+   
     public void createWorkTripRequest(WorkTripRequest workTripRequest) {
         String sql = "INSERT INTO WorkTripRequests (EmployeeID, Destination, StartDate, EndDate, Purpose, Status) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -29,19 +29,19 @@ public class WorkTripRequestDao {
                 workTripRequest.getStatus() != null ? workTripRequest.getStatus().getValue() : null);
     }
 
-    // Method to get a work trip request record by ID
+   
     public WorkTripRequest getWorkTripRequestById(Integer id) {
         String sql = "SELECT * FROM WorkTripRequests WHERE RequestID = ?";
         return jdbcTemplate.queryForObject(sql, workTripRequestRowMapper, id);
     }
 
-    // Method to get all work trip request records
+   
     public List<WorkTripRequest> getAllWorkTripRequests() {
         String sql = "SELECT * FROM WorkTripRequests";
         return jdbcTemplate.query(sql, workTripRequestRowMapper);
     }
 
-    // Method to update a work trip request record
+   
     public void updateWorkTripRequest(WorkTripRequest workTripRequest) {
         String sql = "UPDATE WorkTripRequests SET EmployeeID = ?, Destination = ?, StartDate = ?, EndDate = ?, Purpose = ?, Status = ? WHERE RequestID = ?";
         jdbcTemplate.update(sql,
@@ -54,7 +54,7 @@ public class WorkTripRequestDao {
                 workTripRequest.getId());
     }
 
-    // Method to delete a work trip request record
+   
     public void deleteWorkTripRequest(Integer id) {
         String sql = "DELETE FROM WorkTripRequests WHERE RequestID = ?";
         jdbcTemplate.update(sql, id);

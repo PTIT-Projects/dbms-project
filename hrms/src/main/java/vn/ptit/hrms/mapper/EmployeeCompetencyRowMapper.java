@@ -24,20 +24,20 @@ public class EmployeeCompetencyRowMapper implements RowMapper<EmployeeCompetency
     public EmployeeCompetency mapRow(ResultSet rs, int rowNum) throws SQLException {
         EmployeeCompetency employeeCompetency = new EmployeeCompetency();
 
-        // Map EmployeeCompetency id - use the correct column name EmployeeCompetencyID
+       
         employeeCompetency.setId(rs.getInt("EmployeeCompetencyID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
+       
         int employeeId = rs.getInt("EmployeeID");
         Employee employee = employeeDAO.getEmployeeById(employeeId);
         employeeCompetency.setEmployee(employee);
 
-        // Retrieve competency id from ResultSet and fetch the full Competency using CompetencyDAO.
+       
         int competencyId = rs.getInt("CompetencyID");
         Competency competency = competencyDAO.getCompetencyById(competencyId);
         employeeCompetency.setCompetency(competency);
 
-        // Map EmployeeCompetencyLevelEnum field - use the correct column name Level
+       
         String levelValue = rs.getString("Level");
         if (levelValue != null) {
             employeeCompetency.setLevel(getEmployeeCompetencyLevelEnum(levelValue));
@@ -46,12 +46,9 @@ public class EmployeeCompetencyRowMapper implements RowMapper<EmployeeCompetency
         return employeeCompetency;
     }
 
-    /**
-     * Converts a string value from the database into the corresponding EmployeeCompetencyLevelEnum.
-     */
     private EmployeeCompetencyLevelEnum getEmployeeCompetencyLevelEnum(String value) {
         for (EmployeeCompetencyLevelEnum level : EmployeeCompetencyLevelEnum.values()) {
-            if (level.getValue().equalsIgnoreCase(value)) {  // Use getValue() instead of name()
+            if (level.getValue().equalsIgnoreCase(value)) { 
                 return level;
             }
         }

@@ -17,7 +17,7 @@ public class TrainingResultDao {
         this.trainingResultRowMapper = trainingResultRowMapper;
     }
 
-    // Method to create a new training result record
+   
     public void createTrainingResult(TrainingResult trainingResult) {
         String sql = "INSERT INTO TrainingResults (EmployeeID, CourseID, CompletionStatus, Score) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -27,19 +27,19 @@ public class TrainingResultDao {
                 trainingResult.getScore());
     }
 
-    // Method to get a training result record by ID
+   
     public TrainingResult getTrainingResultById(Integer id) {
         String sql = "SELECT * FROM TrainingResults WHERE ResultID = ?";
         return jdbcTemplate.queryForObject(sql, trainingResultRowMapper, id);
     }
 
-    // Method to get all training result records
+   
     public List<TrainingResult> getAllTrainingResults() {
         String sql = "SELECT * FROM TrainingResults";
         return jdbcTemplate.query(sql, trainingResultRowMapper);
     }
 
-    // Method to update a training result record
+   
     public void updateTrainingResult(TrainingResult trainingResult) {
         String sql = "UPDATE TrainingResults SET EmployeeID = ?, CourseID = ?, CompletionStatus = ?, Score = ? WHERE ResultID = ?";
         jdbcTemplate.update(sql,
@@ -50,7 +50,7 @@ public class TrainingResultDao {
                 trainingResult.getId());
     }
 
-    // Method to delete a training result record
+   
     public void deleteTrainingResult(Integer id) {
         String sql = "DELETE FROM TrainingResults WHERE ResultID = ?";
         jdbcTemplate.update(sql, id);

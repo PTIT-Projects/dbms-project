@@ -17,7 +17,6 @@ public class EmployeeDao {
         this.employeeRowMapper = employeeRowMapper;
     }
 
-    // Method to create a new employee
     public void createEmployee(Employee employee) {
         String sql = "INSERT INTO Employees (FullName, DateOfBirth, Gender, Address, Phone, Email, DepartmentID, Position, HireDate, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -33,19 +32,16 @@ public class EmployeeDao {
                 employee.getStatus() != null ? employee.getStatus().getValue() : null);
     }
 
-    // Method to get an employee by ID
     public Employee getEmployeeById(Integer id) {
         String sql = "SELECT * FROM Employees WHERE EmployeeID = ?";
         return jdbcTemplate.queryForObject(sql, employeeRowMapper, id);
     }
 
-    // Method to get all employees
     public List<Employee> getAllEmployees() {
         String sql = "SELECT * FROM Employees";
         return jdbcTemplate.query(sql, employeeRowMapper);
     }
 
-    // Method to update an employee
     public void updateEmployee(Employee employee) {
         String sql = "UPDATE Employees SET FullName = ?, DateOfBirth = ?, Gender = ?, Address = ?, Phone = ?, Email = ?, DepartmentID = ?, Position = ?, HireDate = ?, Status = ? WHERE EmployeeID = ?";
         jdbcTemplate.update(sql,
@@ -62,7 +58,6 @@ public class EmployeeDao {
                 employee.getId());
     }
 
-    // Method to delete an employee
     public void deleteEmployee(Integer id) {
         String sql = "DELETE FROM Employees WHERE EmployeeID = ?";
         jdbcTemplate.update(sql, id);

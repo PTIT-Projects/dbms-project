@@ -21,18 +21,18 @@ public class ContractRowMapper implements RowMapper<Contract> {
     public Contract mapRow(ResultSet rs, int rowNum) throws SQLException {
         Contract contract = new Contract();
 
-        // Map ContractID
+       
         contract.setId(rs.getInt("ContractID"));
 
-        // Map EmployeeID and get Employee object
+       
         int employeeId = rs.getInt("EmployeeID");
         Employee employee = employeeDAO.getEmployeeById(employeeId);
         contract.setEmployee(employee);
 
-        // Map contract type
+       
         contract.setContractType(rs.getString("ContractType"));
 
-        // Map dates
+       
         Date startDate = rs.getDate("StartDate");
         if (startDate != null) {
             contract.setStartDate(startDate.toLocalDate());
@@ -43,10 +43,10 @@ public class ContractRowMapper implements RowMapper<Contract> {
             contract.setEndDate(endDate.toLocalDate());
         }
 
-        // Map Salary (might need to convert from BigDecimal to Double)
+       
         contract.setSalary(rs.getDouble("Salary"));
 
-        // Map Status to enum
+       
         String statusStr = rs.getString("Status");
         if (statusStr != null) {
             contract.setStatus(getContractStatus(statusStr));

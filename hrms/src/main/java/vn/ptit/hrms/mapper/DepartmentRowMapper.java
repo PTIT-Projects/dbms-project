@@ -19,15 +19,15 @@ public class DepartmentRowMapper implements RowMapper<Department> {
     public Department mapRow(ResultSet rs, int rowNum) throws SQLException {
         Department department = new Department();
 
-        // Map Department id
+       
         department.setId(rs.getInt("DepartmentID"));
 
-        // Map Department name
+       
         department.setDepartmentName(rs.getString("DepartmentName"));
 
-        // Retrieve manager id from ResultSet and fetch the full Employee using EmployeeDAO.
+       
         int managerId = rs.getInt("ManagerID");
-        if (managerId > 0) { // Assuming manager_id is nullable and 0 means no manager
+        if (managerId > 0) {
             Employee manager = employeeDAO.getEmployeeById(managerId);
             department.setManager(manager);
         }

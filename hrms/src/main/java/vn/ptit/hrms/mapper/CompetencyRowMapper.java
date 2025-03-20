@@ -19,34 +19,31 @@ public class CompetencyRowMapper implements RowMapper<Competency> {
     public Competency mapRow(ResultSet rs, int rowNum) throws SQLException {
         Competency competency = new Competency();
 
-        // Map Competency id - use the correct column name CompetencyID
+       
         competency.setId(rs.getInt("CompetencyID"));
 
-        // Retrieve position id from ResultSet and fetch the full Position using PositionDAO.
-        // Use the correct column name PositionID
+       
+       
         int positionId = rs.getInt("PositionID");
         Position position = positionDAO.getPositionById(positionId);
         competency.setPosition(position);
 
-        // Map CompetencyTypeEnum field using a helper method.
-        // Use the correct column name CompetencyType
+       
+       
         String competencyTypeValue = rs.getString("CompetencyType");
         if (competencyTypeValue != null) {
             competency.setCompetencyType(getCompetencyType(competencyTypeValue));
         }
 
-        // Map description - use the correct column name Description
+       
         competency.setDescription(rs.getString("Description"));
 
         return competency;
     }
 
-    /**
-     * Converts a string value from the database into the corresponding CompetencyTypeEnum.
-     */
     private CompetencyTypeEnum getCompetencyType(String value) {
         for (CompetencyTypeEnum type : CompetencyTypeEnum.values()) {
-            // Compare with getValue() instead of name() since the database stores the display value
+           
             if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }

@@ -19,32 +19,32 @@ public class SalaryRowMapper implements RowMapper<Salary> {
     public Salary mapRow(ResultSet rs, int rowNum) throws SQLException {
         Salary salary = new Salary();
 
-        // Map Salary id
+       
         salary.setId(rs.getInt("SalaryID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+       
         int employeeId = rs.getInt("EmployeeID");
         if (employeeId > 0) {
             Employee employee = employeeDAO.getEmployeeById(employeeId);
             salary.setEmployee(employee);
         }
 
-        // Map month
+       
         salary.setMonth(rs.getInt("Month"));
 
-        // Map year
+       
         salary.setYear(rs.getInt("Year"));
 
-        // Map basic salary
+       
         salary.setBasicSalary(rs.getDouble("BasicSalary"));
 
-        // Map allowance
+       
         salary.setAllowance(rs.getDouble("Allowance"));
 
-        // Map deductions
+       
         salary.setDeductions(rs.getDouble("Deductions"));
 
-        // Map net salary
+       
         salary.setNetSalary(rs.getDouble("NetSalary"));
 
         return salary;

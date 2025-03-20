@@ -17,7 +17,6 @@ public class CompetencyDao {
         this.competencyRowMapper = competencyRowMapper;
     }
 
-    // Method to create a new competency
     public void createCompetency(Competency competency) {
         String sql = "INSERT INTO Competencies (PositionID, CompetencyType, Description) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -26,19 +25,16 @@ public class CompetencyDao {
                 competency.getDescription());
     }
 
-    // Method to get a competency by ID
     public Competency getCompetencyById(Integer id) {
         String sql = "SELECT * FROM Competencies WHERE CompetencyID = ?";
         return jdbcTemplate.queryForObject(sql, competencyRowMapper, id);
     }
 
-    // Method to get all competencies
     public List<Competency> getAllCompetencies() {
         String sql = "SELECT * FROM Competencies";
         return jdbcTemplate.query(sql, competencyRowMapper);
     }
 
-    // Method to update a competency
     public void updateCompetency(Competency competency) {
         String sql = "UPDATE Competencies SET PositionID = ?, CompetencyType = ?, Description = ? WHERE CompetencyID = ?";
         jdbcTemplate.update(sql,
@@ -48,7 +44,6 @@ public class CompetencyDao {
                 competency.getId());
     }
 
-    // Method to delete a competency
     public void deleteCompetency(Integer id) {
         String sql = "DELETE FROM Competencies WHERE CompetencyID = ?";
         jdbcTemplate.update(sql, id);

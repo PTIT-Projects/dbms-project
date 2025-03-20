@@ -17,7 +17,6 @@ public class AttendanceDao {
         this.attendanceRowMapper = attendanceRowMapper;
     }
 
-    // Method to create a new attendance record
     public void createAttendance(Attendance attendance) {
         String sql = "INSERT INTO Attendance (EmployeeID, Date, CheckInTime, CheckOutTime, Status) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
@@ -28,19 +27,16 @@ public class AttendanceDao {
                 attendance.getStatus().getValue());
     }
 
-    // Method to get an attendance record by ID
     public Attendance getAttendanceById(Integer id) {
         String sql = "SELECT * FROM Attendance WHERE AttendanceID = ?";
         return jdbcTemplate.queryForObject(sql, attendanceRowMapper, id);
     }
 
-    // Method to get all attendance records
     public List<Attendance> getAllAttendance() {
         String sql = "SELECT * FROM Attendance";
         return jdbcTemplate.query(sql, attendanceRowMapper);
     }
 
-    // Method to update an attendance record
     public void updateAttendance(Attendance attendance) {
         String sql = "UPDATE Attendance SET EmployeeID = ?, Date = ?, CheckInTime = ?, CheckOutTime = ?, Status = ? WHERE AttendanceID = ?";
         jdbcTemplate.update(sql,
@@ -52,7 +48,6 @@ public class AttendanceDao {
                 attendance.getId());
     }
 
-    // Method to delete an attendance record
     public void deleteAttendance(Integer id) {
         String sql = "DELETE FROM Attendance WHERE AttendanceID = ?";
         jdbcTemplate.update(sql, id);
