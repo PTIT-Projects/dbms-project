@@ -7,15 +7,15 @@ import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.TrainingCourse;
 import vn.ptit.hrms.domain.TrainingResult;
 import vn.ptit.hrms.constant.TrainingCompletionStatusEnum;
-import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
-import vn.ptit.hrms.dao.TrainingCourseDAO; // Assuming you have a TrainingCourseDAO to fetch TrainingCourse
+import vn.ptit.hrms.dao.EmployeeDao;
+import vn.ptit.hrms.dao.TrainingCourseDao;
 
 public class TrainingResultRowMapper implements RowMapper<TrainingResult> {
 
-    private final EmployeeDAO employeeDAO;
-    private final TrainingCourseDAO trainingCourseDAO;
+    private final EmployeeDao employeeDAO;
+    private final TrainingCourseDao trainingCourseDAO;
 
-    public TrainingResultRowMapper(EmployeeDAO employeeDAO, TrainingCourseDAO trainingCourseDAO) {
+    public TrainingResultRowMapper(EmployeeDao employeeDAO, TrainingCourseDao trainingCourseDAO) {
         this.employeeDAO = employeeDAO;
         this.trainingCourseDAO = trainingCourseDAO;
     }
@@ -25,30 +25,30 @@ public class TrainingResultRowMapper implements RowMapper<TrainingResult> {
         TrainingResult trainingResult = new TrainingResult();
 
         // Map TrainingResult id
-        trainingResult.setId(rs.getInt("id"));
+        trainingResult.setId(rs.getInt("ResultID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
-        if (employeeId > 0) { // Assuming employee ID is positive
-            Employee employee = employeeDAO.findById(employeeId);
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+        int employeeId = rs.getInt("EmployeeID");
+        if (employeeId > 0) {
+            Employee employee = employeeDAO.getEmployeeById(employeeId);
             trainingResult.setEmployee(employee);
         }
 
-        // Retrieve course id from ResultSet and fetch the full TrainingCourse using TrainingCourseDAO.
-        int courseId = rs.getInt("course_id"); // Assuming the column name is course_id
-        if (courseId > 0) { // Assuming course ID is positive
-            TrainingCourse course = trainingCourseDAO.findById(courseId);
+        // Retrieve course id from ResultSet and fetch the full TrainingCourse using TrainingCourseDAO
+        int courseId = rs.getInt("CourseID");
+        if (courseId > 0) {
+            TrainingCourse course = trainingCourseDAO.getTrainingCourseById(courseId);
             trainingResult.setCourse(course);
         }
 
         // Map TrainingCompletionStatusEnum field
-        String completionStatusValue = rs.getString("completion_status");
+        String completionStatusValue = rs.getString("CompletionStatus");
         if (completionStatusValue != null) {
             trainingResult.setCompletionStatus(getTrainingCompletionStatusEnum(completionStatusValue));
         }
 
         // Map score
-        trainingResult.setScore(rs.getDouble("score"));
+        trainingResult.setScore(rs.getDouble("Score"));
 
         return trainingResult;
     }
@@ -58,7 +58,7 @@ public class TrainingResultRowMapper implements RowMapper<TrainingResult> {
      */
     private TrainingCompletionStatusEnum getTrainingCompletionStatusEnum(String value) {
         for (TrainingCompletionStatusEnum status : TrainingCompletionStatusEnum.values()) {
-            if (status.name().equalsIgnoreCase(value)) {
+            if (status.getValue().equalsIgnoreCase(value)) { // Changed from name() to getValue()
                 return status;
             }
         }

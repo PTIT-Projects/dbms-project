@@ -5,15 +5,15 @@ import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
-import vn.ptit.hrms.dao.EmployeeDAO;
+import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.WorkTripRequest;
 
 public class WorkTripRequestRowMapper implements RowMapper<WorkTripRequest> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public WorkTripRequestRowMapper(EmployeeDAO employeeDAO) {
+    public WorkTripRequestRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -22,32 +22,32 @@ public class WorkTripRequestRowMapper implements RowMapper<WorkTripRequest> {
         WorkTripRequest workTripRequest = new WorkTripRequest();
 
         // Map WorkTripRequest id
-        workTripRequest.setId(rs.getInt("id"));
+        workTripRequest.setId(rs.getInt("RequestID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
-        Employee employee = employeeDAO.findById(employeeId);
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+        int employeeId = rs.getInt("EmployeeID");
+        Employee employee = employeeDAO.getEmployeeById(employeeId);
         workTripRequest.setEmployee(employee);
 
         // Map destination
-        workTripRequest.setDestination(rs.getString("destination"));
+        workTripRequest.setDestination(rs.getString("Destination"));
 
         // Map LocalDate fields from SQL Date
-        Date sqlStartDate = rs.getDate("start_date");
+        Date sqlStartDate = rs.getDate("StartDate");
         if (sqlStartDate != null) {
             workTripRequest.setStartDate(sqlStartDate.toLocalDate());
         }
 
-        Date sqlEndDate = rs.getDate("end_date");
+        Date sqlEndDate = rs.getDate("EndDate");
         if (sqlEndDate != null) {
             workTripRequest.setEndDate(sqlEndDate.toLocalDate());
         }
 
         // Map purpose
-        workTripRequest.setPurpose(rs.getString("purpose"));
+        workTripRequest.setPurpose(rs.getString("Purpose"));
 
-        // Map RegistrationStatusEnum field using a helper method.
-        String statusValue = rs.getString("status");
+        // Map RegistrationStatusEnum field using a helper method
+        String statusValue = rs.getString("Status");
         if (statusValue != null) {
             workTripRequest.setStatus(getRegistrationStatus(statusValue));
         }
@@ -60,8 +60,7 @@ public class WorkTripRequestRowMapper implements RowMapper<WorkTripRequest> {
      */
     private RegistrationStatusEnum getRegistrationStatus(String value) {
         for (RegistrationStatusEnum status : RegistrationStatusEnum.values()) {
-            // Adjust the comparison if your enum uses a custom value
-            if (status.name().equalsIgnoreCase(value)) {
+            if (status.getValue().equalsIgnoreCase(value)) { // Changed from name() to getValue()
                 return status;
             }
         }

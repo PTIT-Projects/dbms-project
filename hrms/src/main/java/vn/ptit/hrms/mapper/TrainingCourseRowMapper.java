@@ -6,13 +6,13 @@ import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.TrainingCourse;
-import vn.ptit.hrms.dao.EmployeeDAO; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao;
 
 public class TrainingCourseRowMapper implements RowMapper<TrainingCourse> {
 
-    private final EmployeeDAO employeeDAO;
+    private final EmployeeDao employeeDAO;
 
-    public TrainingCourseRowMapper(EmployeeDAO employeeDAO) {
+    public TrainingCourseRowMapper(EmployeeDao employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
 
@@ -21,30 +21,30 @@ public class TrainingCourseRowMapper implements RowMapper<TrainingCourse> {
         TrainingCourse trainingCourse = new TrainingCourse();
 
         // Map TrainingCourse id
-        trainingCourse.setId(rs.getInt("id"));
+        trainingCourse.setId(rs.getInt("CourseID"));
 
         // Map course name
-        trainingCourse.setCourseName(rs.getString("course_name"));
+        trainingCourse.setCourseName(rs.getString("CourseName"));
 
         // Map description
-        trainingCourse.setDescription(rs.getString("description"));
+        trainingCourse.setDescription(rs.getString("Description"));
 
         // Map LocalDate field from SQL Date for start date
-        Date sqlStartDate = rs.getDate("start_date");
+        Date sqlStartDate = rs.getDate("StartDate");
         if (sqlStartDate != null) {
             trainingCourse.setStartDate(sqlStartDate.toLocalDate());
         }
 
         // Map LocalDate field from SQL Date for end date
-        Date sqlEndDate = rs.getDate("end_date");
+        Date sqlEndDate = rs.getDate("EndDate");
         if (sqlEndDate != null) {
             trainingCourse.setEndDate(sqlEndDate.toLocalDate());
         }
 
-        // Retrieve trainer id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int trainerId = rs.getInt("trainer_id"); // Assuming the column name is trainer_id
-        if (trainerId > 0) { // Assuming trainer ID is positive
-            Employee trainer = employeeDAO.findById(trainerId);
+        // Retrieve trainer id from ResultSet and fetch the full Employee using EmployeeDAO
+        int trainerId = rs.getInt("TrainerID");
+        if (trainerId > 0) {
+            Employee trainer = employeeDAO.getEmployeeById(trainerId);
             trainingCourse.setTrainer(trainer);
         }
 

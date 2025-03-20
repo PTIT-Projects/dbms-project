@@ -26,7 +26,7 @@ public class DepartmentDao {
 
     // Method to get a department by ID
     public Department getDepartmentById(Integer id) {
-        String sql = "SELECT * FROM departments WHERE id = ?";
+        String sql = "SELECT * FROM Departments WHERE DepartmentID = ?";
         return jdbcTemplate.queryForObject(sql, departmentRowMapper, id);
     }
 
@@ -38,7 +38,7 @@ public class DepartmentDao {
 
     // Method to update a department
     public void updateDepartment(Department department) {
-        String sql = "UPDATE departments SET department_name = ?, manager_id = ? WHERE id = ?";
+        String sql = "UPDATE departments SET DepartmentName = ?, ManagerID = ? WHERE DepartmentID = ?";
         jdbcTemplate.update(sql, department.getDepartmentName(),
                 department.getManager() != null ? department.getManager().getId() : null,
                 department.getId());

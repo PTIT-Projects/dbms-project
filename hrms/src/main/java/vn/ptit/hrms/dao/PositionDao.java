@@ -19,7 +19,7 @@ public class PositionDao {
 
     // Method to create a new position
     public void createPosition(Position position) {
-        String sql = "INSERT INTO positions (position_name, department_id) VALUES (?, ?)";
+        String sql = "INSERT INTO Positions (PositionName, DepartmentID) VALUES (?, ?)";
         jdbcTemplate.update(sql,
                 position.getPositionName(),
                 position.getDepartment() != null ? position.getDepartment().getId() : null);
@@ -27,19 +27,19 @@ public class PositionDao {
 
     // Method to get a position by ID
     public Position getPositionById(Integer id) {
-        String sql = "SELECT * FROM positions WHERE position_id = ?";
+        String sql = "SELECT * FROM Positions WHERE PositionID = ?";
         return jdbcTemplate.queryForObject(sql, positionRowMapper, id);
     }
 
     // Method to get all positions
     public List<Position> getAllPositions() {
-        String sql = "SELECT * FROM positions";
+        String sql = "SELECT * FROM Positions";
         return jdbcTemplate.query(sql, positionRowMapper);
     }
 
     // Method to update a position
     public void updatePosition(Position position) {
-        String sql = "UPDATE positions SET position_name = ?, department_id = ? WHERE position_id = ?";
+        String sql = "UPDATE Positions SET PositionName = ?, DepartmentID = ? WHERE PositionID = ?";
         jdbcTemplate.update(sql,
                 position.getPositionName(),
                 position.getDepartment() != null ? position.getDepartment().getId() : null,
@@ -48,7 +48,7 @@ public class PositionDao {
 
     // Method to delete a position
     public void deletePosition(Integer id) {
-        String sql = "DELETE FROM positions WHERE position_id = ?";
+        String sql = "DELETE FROM Positions WHERE PositionID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

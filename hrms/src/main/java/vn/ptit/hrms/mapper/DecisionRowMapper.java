@@ -21,28 +21,28 @@ public class DecisionRowMapper implements RowMapper<Decision> {
     public Decision mapRow(ResultSet rs, int rowNum) throws SQLException {
         Decision decision = new Decision();
 
-        // Map Decision id
-        decision.setId(rs.getInt("id"));
+        // Map Decision id with correct column name
+        decision.setId(rs.getInt("DecisionID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+        int employeeId = rs.getInt("EmployeeID");
         Employee employee = employeeDAO.getEmployeeById(employeeId);
         decision.setEmployee(employee);
 
-        // Map DecisionTypeEnum field using a helper method.
-        String decisionTypeValue = rs.getString("decision_type");
+        // Map DecisionTypeEnum field using a helper method
+        String decisionTypeValue = rs.getString("DecisionType");
         if (decisionTypeValue != null) {
             decision.setDecisionType(getDecisionType(decisionTypeValue));
         }
 
         // Map decision date
-        Date sqlDecisionDate = rs.getDate("decision_date");
+        Date sqlDecisionDate = rs.getDate("DecisionDate");
         if (sqlDecisionDate != null) {
             decision.setDecisionDate(sqlDecisionDate.toLocalDate());
         }
 
         // Map details
-        decision.setDetails(rs.getString("details"));
+        decision.setDetails(rs.getString("Details"));
 
         return decision;
     }
@@ -52,8 +52,8 @@ public class DecisionRowMapper implements RowMapper<Decision> {
      */
     private DecisionTypeEnum getDecisionType(String value) {
         for (DecisionTypeEnum type : DecisionTypeEnum.values()) {
-            // Adjust the comparison if your enum uses a custom value
-            if (type.name().equalsIgnoreCase(value)) {
+            // Compare with getValue() instead of name() to match database values
+            if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }
         }

@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.Notification;
-import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao;
 
 public class NotificationRowMapper implements RowMapper<Notification> {
 
@@ -21,22 +21,22 @@ public class NotificationRowMapper implements RowMapper<Notification> {
         Notification notification = new Notification();
 
         // Map Notification id
-        notification.setId(rs.getInt("id"));
+        notification.setId(rs.getInt("NotificationID"));
 
         // Map Notification title
-        notification.setTitle(rs.getString("title"));
+        notification.setTitle(rs.getString("Title"));
 
         // Map Notification content
-        notification.setContent(rs.getString("content"));
+        notification.setContent(rs.getString("Content"));
 
         // Map LocalDateTime field from SQL Timestamp for created date
-        Timestamp sqlCreatedDate = rs.getTimestamp("created_date");
+        Timestamp sqlCreatedDate = rs.getTimestamp("CreatedDate");
         if (sqlCreatedDate != null) {
             notification.setCreatedDate(sqlCreatedDate.toLocalDateTime());
         }
 
         // Retrieve created by employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int createdById = rs.getInt("created_by");
+        int createdById = rs.getInt("CreatedBy");
         if (createdById > 0) { // Assuming employee ID is positive
             Employee createdBy = employeeDAO.getEmployeeById(createdById);
             notification.setCreatedBy(createdBy);

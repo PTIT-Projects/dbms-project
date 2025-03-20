@@ -17,50 +17,53 @@ public class EmployeeRowMapper implements RowMapper<Employee> {
         Employee employee = new Employee();
 
         // Map Employee id
-        employee.setId(rs.getInt("id"));
+        employee.setId(rs.getInt("EmployeeID"));
 
         // Map Employee full name
-        employee.setFullName(rs.getString("full_name"));
+        employee.setFullName(rs.getString("FullName"));
 
         // Map LocalDate field from SQL Date for date of birth
-        Date sqlDateOfBirth = rs.getDate("date_of_birth");
+        Date sqlDateOfBirth = rs.getDate("DateOfBirth");
         if (sqlDateOfBirth != null) {
             LocalDate localDateOfBirth = sqlDateOfBirth.toLocalDate();
             employee.setDateOfBirth(localDateOfBirth);
         }
 
         // Map GenderEnum field
-        String genderValue = rs.getString("gender");
+        String genderValue = rs.getString("Gender");
         if (genderValue != null) {
             employee.setGender(getGenderEnum(genderValue));
         }
 
         // Map Employee address
-        employee.setAddress(rs.getString("address"));
+        employee.setAddress(rs.getString("Address"));
 
         // Map Employee phone
-        employee.setPhone(rs.getString("phone"));
+        employee.setPhone(rs.getString("Phone"));
 
         // Map Employee email
-        employee.setEmail(rs.getString("email"));
+        employee.setEmail(rs.getString("Email"));
 
-        // Map Department (assuming you have a method to fetch Department by ID)
-        int departmentId = rs.getInt("department_id");
-        Department department = fetchDepartmentById(departmentId); // Implement this method as needed
-        employee.setDepartment(department);
+        // Map Department (using departmentId only, actual Department object should be set by DAO)
+        int departmentId = rs.getInt("DepartmentID");
+        if (departmentId > 0) {
+            Department department = new Department();
+            department.setId(departmentId);
+            employee.setDepartment(department);
+        }
 
         // Map Employee position
-        employee.setPosition(rs.getString("position"));
+        employee.setPosition(rs.getString("Position"));
 
         // Map LocalDate field from SQL Date for hire date
-        Date sqlHireDate = rs.getDate("hire_date");
+        Date sqlHireDate = rs.getDate("HireDate");
         if (sqlHireDate != null) {
             LocalDate localHireDate = sqlHireDate.toLocalDate();
             employee.setHireDate(localHireDate);
         }
 
         // Map EmployeeStatusEnum field
-        String statusValue = rs.getString("status");
+        String statusValue = rs.getString("Status");
         if (statusValue != null) {
             employee.setStatus(getEmployeeStatusEnum(statusValue));
         }
@@ -73,7 +76,7 @@ public class EmployeeRowMapper implements RowMapper<Employee> {
      */
     private GenderEnum getGenderEnum(String value) {
         for (GenderEnum gender : GenderEnum.values()) {
-            if (gender.name().equalsIgnoreCase(value)) {
+            if (gender.getValue().equalsIgnoreCase(value)) {
                 return gender;
             }
         }
@@ -85,17 +88,10 @@ public class EmployeeRowMapper implements RowMapper<Employee> {
      */
     private EmployeeStatusEnum getEmployeeStatusEnum(String value) {
         for (EmployeeStatusEnum status : EmployeeStatusEnum.values()) {
-            if (status.name().equalsIgnoreCase(value)) {
+            if (status.getValue().equalsIgnoreCase(value)) {
                 return status;
             }
         }
         throw new IllegalArgumentException("Unknown employee status value: " + value);
-    }
-
-    // Placeholder for fetching Department by ID
-    private Department fetchDepartmentById(int departmentId) {
-        // Implement the logic to fetch the Department based on the departmentId
-        // This could involve calling a DAO method or similar
-        return null; // Replace with actual implementation
     }
 }

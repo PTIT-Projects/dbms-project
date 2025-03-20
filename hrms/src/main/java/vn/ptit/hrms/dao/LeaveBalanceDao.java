@@ -19,7 +19,7 @@ public class LeaveBalanceDao {
 
     // Method to create a new leave balance record
     public void createLeaveBalance(LeaveBalance leaveBalance) {
-        String sql = "INSERT INTO leave_balances (employee_id, year, total_leave_days, used_leave_days, remaining_leave_days) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO LeaveBalances (EmployeeID, Year, TotalLeaveDays, UsedLeaveDays, RemainingLeaveDays) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 leaveBalance.getEmployee() != null ? leaveBalance.getEmployee().getId() : null,
                 leaveBalance.getYear(),
@@ -30,19 +30,19 @@ public class LeaveBalanceDao {
 
     // Method to get a leave balance record by ID
     public LeaveBalance getLeaveBalanceById(Integer id) {
-        String sql = "SELECT * FROM leave_balances WHERE id = ?";
+        String sql = "SELECT * FROM LeaveBalances WHERE LeaveBalanceID = ?";
         return jdbcTemplate.queryForObject(sql, leaveBalanceRowMapper, id);
     }
 
     // Method to get all leave balance records
     public List<LeaveBalance> getAllLeaveBalances() {
-        String sql = "SELECT * FROM leave_balances";
+        String sql = "SELECT * FROM LeaveBalances";
         return jdbcTemplate.query(sql, leaveBalanceRowMapper);
     }
 
     // Method to update a leave balance record
     public void updateLeaveBalance(LeaveBalance leaveBalance) {
-        String sql = "UPDATE leave_balances SET employee_id = ?, year = ?, total_leave_days = ?, used_leave_days = ?, remaining_leave_days = ? WHERE id = ?";
+        String sql = "UPDATE LeaveBalances SET EmployeeID = ?, Year = ?, TotalLeaveDays = ?, UsedLeaveDays = ?, RemainingLeaveDays = ? WHERE LeaveBalanceID = ?";
         jdbcTemplate.update(sql,
                 leaveBalance.getEmployee() != null ? leaveBalance.getEmployee().getId() : null,
                 leaveBalance.getYear(),
@@ -54,7 +54,7 @@ public class LeaveBalanceDao {
 
     // Method to delete a leave balance record
     public void deleteLeaveBalance(Integer id) {
-        String sql = "DELETE FROM leave_balances WHERE id = ?";
+        String sql = "DELETE FROM LeaveBalances WHERE LeaveBalanceID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

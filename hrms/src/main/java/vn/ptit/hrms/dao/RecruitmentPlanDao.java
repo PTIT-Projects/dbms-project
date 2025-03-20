@@ -19,7 +19,7 @@ public class RecruitmentPlanDao {
 
     // Method to create a new recruitment plan
     public void createRecruitmentPlan(RecruitmentPlan recruitmentPlan) {
-        String sql = "INSERT INTO recruitment_plans (position, department_id, quantity, start_date, end_date) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO RecruitmentPlans (Position, DepartmentID, Quantity, StartDate, EndDate) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 recruitmentPlan.getPosition(),
                 recruitmentPlan.getDepartment() != null ? recruitmentPlan.getDepartment().getId() : null,
@@ -30,19 +30,19 @@ public class RecruitmentPlanDao {
 
     // Method to get a recruitment plan by ID
     public RecruitmentPlan getRecruitmentPlanById(Integer id) {
-        String sql = "SELECT * FROM recruitment_plans WHERE id = ?";
+        String sql = "SELECT * FROM RecruitmentPlans WHERE PlanID = ?";
         return jdbcTemplate.queryForObject(sql, recruitmentPlanRowMapper, id);
     }
 
     // Method to get all recruitment plans
     public List<RecruitmentPlan> getAllRecruitmentPlans() {
-        String sql = "SELECT * FROM recruitment_plans";
+        String sql = "SELECT * FROM RecruitmentPlans";
         return jdbcTemplate.query(sql, recruitmentPlanRowMapper);
     }
 
     // Method to update a recruitment plan
     public void updateRecruitmentPlan(RecruitmentPlan recruitmentPlan) {
-        String sql = "UPDATE recruitment_plans SET position = ?, department_id = ?, quantity = ?, start_date = ?, end_date = ? WHERE id = ?";
+        String sql = "UPDATE RecruitmentPlans SET Position = ?, DepartmentID = ?, Quantity = ?, StartDate = ?, EndDate = ? WHERE PlanID = ?";
         jdbcTemplate.update(sql,
                 recruitmentPlan.getPosition(),
                 recruitmentPlan.getDepartment() != null ? recruitmentPlan.getDepartment().getId() : null,
@@ -54,7 +54,7 @@ public class RecruitmentPlanDao {
 
     // Method to delete a recruitment plan
     public void deleteRecruitmentPlan(Integer id) {
-        String sql = "DELETE FROM recruitment_plans WHERE id = ?";
+        String sql = "DELETE FROM RecruitmentPlans WHERE PlanID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

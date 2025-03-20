@@ -19,44 +19,44 @@ public class WorkTripRequestDao {
 
     // Method to create a new work trip request record
     public void createWorkTripRequest(WorkTripRequest workTripRequest) {
-        String sql = "INSERT INTO work_trip_requests (employee_id, destination, start_date, end_date, purpose, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO WorkTripRequests (EmployeeID, Destination, StartDate, EndDate, Purpose, Status) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 workTripRequest.getEmployee() != null ? workTripRequest.getEmployee().getId() : null,
                 workTripRequest.getDestination(),
                 workTripRequest.getStartDate(),
                 workTripRequest.getEndDate(),
                 workTripRequest.getPurpose(),
-                workTripRequest.getStatus() != null ? workTripRequest.getStatus().name() : null);
+                workTripRequest.getStatus() != null ? workTripRequest.getStatus().getValue() : null);
     }
 
     // Method to get a work trip request record by ID
     public WorkTripRequest getWorkTripRequestById(Integer id) {
-        String sql = "SELECT * FROM work_trip_requests WHERE id = ?";
+        String sql = "SELECT * FROM WorkTripRequests WHERE RequestID = ?";
         return jdbcTemplate.queryForObject(sql, workTripRequestRowMapper, id);
     }
 
     // Method to get all work trip request records
     public List<WorkTripRequest> getAllWorkTripRequests() {
-        String sql = "SELECT * FROM work_trip_requests";
+        String sql = "SELECT * FROM WorkTripRequests";
         return jdbcTemplate.query(sql, workTripRequestRowMapper);
     }
 
     // Method to update a work trip request record
     public void updateWorkTripRequest(WorkTripRequest workTripRequest) {
-        String sql = "UPDATE work_trip_requests SET employee_id = ?, destination = ?, start_date = ?, end_date = ?, purpose = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE WorkTripRequests SET EmployeeID = ?, Destination = ?, StartDate = ?, EndDate = ?, Purpose = ?, Status = ? WHERE RequestID = ?";
         jdbcTemplate.update(sql,
                 workTripRequest.getEmployee() != null ? workTripRequest.getEmployee().getId() : null,
                 workTripRequest.getDestination(),
                 workTripRequest.getStartDate(),
                 workTripRequest.getEndDate(),
                 workTripRequest.getPurpose(),
-                workTripRequest.getStatus() != null ? workTripRequest.getStatus().name() : null,
+                workTripRequest.getStatus() != null ? workTripRequest.getStatus().getValue() : null,
                 workTripRequest.getId());
     }
 
     // Method to delete a work trip request record
     public void deleteWorkTripRequest(Integer id) {
-        String sql = "DELETE FROM work_trip_requests WHERE id = ?";
+        String sql = "DELETE FROM WorkTripRequests WHERE RequestID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

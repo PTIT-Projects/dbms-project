@@ -19,40 +19,40 @@ public class TrainingResultDao {
 
     // Method to create a new training result record
     public void createTrainingResult(TrainingResult trainingResult) {
-        String sql = "INSERT INTO training_results (employee_id, course_id, completion_status, score) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO TrainingResults (EmployeeID, CourseID, CompletionStatus, Score) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 trainingResult.getEmployee() != null ? trainingResult.getEmployee().getId() : null,
                 trainingResult.getCourse() != null ? trainingResult.getCourse().getId() : null,
-                trainingResult.getCompletionStatus() != null ? trainingResult.getCompletionStatus().name() : null,
+                trainingResult.getCompletionStatus() != null ? trainingResult.getCompletionStatus().getValue() : null,
                 trainingResult.getScore());
     }
 
     // Method to get a training result record by ID
     public TrainingResult getTrainingResultById(Integer id) {
-        String sql = "SELECT * FROM training_results WHERE id = ?";
+        String sql = "SELECT * FROM TrainingResults WHERE ResultID = ?";
         return jdbcTemplate.queryForObject(sql, trainingResultRowMapper, id);
     }
 
     // Method to get all training result records
     public List<TrainingResult> getAllTrainingResults() {
-        String sql = "SELECT * FROM training_results";
+        String sql = "SELECT * FROM TrainingResults";
         return jdbcTemplate.query(sql, trainingResultRowMapper);
     }
 
     // Method to update a training result record
     public void updateTrainingResult(TrainingResult trainingResult) {
-        String sql = "UPDATE training_results SET employee_id = ?, course_id = ?, completion_status = ?, score = ? WHERE id = ?";
+        String sql = "UPDATE TrainingResults SET EmployeeID = ?, CourseID = ?, CompletionStatus = ?, Score = ? WHERE ResultID = ?";
         jdbcTemplate.update(sql,
                 trainingResult.getEmployee() != null ? trainingResult.getEmployee().getId() : null,
                 trainingResult.getCourse() != null ? trainingResult.getCourse().getId() : null,
-                trainingResult.getCompletionStatus() != null ? trainingResult.getCompletionStatus().name() : null,
+                trainingResult.getCompletionStatus() != null ? trainingResult.getCompletionStatus().getValue() : null,
                 trainingResult.getScore(),
                 trainingResult.getId());
     }
 
     // Method to delete a training result record
     public void deleteTrainingResult(Integer id) {
-        String sql = "DELETE FROM training_results WHERE id = ?";
+        String sql = "DELETE FROM TrainingResults WHERE ResultID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

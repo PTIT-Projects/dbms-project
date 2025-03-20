@@ -8,7 +8,7 @@ import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.Registration;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
 import vn.ptit.hrms.constant.RegistrationTypeEnum;
-import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao;
 
 public class RegistrationRowMapper implements RowMapper<Registration> {
 
@@ -23,40 +23,40 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
         Registration registration = new Registration();
 
         // Map Registration id
-        registration.setId(rs.getInt("id"));
+        registration.setId(rs.getInt("RegistrationID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
-        if (employeeId > 0) { // Assuming employee ID is positive
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+        int employeeId = rs.getInt("EmployeeID");
+        if (employeeId > 0) {
             Employee employee = employeeDAO.getEmployeeById(employeeId);
             registration.setEmployee(employee);
         }
 
-        // Map RegistrationTypeEnum field
-        String registrationTypeValue = rs.getString("registration_type");
+        // Map RegistrationType field
+        String registrationTypeValue = rs.getString("RegistrationType");
         if (registrationTypeValue != null) {
             registration.setRegistrationType(getRegistrationTypeEnum(registrationTypeValue));
         }
 
-        // Map LocalDate field from SQL Date for request date
-        Date sqlRequestDate = rs.getDate("request_date");
+        // Map RequestDate
+        Date sqlRequestDate = rs.getDate("RequestDate");
         if (sqlRequestDate != null) {
             registration.setRequestDate(sqlRequestDate.toLocalDate());
         }
 
-        // Map details
-        registration.setDetails(rs.getString("details"));
+        // Map Details
+        registration.setDetails(rs.getString("Details"));
 
-        // Map RegistrationStatusEnum field
-        String statusValue = rs.getString("status");
+        // Map Status field
+        String statusValue = rs.getString("Status");
         if (statusValue != null) {
             registration.setStatus(getRegistrationStatusEnum(statusValue));
         }
 
-        // Retrieve approved by employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int approvedById = rs.getInt("approved_by");
-        if (approvedById > 0) { // Assuming employee ID is positive
-            Employee approvedBy = employeeDAO.EmployeeDao(approvedById);
+        // Retrieve approved by employee id
+        int approvedById = rs.getInt("ApprovedBy");
+        if (approvedById > 0) {
+            Employee approvedBy = employeeDAO.getEmployeeById(approvedById);
             registration.setApprovedBy(approvedBy);
         }
 
@@ -68,7 +68,7 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
      */
     private RegistrationTypeEnum getRegistrationTypeEnum(String value) {
         for (RegistrationTypeEnum type : RegistrationTypeEnum.values()) {
-            if (type.name().equalsIgnoreCase(value)) {
+            if (type.getValue().equalsIgnoreCase(value)) { // Changed from name() to getValue()
                 return type;
             }
         }
@@ -80,7 +80,7 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
      */
     private RegistrationStatusEnum getRegistrationStatusEnum(String value) {
         for (RegistrationStatusEnum status : RegistrationStatusEnum.values()) {
-            if (status.name().equalsIgnoreCase(value)) {
+            if (status.getValue().equalsIgnoreCase(value)) { // Changed from name() to getValue()
                 return status;
             }
         }

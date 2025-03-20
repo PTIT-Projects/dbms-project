@@ -19,7 +19,7 @@ public class DependentDeductionDao {
 
     // Method to create a new dependent deduction
     public void createDependentDeduction(DependentDeduction dependentDeduction) {
-        String sql = "INSERT INTO dependent_deductions (employee_id, number_of_dependents, deduction_amount) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO DependentsDeductions (EmployeeID, NumberOfDependents, DeductionAmount) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql,
                 dependentDeduction.getEmployee() != null ? dependentDeduction.getEmployee().getId() : null,
                 dependentDeduction.getNumberOfDependents(),
@@ -28,19 +28,19 @@ public class DependentDeductionDao {
 
     // Method to get a dependent deduction by ID
     public DependentDeduction getDependentDeductionById(Integer id) {
-        String sql = "SELECT * FROM dependent_deductions WHERE id = ?";
+        String sql = "SELECT * FROM DependentsDeductions WHERE DeductionID = ?";
         return jdbcTemplate.queryForObject(sql, dependentDeductionRowMapper, id);
     }
 
     // Method to get all dependent deductions
     public List<DependentDeduction> getAllDependentDeductions() {
-        String sql = "SELECT * FROM dependent_deductions";
+        String sql = "SELECT * FROM DependentsDeductions";
         return jdbcTemplate.query(sql, dependentDeductionRowMapper);
     }
 
     // Method to update a dependent deduction
     public void updateDependentDeduction(DependentDeduction dependentDeduction) {
-        String sql = "UPDATE dependent_deductions SET employee_id = ?, number_of_dependents = ?, deduction_amount = ? WHERE id = ?";
+        String sql = "UPDATE DependentsDeductions SET EmployeeID = ?, NumberOfDependents = ?, DeductionAmount = ? WHERE DeductionID = ?";
         jdbcTemplate.update(sql,
                 dependentDeduction.getEmployee() != null ? dependentDeduction.getEmployee().getId() : null,
                 dependentDeduction.getNumberOfDependents(),
@@ -50,7 +50,7 @@ public class DependentDeductionDao {
 
     // Method to delete a dependent deduction
     public void deleteDependentDeduction(Integer id) {
-        String sql = "DELETE FROM dependent_deductions WHERE id = ?";
+        String sql = "DELETE FROM DependentsDeductions WHERE DeductionID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

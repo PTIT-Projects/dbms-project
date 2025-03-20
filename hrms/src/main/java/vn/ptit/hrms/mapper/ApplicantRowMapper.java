@@ -22,14 +22,14 @@ public class ApplicantRowMapper implements RowMapper<Applicant> {
     public Applicant mapRow(ResultSet rs, int rowNum) throws SQLException {
         Applicant applicant = new Applicant();
 
-        applicant.setId(rs.getInt("id"));
+        applicant.setId(rs.getInt("ApplicantID"));
 
         // Fetch RecruitmentPlan using DAO
-        int planId = rs.getInt("plan_id");
+        int planId = rs.getInt("PlanID");
         RecruitmentPlan plan = recruitmentPlanDAO.getRecruitmentPlanById(planId);
         applicant.setPlan(plan);
 
-        applicant.setFullName(rs.getString("full_name"));
+        applicant.setFullName(rs.getString("FullName"));
         applicant.setEmail(rs.getString("email"));
         applicant.setPhone(rs.getString("phone"));
 

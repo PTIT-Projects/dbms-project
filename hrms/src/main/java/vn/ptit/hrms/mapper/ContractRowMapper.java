@@ -3,6 +3,7 @@ package vn.ptit.hrms.mapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
+import java.time.LocalDate;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.ContractStatusEnum;
 import vn.ptit.hrms.dao.EmployeeDao;
@@ -10,7 +11,6 @@ import vn.ptit.hrms.domain.Contract;
 import vn.ptit.hrms.domain.Employee;
 
 public class ContractRowMapper implements RowMapper<Contract> {
-
     private final EmployeeDao employeeDAO;
 
     public ContractRowMapper(EmployeeDao employeeDAO) {
@@ -21,50 +21,46 @@ public class ContractRowMapper implements RowMapper<Contract> {
     public Contract mapRow(ResultSet rs, int rowNum) throws SQLException {
         Contract contract = new Contract();
 
-        // Map Contract id
-        contract.setId(rs.getInt("id"));
+        // Map ContractID
+        contract.setId(rs.getInt("ContractID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
+        // Map EmployeeID and get Employee object
+        int employeeId = rs.getInt("EmployeeID");
         Employee employee = employeeDAO.getEmployeeById(employeeId);
         contract.setEmployee(employee);
 
         // Map contract type
-        contract.setContractType(rs.getString("contract_type"));
+        contract.setContractType(rs.getString("ContractType"));
 
-        // Map LocalDate fields from SQL Date
-        Date sqlStartDate = rs.getDate("start_date");
-        if (sqlStartDate != null) {
-            contract.setStartDate(sqlStartDate.toLocalDate());
+        // Map dates
+        Date startDate = rs.getDate("StartDate");
+        if (startDate != null) {
+            contract.setStartDate(startDate.toLocalDate());
         }
 
-        Date sqlEndDate = rs.getDate("end_date");
-        if (sqlEndDate != null) {
-            contract.setEndDate(sqlEndDate.toLocalDate());
+        Date endDate = rs.getDate("EndDate");
+        if (endDate != null) {
+            contract.setEndDate(endDate.toLocalDate());
         }
 
-        // Map salary
-        contract.setSalary(rs.getDouble("salary"));
+        // Map Salary (might need to convert from BigDecimal to Double)
+        contract.setSalary(rs.getDouble("Salary"));
 
-        // Map ContractStatusEnum field using a helper method.
-        String statusValue = rs.getString("status");
-        if (statusValue != null) {
-            contract.setStatus(getContractStatus(statusValue));
+        // Map Status to enum
+        String statusStr = rs.getString("Status");
+        if (statusStr != null) {
+            contract.setStatus(getContractStatus(statusStr));
         }
 
         return contract;
     }
 
-    /**
-     * Converts a string value from the database into the corresponding ContractStatusEnum.
-     */
     private ContractStatusEnum getContractStatus(String value) {
         for (ContractStatusEnum status : ContractStatusEnum.values()) {
-            // Adjust the comparison if your enum uses a custom value
-            if (status.name().equalsIgnoreCase(value)) {
+            if (status.getValue().equalsIgnoreCase(value)) {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown contract status value: " + value);
+        throw new IllegalArgumentException("Unknown contract status: " + value);
     }
 }

@@ -6,7 +6,7 @@ import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Department;
 import vn.ptit.hrms.domain.RecruitmentPlan;
-import vn.ptit.hrms.dao.DepartmentDao; // Assuming you have a DepartmentDAO to fetch Department
+import vn.ptit.hrms.dao.DepartmentDao;
 
 public class RecruitmentPlanRowMapper implements RowMapper<RecruitmentPlan> {
 
@@ -21,29 +21,29 @@ public class RecruitmentPlanRowMapper implements RowMapper<RecruitmentPlan> {
         RecruitmentPlan recruitmentPlan = new RecruitmentPlan();
 
         // Map RecruitmentPlan id
-        recruitmentPlan.setId(rs.getInt("id"));
+        recruitmentPlan.setId(rs.getInt("PlanID"));
 
         // Map position
-        recruitmentPlan.setPosition(rs.getString("position"));
+        recruitmentPlan.setPosition(rs.getString("Position"));
 
-        // Retrieve department id from ResultSet and fetch the full Department using DepartmentDAO.
-        int departmentId = rs.getInt("department_id"); // Assuming the column name is department_id
-        if (departmentId > 0) { // Assuming department ID is positive
+        // Retrieve department id from ResultSet and fetch the full Department using DepartmentDAO
+        int departmentId = rs.getInt("DepartmentID");
+        if (departmentId > 0) {
             Department department = departmentDAO.getDepartmentById(departmentId);
             recruitmentPlan.setDepartment(department);
         }
 
         // Map quantity
-        recruitmentPlan.setQuantity(rs.getInt("quantity"));
+        recruitmentPlan.setQuantity(rs.getInt("Quantity"));
 
         // Map LocalDate field from SQL Date for start date
-        Date sqlStartDate = rs.getDate("start_date");
+        Date sqlStartDate = rs.getDate("StartDate");
         if (sqlStartDate != null) {
             recruitmentPlan.setStartDate(sqlStartDate.toLocalDate());
         }
 
         // Map LocalDate field from SQL Date for end date
-        Date sqlEndDate = rs.getDate("end_date");
+        Date sqlEndDate = rs.getDate("EndDate");
         if (sqlEndDate != null) {
             recruitmentPlan.setEndDate(sqlEndDate.toLocalDate());
         }

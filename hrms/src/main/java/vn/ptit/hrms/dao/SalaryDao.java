@@ -19,7 +19,7 @@ public class SalaryDao {
 
     // Method to create a new salary record
     public void createSalary(Salary salary) {
-        String sql = "INSERT INTO salaries (employee_id, month, year, basic_salary, allowance, deductions, net_salary) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Salary (EmployeeID, Month, Year, BasicSalary, Allowance, Deductions, NetSalary) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 salary.getEmployee() != null ? salary.getEmployee().getId() : null,
                 salary.getMonth(),
@@ -32,19 +32,19 @@ public class SalaryDao {
 
     // Method to get a salary record by ID
     public Salary getSalaryById(Integer id) {
-        String sql = "SELECT * FROM salaries WHERE id = ?";
+        String sql = "SELECT * FROM Salary WHERE SalaryID = ?";
         return jdbcTemplate.queryForObject(sql, salaryRowMapper, id);
     }
 
     // Method to get all salary records
     public List<Salary> getAllSalaries() {
-        String sql = "SELECT * FROM salaries";
+        String sql = "SELECT * FROM Salary";
         return jdbcTemplate.query(sql, salaryRowMapper);
     }
 
     // Method to update a salary record
     public void updateSalary(Salary salary) {
-        String sql = "UPDATE salaries SET employee_id = ?, month = ?, year = ?, basic_salary = ?, allowance = ?, deductions = ?, net_salary = ? WHERE id = ?";
+        String sql = "UPDATE Salary SET EmployeeID = ?, Month = ?, Year = ?, BasicSalary = ?, Allowance = ?, Deductions = ?, NetSalary = ? WHERE SalaryID = ?";
         jdbcTemplate.update(sql,
                 salary.getEmployee() != null ? salary.getEmployee().getId() : null,
                 salary.getMonth(),
@@ -58,7 +58,7 @@ public class SalaryDao {
 
     // Method to delete a salary record
     public void deleteSalary(Integer id) {
-        String sql = "DELETE FROM salaries WHERE id = ?";
+        String sql = "DELETE FROM Salary WHERE SalaryID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

@@ -19,21 +19,21 @@ public class DependentDeductionRowMapper implements RowMapper<DependentDeduction
     public DependentDeduction mapRow(ResultSet rs, int rowNum) throws SQLException {
         DependentDeduction dependentDeduction = new DependentDeduction();
 
-        // Map DependentDeduction id
-        dependentDeduction.setId(rs.getInt("id"));
+        // Map DependentDeduction id - use the correct column name DeductionID
+        dependentDeduction.setId(rs.getInt("DeductionID"));
 
         // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
-        if (employeeId > 0) { // Assuming employee_id is nullable and 0 means no employee
+        int employeeId = rs.getInt("EmployeeID");
+        if (employeeId > 0) { // Assuming EmployeeID is nullable and 0 means no employee
             Employee employee = employeeDAO.getEmployeeById(employeeId);
             dependentDeduction.setEmployee(employee);
         }
 
-        // Map number of dependents
-        dependentDeduction.setNumberOfDependents(rs.getInt("number_of_dependents"));
+        // Map number of dependents - use the correct column name NumberOfDependents
+        dependentDeduction.setNumberOfDependents(rs.getInt("NumberOfDependents"));
 
-        // Map deduction amount
-        dependentDeduction.setDeductionAmount(rs.getDouble("deduction_amount"));
+        // Map deduction amount - use the correct column name DeductionAmount
+        dependentDeduction.setDeductionAmount(rs.getDouble("DeductionAmount"));
 
         return dependentDeduction;
     }

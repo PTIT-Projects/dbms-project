@@ -1,0 +1,106 @@
+package vn.ptit.hrms.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import vn.ptit.hrms.dao.*;
+import vn.ptit.hrms.mapper.*;
+
+@Configuration
+public class RowMapperConfig {
+
+    @Bean
+    public ContractRowMapper contractRowMapper(EmployeeDao employeeDao) {
+        return new ContractRowMapper(employeeDao);
+    }
+
+    @Bean
+    public AttendanceRowMapper attendanceRowMapper(EmployeeDao employeeDao) {
+        return new AttendanceRowMapper(employeeDao);
+    }
+
+    @Bean
+    public DecisionRowMapper decisionRowMapper(EmployeeDao employeeDao) {
+        return new DecisionRowMapper(employeeDao);
+    }
+
+    @Bean
+    public DependentDeductionRowMapper dependentDeductionRowMapper(EmployeeDao employeeDao) {
+        return new DependentDeductionRowMapper(employeeDao);
+    }
+
+    @Bean
+    public EmployeeRowMapper employeeRowMapper() {
+        return new EmployeeRowMapper();
+    }
+
+    @Bean
+    public InsuranceRowMapper insuranceRowMapper(EmployeeDao employeeDao) {
+        return new InsuranceRowMapper(employeeDao);
+    }
+
+    @Bean
+    public LeaveBalanceRowMapper leaveBalanceRowMapper(EmployeeDao employeeDao) {
+        return new LeaveBalanceRowMapper(employeeDao);
+    }
+
+    @Bean
+    public RecruitmentPlanRowMapper recruitmentPlanRowMapper(DepartmentDao departmentDao) {
+        return new RecruitmentPlanRowMapper(departmentDao);
+    }
+
+    @Bean
+    public TrainingCourseRowMapper trainingCourseRowMapper(EmployeeDao employeeDao) {
+        return new TrainingCourseRowMapper(employeeDao);
+    }
+
+    @Bean
+    public TrainingResultRowMapper trainingResultRowMapper(EmployeeDao employeeDao, TrainingCourseDao trainingCourseDao) {
+        return new TrainingResultRowMapper(employeeDao, trainingCourseDao);
+    }
+
+    @Bean
+    public WorkTripRequestRowMapper workTripRequestRowMapper(EmployeeDao employeeDao) {
+        return new WorkTripRequestRowMapper(employeeDao);
+    }
+
+    @Bean
+    public SalaryRowMapper salaryRowMapper(EmployeeDao employeeDao) {
+        return new SalaryRowMapper(employeeDao);
+    }
+
+    @Bean
+    public RegistrationRowMapper registrationRowMapper(EmployeeDao employeeDao) {
+        return new RegistrationRowMapper(employeeDao);
+    }
+
+    // Adding missing mappers
+    @Bean
+    public DepartmentRowMapper departmentRowMapper(EmployeeDao employeeDao) {
+        return new DepartmentRowMapper(employeeDao);
+    }
+
+    @Bean
+    public PositionRowMapper positionRowMapper(DepartmentDao departmentDao) {
+        return new PositionRowMapper(departmentDao);
+    }
+
+    @Bean
+    public NotificationRowMapper notificationRowMapper(EmployeeDao employeeDao) {
+        return new NotificationRowMapper(employeeDao);
+    }
+
+    @Bean
+    public ApplicantRowMapper applicantRowMapper(RecruitmentPlanDao recruitmentPlanDao) {
+        return new ApplicantRowMapper(recruitmentPlanDao);
+    }
+
+    @Bean
+    public EmployeeCompetencyRowMapper employeeCompetencyRowMapper(EmployeeDao employeeDao, CompetencyDao competencyDao) {
+        return new EmployeeCompetencyRowMapper(employeeDao, competencyDao);
+    }
+
+    @Bean
+    public CompetencyRowMapper competencyRowMapper(PositionDao positionDao) {
+        return new CompetencyRowMapper(positionDao);
+    }
+}

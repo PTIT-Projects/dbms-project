@@ -19,42 +19,42 @@ public class InsuranceDao {
 
     // Method to create a new insurance record
     public void createInsurance(Insurance insurance) {
-        String sql = "INSERT INTO insurances (employee_id, insurance_number, insurance_type, start_date, end_date) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Insurance (EmployeeID, InsuranceNumber, InsuranceType, StartDate, EndDate) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 insurance.getEmployee() != null ? insurance.getEmployee().getId() : null,
                 insurance.getInsuranceNumber(),
                 insurance.getInsuranceType(),
-                insurance.getStartDate() != null ? java.sql.Date.valueOf(insurance.getStartDate()) : null,
-                insurance.getEndDate() != null ? java.sql.Date.valueOf(insurance.getEndDate()) : null);
+                insurance.getStartDate(),
+                insurance.getEndDate());
     }
 
     // Method to get an insurance record by ID
     public Insurance getInsuranceById(Integer id) {
-        String sql = "SELECT * FROM insurances WHERE id = ?";
+        String sql = "SELECT * FROM Insurance WHERE InsuranceID = ?";
         return jdbcTemplate.queryForObject(sql, insuranceRowMapper, id);
     }
 
     // Method to get all insurance records
     public List<Insurance> getAllInsurances() {
-        String sql = "SELECT * FROM insurances";
+        String sql = "SELECT * FROM Insurance";
         return jdbcTemplate.query(sql, insuranceRowMapper);
     }
 
     // Method to update an insurance record
     public void updateInsurance(Insurance insurance) {
-        String sql = "UPDATE insurances SET employee_id = ?, insurance_number = ?, insurance_type = ?, start_date = ?, end_date = ? WHERE id = ?";
+        String sql = "UPDATE Insurance SET EmployeeID = ?, InsuranceNumber = ?, InsuranceType = ?, StartDate = ?, EndDate = ? WHERE InsuranceID = ?";
         jdbcTemplate.update(sql,
                 insurance.getEmployee() != null ? insurance.getEmployee().getId() : null,
                 insurance.getInsuranceNumber(),
                 insurance.getInsuranceType(),
-                insurance.getStartDate() != null ? java.sql.Date.valueOf(insurance.getStartDate()) : null,
-                insurance.getEndDate() != null ? java.sql.Date.valueOf(insurance.getEndDate()) : null,
+                insurance.getStartDate(),
+                insurance.getEndDate(),
                 insurance.getId());
     }
 
     // Method to delete an insurance record
     public void deleteInsurance(Integer id) {
-        String sql = "DELETE FROM insurances WHERE id = ?";
+        String sql = "DELETE FROM Insurance WHERE InsuranceID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

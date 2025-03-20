@@ -9,7 +9,6 @@ import vn.ptit.hrms.domain.Competency;
 import vn.ptit.hrms.domain.Position;
 
 public class CompetencyRowMapper implements RowMapper<Competency> {
-
     private final PositionDao positionDAO;
 
     public CompetencyRowMapper(PositionDao positionDAO) {
@@ -20,22 +19,24 @@ public class CompetencyRowMapper implements RowMapper<Competency> {
     public Competency mapRow(ResultSet rs, int rowNum) throws SQLException {
         Competency competency = new Competency();
 
-        // Map Competency id
-        competency.setId(rs.getInt("id"));
+        // Map Competency id - use the correct column name CompetencyID
+        competency.setId(rs.getInt("CompetencyID"));
 
         // Retrieve position id from ResultSet and fetch the full Position using PositionDAO.
-        int positionId = rs.getInt("position_id");
+        // Use the correct column name PositionID
+        int positionId = rs.getInt("PositionID");
         Position position = positionDAO.getPositionById(positionId);
         competency.setPosition(position);
 
         // Map CompetencyTypeEnum field using a helper method.
-        String competencyTypeValue = rs.getString("competency_type");
+        // Use the correct column name CompetencyType
+        String competencyTypeValue = rs.getString("CompetencyType");
         if (competencyTypeValue != null) {
             competency.setCompetencyType(getCompetencyType(competencyTypeValue));
         }
 
-        // Map description
-        competency.setDescription(rs.getString("description"));
+        // Map description - use the correct column name Description
+        competency.setDescription(rs.getString("Description"));
 
         return competency;
     }
@@ -45,8 +46,8 @@ public class CompetencyRowMapper implements RowMapper<Competency> {
      */
     private CompetencyTypeEnum getCompetencyType(String value) {
         for (CompetencyTypeEnum type : CompetencyTypeEnum.values()) {
-            // Adjust the comparison if your enum uses a custom value
-            if (type.name().equalsIgnoreCase(value)) {
+            // Compare with getValue() instead of name() since the database stores the display value
+            if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }
         }

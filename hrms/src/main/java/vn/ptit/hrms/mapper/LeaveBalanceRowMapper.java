@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.domain.LeaveBalance;
-import vn.ptit.hrms.dao.EmployeeDao; // Assuming you have an EmployeeDAO to fetch Employee
+import vn.ptit.hrms.dao.EmployeeDao;
 
 public class LeaveBalanceRowMapper implements RowMapper<LeaveBalance> {
 
@@ -19,25 +19,25 @@ public class LeaveBalanceRowMapper implements RowMapper<LeaveBalance> {
     public LeaveBalance mapRow(ResultSet rs, int rowNum) throws SQLException {
         LeaveBalance leaveBalance = new LeaveBalance();
 
-        // Map LeaveBalance id
-        leaveBalance.setId(rs.getInt("id"));
+        // Map LeaveBalance id using the correct column name
+        leaveBalance.setId(rs.getInt("LeaveBalanceID"));
 
-        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int employeeId = rs.getInt("employee_id");
+        // Retrieve employee id from ResultSet and fetch the full Employee using EmployeeDAO
+        int employeeId = rs.getInt("EmployeeID");
         Employee employee = employeeDAO.getEmployeeById(employeeId);
         leaveBalance.setEmployee(employee);
 
         // Map year
-        leaveBalance.setYear(rs.getInt("year"));
+        leaveBalance.setYear(rs.getInt("Year"));
 
         // Map total leave days
-        leaveBalance.setTotalLeaveDays(rs.getInt("total_leave_days"));
+        leaveBalance.setTotalLeaveDays(rs.getInt("TotalLeaveDays"));
 
         // Map used leave days
-        leaveBalance.setUsedLeaveDays(rs.getInt("used_leave_days"));
+        leaveBalance.setUsedLeaveDays(rs.getInt("UsedLeaveDays"));
 
         // Map remaining leave days
-        leaveBalance.setRemainingLeaveDays(rs.getInt("remaining_leave_days"));
+        leaveBalance.setRemainingLeaveDays(rs.getInt("RemainingLeaveDays"));
 
         return leaveBalance;
     }

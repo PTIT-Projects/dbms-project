@@ -20,13 +20,13 @@ public class DepartmentRowMapper implements RowMapper<Department> {
         Department department = new Department();
 
         // Map Department id
-        department.setId(rs.getInt("id"));
+        department.setId(rs.getInt("DepartmentID"));
 
         // Map Department name
-        department.setDepartmentName(rs.getString("department_name"));
+        department.setDepartmentName(rs.getString("DepartmentName"));
 
         // Retrieve manager id from ResultSet and fetch the full Employee using EmployeeDAO.
-        int managerId = rs.getInt("manager_id");
+        int managerId = rs.getInt("ManagerID");
         if (managerId > 0) { // Assuming manager_id is nullable and 0 means no manager
             Employee manager = employeeDAO.getEmployeeById(managerId);
             department.setManager(manager);
