@@ -1,6 +1,6 @@
 package vn.ptit.hrms.domain;
 
-import vn.ptit.hrms.constant.AttendanceStatus;
+import vn.ptit.hrms.constant.AttendanceStatusEnum;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -11,7 +11,7 @@ public class Attendance {
     private LocalDate date;
     private LocalTime checkInTime;
     private LocalTime checkOutTime;
-    private AttendanceStatus status;
+    private AttendanceStatusEnum status;
 
     public Integer getId() {
         return id;
@@ -53,11 +53,11 @@ public class Attendance {
         this.checkOutTime = checkOutTime;
     }
 
-    public AttendanceStatus getStatus() {
+    public AttendanceStatusEnum getStatus() {
         return status;
     }
 
-    public void setStatus(AttendanceStatus status) {
+    public void setStatus(AttendanceStatusEnum status) {
         this.status = status;
     }
 }

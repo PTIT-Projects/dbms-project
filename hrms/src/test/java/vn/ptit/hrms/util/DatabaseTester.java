@@ -926,7 +926,7 @@ public class DatabaseTester {
             newAttendance.setDate(LocalDate.now());
             newAttendance.setCheckInTime(LocalTime.of(8, 15));
             newAttendance.setCheckOutTime(LocalTime.of(17, 30));
-            newAttendance.setStatus(AttendanceStatus.PRESENT);
+            newAttendance.setStatus(AttendanceStatusEnum.PRESENT);
 
             writer.println("   Creating new attendance record for: " + employee.getFullName());
             attendanceDao.createAttendance(newAttendance);
@@ -944,7 +944,7 @@ public class DatabaseTester {
 
             // UPDATE
             writer.println("\n4. Testing updateAttendance()");
-            retrievedAttendance.setStatus(AttendanceStatus.OVERTIME);
+            retrievedAttendance.setStatus(AttendanceStatusEnum.OVERTIME);
             retrievedAttendance.setCheckOutTime(LocalTime.of(19, 0));
             attendanceDao.updateAttendance(retrievedAttendance);
             writer.println("   Attendance record updated");

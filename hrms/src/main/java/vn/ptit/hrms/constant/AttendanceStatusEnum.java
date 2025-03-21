@@ -1,10 +1,10 @@
 package vn.ptit.hrms.constant;
 
-public enum AttendanceStatus {
+public enum AttendanceStatusEnum {
     OVERTIME("Làm thêm giờ"), LATE("Đi muộn"), ABSENT("Vắng mặt"), PRESENT("Có mặt");
     private final String value;
 
-    AttendanceStatus(String value) {
+    AttendanceStatusEnum(String value) {
         this.value = value;
     }
 

@@ -7,7 +7,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import org.springframework.jdbc.core.RowMapper;
-import vn.ptit.hrms.constant.AttendanceStatus;
+import vn.ptit.hrms.constant.AttendanceStatusEnum;
 import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Attendance;
 import vn.ptit.hrms.domain.Employee;
@@ -61,12 +61,12 @@ public class AttendanceRowMapper implements RowMapper<Attendance> {
         return attendance;
     }
 
-    private AttendanceStatus getAttendanceStatus(String value) {
-        for (AttendanceStatus status : AttendanceStatus.values()) {
+    private AttendanceStatusEnum getAttendanceStatus(String value) {
+        for (AttendanceStatusEnum status : AttendanceStatusEnum.values()) {
             if (status.getValue().equalsIgnoreCase(value)) {
                 return status;
             }
         }
-        return AttendanceStatus.PRESENT;
+        return AttendanceStatusEnum.PRESENT;
     }
 }
