@@ -18,6 +18,10 @@ public class Employee {
     private LocalDate hireDate;
     private EmployeeStatusEnum status;
 
+    public Employee(int employeeId) {
+        this.id = employeeId;
+    }
+
     public Integer getId() {
         return id;
     }
