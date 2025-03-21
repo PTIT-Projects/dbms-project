@@ -57,4 +57,16 @@ public class Applicant {
     public void setStatus(ApplicantStatusEnum status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "Applicant{" +
+                "id=" + id +
+                ", plan=" + plan +
+                ", fullName='" + fullName + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", status=" + status.getValue() +
+                '}';
+    }
 }

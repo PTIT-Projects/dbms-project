@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 public class RecruitmentPlan {
     private Integer id;
-    private String position;
+    private Position position;
     private Department department;
     private Integer quantity;
     private LocalDate startDate;
@@ -16,14 +16,6 @@ public class RecruitmentPlan {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
     }
 
     public Department getDepartment() {
@@ -56,5 +48,13 @@ public class RecruitmentPlan {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public Position getPosition() {
+        return position;
+    }
+
+    public void setPosition(Position position) {
+        this.position = position;
     }
 }

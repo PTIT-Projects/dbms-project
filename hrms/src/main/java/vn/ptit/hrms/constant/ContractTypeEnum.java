@@ -1,10 +1,10 @@
 package vn.ptit.hrms.constant;
 
-public enum AttendanceStatus {
-    OVERTIME("Overtime"), LATE("Late"), ABSENT("Absent"), PRESENT("Present");
+public enum ContractTypeEnum {
+    FULLTIME("Toàn thời gian"), PARTTIME("Bán thời gian");
     private final String value;
 
-    AttendanceStatus(String value) {
+    ContractTypeEnum(String value) {
         this.value = value;
     }
 

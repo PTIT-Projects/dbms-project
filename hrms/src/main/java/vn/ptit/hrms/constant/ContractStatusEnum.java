@@ -1,7 +1,7 @@
 package vn.ptit.hrms.constant;
 
 public enum ContractStatusEnum {
-    TERMINATED("Terminated"), EXPIRED("Expired"), ACTIVE("Active");
+    TERMINATED("Chấm dứt"), EXPIRED("Hết hạn"), ACTIVE("Hiệu lực");
     private final String value;
 
     ContractStatusEnum(String value) {
