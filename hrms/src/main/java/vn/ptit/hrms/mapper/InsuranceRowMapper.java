@@ -31,10 +31,10 @@ public class InsuranceRowMapper implements RowMapper<Insurance> {
         }
 
        
-        insurance.setInsuranceNumber(rs.getString("InsuranceNumber"));
+        insurance.setInsuranceNumber(rs.getNString("InsuranceNumber"));
 
        
-        insurance.setInsuranceType(rs.getString("InsuranceType"));
+        insurance.setInsuranceType(rs.getNString("InsuranceType"));
 
        
         Date sqlStartDate = rs.getDate("StartDate");

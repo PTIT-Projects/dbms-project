@@ -1,7 +1,7 @@
 package vn.ptit.hrms.constant;
 
 public enum RegistrationStatusEnum {
-    REJECTED("Rejected"), APPROVED("Approved"), PENDING("Pending");
+    REJECTED("Từ chối"), APPROVED("Đã duyệt"), PENDING("Đang chờ");
     private final String value;
 
     RegistrationStatusEnum(String value) {

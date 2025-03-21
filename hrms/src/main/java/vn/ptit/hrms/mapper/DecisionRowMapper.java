@@ -30,7 +30,7 @@ public class DecisionRowMapper implements RowMapper<Decision> {
         decision.setEmployee(employee);
 
        
-        String decisionTypeValue = rs.getString("DecisionType");
+        String decisionTypeValue = rs.getNString("DecisionType");
         if (decisionTypeValue != null) {
             decision.setDecisionType(getDecisionType(decisionTypeValue));
         }
@@ -42,7 +42,7 @@ public class DecisionRowMapper implements RowMapper<Decision> {
         }
 
        
-        decision.setDetails(rs.getString("Details"));
+        decision.setDetails(rs.getNString("Details"));
 
         return decision;
     }

@@ -53,7 +53,7 @@ public class AttendanceRowMapper implements RowMapper<Attendance> {
         }
 
        
-        String statusValue = rs.getString("Status");
+        String statusValue = rs.getNString("Status");
         if (statusValue != null) {
             attendance.setStatus(getAttendanceStatus(statusValue));
         }

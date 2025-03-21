@@ -33,7 +33,7 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
         }
 
        
-        String registrationTypeValue = rs.getString("RegistrationType");
+        String registrationTypeValue = rs.getNString("RegistrationType");
         if (registrationTypeValue != null) {
             registration.setRegistrationType(getRegistrationTypeEnum(registrationTypeValue));
         }
@@ -45,10 +45,10 @@ public class RegistrationRowMapper implements RowMapper<Registration> {
         }
 
        
-        registration.setDetails(rs.getString("Details"));
+        registration.setDetails(rs.getNString("Details"));
 
        
-        String statusValue = rs.getString("Status");
+        String statusValue = rs.getNString("Status");
         if (statusValue != null) {
             registration.setStatus(getRegistrationStatusEnum(statusValue));
         }

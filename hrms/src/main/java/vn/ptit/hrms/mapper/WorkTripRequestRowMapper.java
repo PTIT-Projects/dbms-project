@@ -30,7 +30,7 @@ public class WorkTripRequestRowMapper implements RowMapper<WorkTripRequest> {
         workTripRequest.setEmployee(employee);
 
        
-        workTripRequest.setDestination(rs.getString("Destination"));
+        workTripRequest.setDestination(rs.getNString("Destination"));
 
        
         Date sqlStartDate = rs.getDate("StartDate");
@@ -44,10 +44,10 @@ public class WorkTripRequestRowMapper implements RowMapper<WorkTripRequest> {
         }
 
        
-        workTripRequest.setPurpose(rs.getString("Purpose"));
+        workTripRequest.setPurpose(rs.getNString("Purpose"));
 
        
-        String statusValue = rs.getString("Status");
+        String statusValue = rs.getNString("Status");
         if (statusValue != null) {
             workTripRequest.setStatus(getRegistrationStatus(statusValue));
         }

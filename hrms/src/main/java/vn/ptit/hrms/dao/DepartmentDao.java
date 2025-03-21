@@ -18,9 +18,8 @@ public class DepartmentDao {
     }
 
     public void createDepartment(Department department) {
-        String sql = "INSERT INTO departments (department_name, manager_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, department.getDepartmentName(),
-                department.getManager() != null ? department.getManager().getId() : null);
+        String sql = "INSERT INTO departments (DepartmentName) VALUES (?)";
+        jdbcTemplate.update(sql, department.getDepartmentName());
     }
 
     public Department getDepartmentById(Integer id) {
@@ -34,14 +33,13 @@ public class DepartmentDao {
     }
 
     public void updateDepartment(Department department) {
-        String sql = "UPDATE departments SET DepartmentName = ?, ManagerID = ? WHERE DepartmentID = ?";
+        String sql = "UPDATE departments SET DepartmentName = ? WHERE DepartmentID = ?";
         jdbcTemplate.update(sql, department.getDepartmentName(),
-                department.getManager() != null ? department.getManager().getId() : null,
                 department.getId());
     }
 
     public void deleteDepartment(Integer id) {
-        String sql = "DELETE FROM departments WHERE id = ?";
+        String sql = "DELETE FROM departments WHERE DepartmentID = ?";
         jdbcTemplate.update(sql, id);
     }
 }

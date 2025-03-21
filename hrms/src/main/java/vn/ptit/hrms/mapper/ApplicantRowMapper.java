@@ -29,11 +29,11 @@ public class ApplicantRowMapper implements RowMapper<Applicant> {
         RecruitmentPlan plan = recruitmentPlanDAO.getRecruitmentPlanById(planId);
         applicant.setPlan(plan);
 
-        applicant.setFullName(rs.getString("FullName"));
-        applicant.setEmail(rs.getString("email"));
-        applicant.setPhone(rs.getString("phone"));
+        applicant.setFullName(rs.getNString("FullName"));
+        applicant.setEmail(rs.getNString("email"));
+        applicant.setPhone(rs.getNString("phone"));
 
-        String statusValue = rs.getString("status");
+        String statusValue = rs.getNString("status");
         if (statusValue != null) {
             applicant.setStatus(getApplicantStatusEnum(statusValue));
         }

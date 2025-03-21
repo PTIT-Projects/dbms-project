@@ -23,7 +23,7 @@ public class PositionRowMapper implements RowMapper<Position> {
         position.setId(rs.getInt("PositionID"));
 
        
-        position.setPositionName(rs.getString("PositionName"));
+        position.setPositionName(rs.getNString("PositionName"));
 
        
         int departmentId = rs.getInt("DepartmentID");

@@ -9,10 +9,8 @@ import vn.ptit.hrms.domain.Employee;
 
 public class DepartmentRowMapper implements RowMapper<Department> {
 
-    private final EmployeeDao employeeDAO;
 
-    public DepartmentRowMapper(EmployeeDao employeeDAO) {
-        this.employeeDAO = employeeDAO;
+    public DepartmentRowMapper() {
     }
 
     @Override
@@ -23,14 +21,7 @@ public class DepartmentRowMapper implements RowMapper<Department> {
         department.setId(rs.getInt("DepartmentID"));
 
        
-        department.setDepartmentName(rs.getString("DepartmentName"));
-
-       
-        int managerId = rs.getInt("ManagerID");
-        if (managerId > 0) {
-            Employee manager = employeeDAO.getEmployeeById(managerId);
-            department.setManager(manager);
-        }
+        department.setDepartmentName(rs.getNString("DepartmentName"));
 
         return department;
     }

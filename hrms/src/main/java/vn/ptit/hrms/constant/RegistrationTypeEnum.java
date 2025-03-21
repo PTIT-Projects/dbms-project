@@ -1,7 +1,7 @@
 package vn.ptit.hrms.constant;
 
 public enum RegistrationTypeEnum {
-    RESIGNATION("Resignation"), ADVANCED("Advanced"), OVERTIME("Overtime"), LEAVE("Leave"), MEETINGROOM("MeetingRoom"), MEAL("Meal"), VEHICLE("Vehicle");
+    RESIGNATION("Từ chức"), ADVANCED("Tạm ứng"), OVERTIME("Làm thêm giờ"), LEAVE("Nghỉ phép"), MEETINGROOM("Phòng họp"), MEAL("Ăn uống"), VEHICLE("Xe");
     private final String value;
 
     RegistrationTypeEnum(String value) {

@@ -18,14 +18,14 @@ public class ContractDao {
     }
 
     public void createContract(Contract contract) {
-        String sql = "INSERT INTO Contracts (EmployeeID, ContractType, StartDate, EndDate, Salary, Status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Contracts (EmployeeID, ContractType, StartDate, EndDate, Status) VALUES (?, ?, ?, ?, ?)";
+
         jdbcTemplate.update(sql,
-                contract.getEmployee().getId(),
-                contract.getContractType(),
-                contract.getStartDate(),
-                contract.getEndDate(),
-                contract.getSalary(),
-                contract.getStatus().getValue());
+                contract.getEmployee() != null ? contract.getEmployee().getId() : null,
+                contract.getContractType() != null ? contract.getContractType().getValue() : null,
+                contract.getStartDate() != null ? java.sql.Date.valueOf(contract.getStartDate()) : null,
+                contract.getEndDate() != null ? java.sql.Date.valueOf(contract.getEndDate()) : null,
+                contract.getStatus() != null ? contract.getStatus().getValue() : null);
     }
 
     public Contract getContractById(Integer id) {
@@ -39,14 +39,14 @@ public class ContractDao {
     }
 
     public void updateContract(Contract contract) {
-        String sql = "UPDATE Contracts SET EmployeeID = ?, ContractType = ?, StartDate = ?, EndDate = ?, Salary = ?, Status = ? WHERE ContractID = ?";
+        String sql = "UPDATE Contracts SET EmployeeID = ?, ContractType = ?, StartDate = ?, EndDate = ?, Status = ? WHERE ContractID = ?";
+
         jdbcTemplate.update(sql,
-                contract.getEmployee().getId(),
-                contract.getContractType(),
-                contract.getStartDate(),
-                contract.getEndDate(),
-                contract.getSalary(),
-                contract.getStatus().getValue(),
+                contract.getEmployee() != null ? contract.getEmployee().getId() : null,
+                contract.getContractType() != null ? contract.getContractType().getValue() : null,
+                contract.getStartDate() != null ? java.sql.Date.valueOf(contract.getStartDate()) : null,
+                contract.getEndDate() != null ? java.sql.Date.valueOf(contract.getEndDate()) : null,
+                contract.getStatus() != null ? contract.getStatus().getValue() : null,
                 contract.getId());
     }
 

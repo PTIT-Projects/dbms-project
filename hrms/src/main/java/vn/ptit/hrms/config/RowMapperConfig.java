@@ -23,14 +23,10 @@ public class RowMapperConfig {
         return new DecisionRowMapper(employeeDao);
     }
 
-    @Bean
-    public DependentDeductionRowMapper dependentDeductionRowMapper(EmployeeDao employeeDao) {
-        return new DependentDeductionRowMapper(employeeDao);
-    }
 
     @Bean
-    public EmployeeRowMapper employeeRowMapper() {
-        return new EmployeeRowMapper();
+    public EmployeeRowMapper employeeRowMapper(PositionDao positionDao) {
+        return new EmployeeRowMapper(positionDao);
     }
 
     @Bean
@@ -44,19 +40,16 @@ public class RowMapperConfig {
     }
 
     @Bean
-    public RecruitmentPlanRowMapper recruitmentPlanRowMapper(DepartmentDao departmentDao) {
-        return new RecruitmentPlanRowMapper(departmentDao);
+    public RecruitmentPlanRowMapper recruitmentPlanRowMapper(DepartmentDao departmentDao, PositionDao positionDao) {
+        return new RecruitmentPlanRowMapper(departmentDao, positionDao);
+    }
+    @Bean
+    public DepartmentManagerRowMapper departmentManagerRowMapper(DepartmentDao departmentDao, EmployeeDao employeeDao) {
+        return new DepartmentManagerRowMapper(departmentDao, employeeDao);
     }
 
-    @Bean
-    public TrainingCourseRowMapper trainingCourseRowMapper(EmployeeDao employeeDao) {
-        return new TrainingCourseRowMapper(employeeDao);
-    }
 
-    @Bean
-    public TrainingResultRowMapper trainingResultRowMapper(EmployeeDao employeeDao, TrainingCourseDao trainingCourseDao) {
-        return new TrainingResultRowMapper(employeeDao, trainingCourseDao);
-    }
+
 
     @Bean
     public WorkTripRequestRowMapper workTripRequestRowMapper(EmployeeDao employeeDao) {
@@ -73,10 +66,10 @@ public class RowMapperConfig {
         return new RegistrationRowMapper(employeeDao);
     }
 
-    // Adding missing mappers
+
     @Bean
-    public DepartmentRowMapper departmentRowMapper(EmployeeDao employeeDao) {
-        return new DepartmentRowMapper(employeeDao);
+    public DepartmentRowMapper departmentRowMapper() {
+        return new DepartmentRowMapper();
     }
 
     @Bean
@@ -94,13 +87,5 @@ public class RowMapperConfig {
         return new ApplicantRowMapper(recruitmentPlanDao);
     }
 
-    @Bean
-    public EmployeeCompetencyRowMapper employeeCompetencyRowMapper(EmployeeDao employeeDao, CompetencyDao competencyDao) {
-        return new EmployeeCompetencyRowMapper(employeeDao, competencyDao);
-    }
 
-    @Bean
-    public CompetencyRowMapper competencyRowMapper(PositionDao positionDao) {
-        return new CompetencyRowMapper(positionDao);
-    }
 }

@@ -1,13 +1,14 @@
 package vn.ptit.hrms.domain;
 
 import vn.ptit.hrms.constant.ContractStatusEnum;
+import vn.ptit.hrms.constant.ContractTypeEnum;
 
 import java.time.LocalDate;
 
 public class Contract {
     private Integer id;
     private Employee employee;
-    private String contractType;
+    private ContractTypeEnum contractType;
     private LocalDate startDate;
     private LocalDate endDate;
     private Double salary;
@@ -29,11 +30,11 @@ public class Contract {
         this.employee = employee;
     }
 
-    public String getContractType() {
+    public ContractTypeEnum getContractType() {
         return contractType;
     }
 
-    public void setContractType(String contractType) {
+    public void setContractType(ContractTypeEnum contractType) {
         this.contractType = contractType;
     }
 

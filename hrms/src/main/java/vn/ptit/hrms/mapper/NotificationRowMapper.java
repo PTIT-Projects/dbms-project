@@ -24,10 +24,10 @@ public class NotificationRowMapper implements RowMapper<Notification> {
         notification.setId(rs.getInt("NotificationID"));
 
        
-        notification.setTitle(rs.getString("Title"));
+        notification.setTitle(rs.getNString("Title"));
 
        
-        notification.setContent(rs.getString("Content"));
+        notification.setContent(rs.getNString("Content"));
 
        
         Timestamp sqlCreatedDate = rs.getTimestamp("CreatedDate");

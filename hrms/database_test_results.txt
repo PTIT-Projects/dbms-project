@@ -1,0 +1,344 @@
+====================================================================
+DATABASE TEST REPORT - 2025-03-21T18:08:50.403724400
+====================================================================
+
+Testing database connection...
+✅ Database connection successful!
+SQL Server Version: Microsoft SQL Server 2022 (RTM) - 16.0.1000.6 (X64) 
+	Oct  8 2022 05:58:25 
+	Copyright (C) 2022 Microsoft Corporation
+	Developer Edition (64-bit) on Windows 10 Pro 10.0 <X64> (Build 19045: ) (Hypervisor)
+
+
+Dumping data from all tables...
+
+=== Data from table: Applicants ===
+ApplicantID         PlanID              FullName            Email               Phone               Status              
+------------------------------------------------------------------------------------------------------------------------
+1                   3                   Huỳnh Quốc Hải      huynh.quốc.hai@hotmail.com0928867742          Từ chối             
+2                   5                   Võ Tuấn Hà          vo.tuấn.ha@gmail.com0346665317          Đã phỏng vấn        
+3                   1                   Phạm Hữu Duy        pham.hữu.duy@hotmail.com0348965801          Đã ứng tuyển        
+4                   4                   Hoàng Tuấn Hùng     hoang.tuấn.hung@outlook.com0338660090          Đã tuyển            
+5                   4                   Võ Xuân Hảo         vo.xuan.hao@outlook.com0372517463          Đã tuyển            
+6                   3                   Huỳnh Đức Hảo       huynh.dức.hao@icloud.com0944346235          Đã phỏng vấn        
+7                   3                   Võ Quốc Chi         vo.quốc.chi@outlook.com0333831667          Từ chối             
+8                   1                   Phan Quang Nhung    phan.quang.nhung@hotmail.com0390498335          Đã phỏng vấn        
+9                   2                   Huỳnh Tuấn Dũng     huynh.tuấn.dung@hotmail.com0331732334          Đã ứng tuyển        
+10                  2                   Trần Quốc Việt      trần.quốc.việt@icloud.com0334071331          Từ chối             
+Total rows: 10
+
+=== Data from table: Attendance ===
+AttendanceID        EmployeeID          Date                CheckInTime         CheckOutTime        Status              
+------------------------------------------------------------------------------------------------------------------------
+1                   1                   2025-03-20          09:28:00            17:00:00            Đi muộn             
+2                   1                   2025-03-19          08:00:00            18:37:00            Làm thêm giờ        
+3                   1                   2025-03-18          09:25:00            17:00:00            Đi muộn             
+4                   1                   2025-03-17          08:00:00            17:00:00            Có mặt              
+5                   1                   2025-03-16          08:00:00            19:38:00            Làm thêm giờ        
+6                   2                   2025-03-20          08:00:00            19:51:00            Làm thêm giờ        
+7                   2                   2025-03-19          08:00:00            17:00:00            Có mặt              
+8                   2                   2025-03-18          08:00:00            17:00:00            Có mặt              
+9                   2                   2025-03-17          08:00:00            18:53:00            Làm thêm giờ        
+10                  2                   2025-03-16          09:07:00            17:00:00            Đi muộn             
+11                  3                   2025-03-20          NULL                NULL                Vắng mặt            
+12                  3                   2025-03-19          08:00:00            17:00:00            Có mặt              
+13                  3                   2025-03-18          08:00:00            19:29:00            Làm thêm giờ        
+14                  3                   2025-03-17          09:26:00            17:00:00            Đi muộn             
+15                  3                   2025-03-16          NULL                NULL                Vắng mặt            
+16                  4                   2025-03-20          08:00:00            18:18:00            Làm thêm giờ        
+17                  4                   2025-03-19          08:00:00            19:27:00            Làm thêm giờ        
+18                  4                   2025-03-18          NULL                NULL                Vắng mặt            
+19                  4                   2025-03-17          NULL                NULL                Vắng mặt            
+20                  4                   2025-03-16          NULL                NULL                Vắng mặt            
+21                  5                   2025-03-20          08:00:00            19:00:00            Làm thêm giờ        
+22                  5                   2025-03-19          09:06:00            17:00:00            Đi muộn             
+23                  5                   2025-03-18          NULL                NULL                Vắng mặt            
+24                  5                   2025-03-17          09:19:00            17:00:00            Đi muộn             
+25                  5                   2025-03-16          08:00:00            17:00:00            Có mặt              
+26                  6                   2025-03-20          NULL                NULL                Vắng mặt            
+27                  6                   2025-03-19          08:00:00            17:00:00            Có mặt              
+28                  6                   2025-03-18          09:28:00            17:00:00            Đi muộn             
+29                  6                   2025-03-17          08:00:00            17:00:00            Có mặt              
+30                  6                   2025-03-16          NULL                NULL                Vắng mặt            
+31                  7                   2025-03-20          09:26:00            17:00:00            Đi muộn             
+32                  7                   2025-03-19          09:03:00            17:00:00            Đi muộn             
+33                  7                   2025-03-18          08:00:00            19:03:00            Làm thêm giờ        
+34                  7                   2025-03-17          08:00:00            19:09:00            Làm thêm giờ        
+35                  7                   2025-03-16          08:00:00            17:00:00            Có mặt              
+41                  9                   2025-03-20          08:00:00            17:00:00            Có mặt              
+42                  9                   2025-03-19          08:00:00            17:00:00            Có mặt              
+43                  9                   2025-03-18          09:04:00            17:00:00            Đi muộn             
+44                  9                   2025-03-17          08:00:00            17:00:00            Có mặt              
+45                  9                   2025-03-16          08:00:00            19:40:00            Làm thêm giờ        
+46                  10                  2025-03-20          09:21:00            17:00:00            Đi muộn             
+47                  10                  2025-03-19          08:00:00            17:00:00            Có mặt              
+48                  10                  2025-03-18          08:00:00            17:00:00            Có mặt              
+49                  10                  2025-03-17          08:00:00            17:00:00            Có mặt              
+50                  10                  2025-03-16          08:00:00            17:00:00            Có mặt              
+Total rows: 45
+
+=== Data from table: Contracts ===
+ContractID          EmployeeID          ContractType        StartDate           EndDate             Status              
+------------------------------------------------------------------------------------------------------------------------
+1                   1                   Bán thời gian       2011-03-04          2024-04-22          Hết hạn             
+2                   2                   Toàn thời gian      2021-10-01          2024-07-05          Hiệu lực            
+3                   3                   Bán thời gian       2019-07-08          2024-07-25          Hiệu lực            
+4                   4                   Toàn thời gian      2012-08-24          2025-06-05          Hết hạn             
+5                   5                   Bán thời gian       2016-03-18          2025-03-05          Hết hạn             
+6                   6                   Toàn thời gian      2014-03-13          2023-01-23          Chấm dứt            
+7                   7                   Toàn thời gian      2011-06-22          2024-07-17          Hết hạn             
+9                   9                   Bán thời gian       2013-01-10          2025-11-27          Hiệu lực            
+10                  10                  Toàn thời gian      2015-06-09          2025-01-27          Hiệu lực            
+Total rows: 9
+
+=== Data from table: Decisions ===
+DecisionID          EmployeeID          DecisionType        DecisionDate        Details             
+----------------------------------------------------------------------------------------------------
+3                   10                  Kỷ luật             2022-03-07          Tăng lương định kỳ  
+4                   7                   Kỷ luật             2020-10-01          Thưởng thành tích xuất sắc trong quý
+5                   6                   Khen thưởng         2022-12-12          Tăng lương định kỳ  
+Total rows: 3
+
+=== Data from table: DepartmentManager ===
+DepartmentID        ManagerID           
+----------------------------------------
+1                   1                   
+2                   5                   
+3                   1                   
+4                   2                   
+5                   1                   
+6                   6                   
+7                   5                   
+8                   3                   
+Total rows: 8
+
+=== Data from table: Departments ===
+DepartmentID        DepartmentName      
+----------------------------------------
+1                   Phòng QA/QC         
+2                   Phòng QA/QC         
+3                   Nhân sự             
+4                   Kế toán             
+5                   Marketing           
+6                   Công nghệ thông tin 
+7                   Kinh doanh          
+8                   Sản xuất            
+9                   Hành chính          
+10                  Đào tạo             
+Total rows: 10
+
+=== Data from table: Employees ===
+userName            userPassword        roleName            EmployeeID          FullName            DateOfBirth         Gender              Address             Phone               Email               DepartmentID        PositionID          HireDate            Status              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+user1               pass1               admin               1                   Hoàng Thị An        1991-04-16          Nam                 80 Nguyễn Đình Chiểu, Quận Hoàn Kiếm, Hạ Long0929771130          hoang.thi.an@icloud.com8                   24                  2018-04-07          Nghỉ phép           
+user2               pass2               manager             2                   Phạm Quang Phương   1991-04-05          Nữ                  101 Nguyễn Huệ, Quận Cầu Giấy, Buôn Ma Thuột0969172688          pham.quang.phuong@yahoo.com5                   21                  2015-12-03          Nghỉ phép           
+user3               pass3               admin               3                   Phạm Hồng Hảo       1974-08-02          Nam                 162 Nguyễn Văn Linh, Quận Hoàn Kiếm, Vinh0993933686          pham.hồng.hao@icloud.com1                   5                   2021-02-04          Đang làm việc       
+user4               pass4               manager             4                   Huỳnh Quang Uyên    1977-02-18          Khác                23 Phan Đình Phùng, Quận Hoàn Kiếm, Huế0332461413          huynh.quang.uyen@outlook.com4                   14                  2015-07-23          Nghỉ phép           
+user5               pass5               manager             5                   Phan Văn Long       1975-05-04          Khác                18 Hoàng Diệu, Quận 1, Thái Nguyên0910505571          phan.van.long@hotmail.com1                   9                   2023-05-20          Nghỉ phép           
+user6               pass6               manager             6                   Trần Tuấn Phong     1993-03-12          Khác                31 Lê Lợi, Quận 1, Biên Hòa0982339160          trần.tuấn.phong@outlook.com1                   4                   2023-01-17          Đang làm việc       
+user7               pass7               admin               7                   Võ Bảo Cường        1982-04-15          Nam                 158 Quang Trung, Quận Long Biên, Thái Nguyên0326180024          vo.bao.cuờng@outlook.com1                   4                   2012-12-07          Nghỉ phép           
+user9               pass9               admin               9                   Võ Mạnh Long        1982-11-19          Nam                 33 Hoàng Diệu, Quận Đống Đa, Cần Thơ0965066956          vo.manh.long@icloud.com5                   4                   2023-08-10          Nghỉ việc           
+user10              pass10              user                10                  Vũ Bảo Tuấn         1985-03-24          Khác                163 Phan Đình Phùng, Quận 1, Vũng Tàu0357485752          vu.bao.tuấn@gmail.com4                   11                  2017-11-08          Nghỉ phép           
+Total rows: 9
+
+=== Data from table: Insurance ===
+InsuranceID         EmployeeID          InsuranceNumber     InsuranceType       StartDate           EndDate             
+------------------------------------------------------------------------------------------------------------------------
+1                   1                   BH3305350           Bảo hiểm xã hội     2016-10-26          2024-05-15          
+2                   1                   BH8313448           Bảo hiểm y tế       2019-09-15          2024-05-03          
+3                   1                   BH9559171           Bảo hiểm thất nghiệp2020-03-22          2025-05-02          
+4                   2                   BH5096792           Bảo hiểm xã hội     2016-01-06          2025-09-05          
+5                   2                   BH5449697           Bảo hiểm y tế       2021-04-23          2025-01-12          
+6                   2                   BH9351156           Bảo hiểm thất nghiệp2019-11-27          2023-01-25          
+7                   3                   BH1253920           Bảo hiểm xã hội     2019-06-01          2023-05-25          
+8                   3                   BH8798585           Bảo hiểm y tế       2016-10-22          2023-01-26          
+9                   3                   BH5450344           Bảo hiểm thất nghiệp2015-08-18          2024-08-21          
+10                  4                   BH1190674           Bảo hiểm xã hội     2017-06-28          2025-03-03          
+11                  4                   BH6022433           Bảo hiểm y tế       2015-09-13          2025-03-24          
+12                  4                   BH6020655           Bảo hiểm thất nghiệp2017-07-12          2025-07-17          
+13                  5                   BH1922526           Bảo hiểm xã hội     2017-01-12          2025-12-05          
+14                  5                   BH8023997           Bảo hiểm y tế       2016-04-24          2023-01-22          
+15                  5                   BH7969554           Bảo hiểm thất nghiệp2016-06-03          2025-01-16          
+16                  6                   BH3857695           Bảo hiểm xã hội     2020-07-10          2024-12-18          
+17                  6                   BH3315399           Bảo hiểm y tế       2017-07-07          2023-08-26          
+18                  6                   BH7959663           Bảo hiểm thất nghiệp2020-02-19          2023-08-20          
+19                  7                   BH3142039           Bảo hiểm xã hội     2016-02-08          2024-06-26          
+20                  7                   BH9305163           Bảo hiểm y tế       2018-08-20          2024-08-12          
+21                  7                   BH2450015           Bảo hiểm thất nghiệp2017-05-08          2023-10-06          
+25                  9                   BH7490659           Bảo hiểm xã hội     2021-11-27          2024-10-22          
+26                  9                   BH7103566           Bảo hiểm y tế       2020-07-26          2023-04-21          
+27                  9                   BH7122820           Bảo hiểm thất nghiệp2020-02-15          2025-04-03          
+28                  10                  BH4819859           Bảo hiểm xã hội     2018-11-27          2024-01-25          
+29                  10                  BH2508670           Bảo hiểm y tế       2015-06-09          2025-06-06          
+30                  10                  BH2358430           Bảo hiểm thất nghiệp2016-06-10          2024-07-04          
+Total rows: 27
+
+=== Data from table: LeaveBalances ===
+LeaveBalanceID      EmployeeID          Year                TotalLeaveDays      UsedLeaveDays       RemainingLeaveDays  
+------------------------------------------------------------------------------------------------------------------------
+1                   1                   2023                13                  11                  2                   
+2                   2                   2023                14                  8                   6                   
+3                   3                   2023                15                  3                   12                  
+4                   4                   2023                15                  0                   15                  
+5                   5                   2023                12                  6                   6                   
+6                   6                   2023                15                  14                  1                   
+7                   7                   2023                13                  10                  3                   
+9                   9                   2023                15                  9                   6                   
+10                  10                  2023                15                  14                  1                   
+Total rows: 9
+
+=== Data from table: Notifications ===
+NotificationID      Title               Content             CreatedDate         CreatedBy           
+----------------------------------------------------------------------------------------------------
+1                   Thông báo nghỉ lễ   Thông báo về lịch nghỉ lễ 30/4 và 1/5 sắp tới.2022-03-06 14:00:00.03                   
+2                   Thông báo họp hàng thángCuộc họp tổng kết tháng sẽ được tổ chức vào ngày 30/3/2023 lúc 14:00.2023-11-28 17:00:00.09                   
+3                   Sắp xếp lại văn phòngCông ty sẽ tiến hành sắp xếp lại văn phòng vào ngày 15/4/2023.2023-08-06 11:00:00.02                   
+4                   Thông báo về chính sách mớiBan quản trị thông báo về việc điều chỉnh chính sách lương thưởng từ Q2/2023.2023-10-14 12:00:00.07                   
+5                   Kế hoạch đào tạo năm 2023Thông báo về kế hoạch đào tạo nội bộ năm 2023 cho các phòng ban.2022-12-12 13:00:00.04                   
+Total rows: 5
+
+=== Data from table: Positions ===
+PositionID          PositionName        DepartmentID        
+------------------------------------------------------------
+3                   Trưởng phòng        1                   
+4                   Phó phòng           1                   
+5                   Nhân viên           1                   
+6                   Kế toán trưởng      2                   
+7                   Kế toán viên        2                   
+8                   Giám đốc marketing  3                   
+9                   Chuyên viên marketing3                   
+10                  Thiết kế đồ họa     3                   
+11                  Giám đốc CNTT       4                   
+12                  Lập trình viên      4                   
+13                  Quản trị hệ thống   4                   
+14                  Kiểm thử phần mềm   4                   
+15                  Giám đốc kinh doanh 5                   
+16                  Trưởng nhóm kinh doanh5                   
+17                  Nhân viên kinh doanh5                   
+18                  Quản đốc            6                   
+19                  Kỹ sư               6                   
+20                  Công nhân           6                   
+21                  Thư ký              7                   
+22                  Lễ tân              7                   
+23                  Tài xế              7                   
+24                  Bảo vệ              7                   
+25                  Giám đốc đào tạo    8                   
+26                  Giảng viên          8                   
+Total rows: 24
+
+=== Data from table: RecruitmentPlans ===
+PlanID              PositionID          DepartmentID        Quantity            StartDate           EndDate             
+------------------------------------------------------------------------------------------------------------------------
+1                   10                  4                   2                   2023-08-21          2024-01-21          
+2                   5                   8                   4                   2023-11-12          2024-02-12          
+3                   5                   4                   2                   2023-08-28          2023-11-28          
+4                   18                  4                   1                   2023-05-24          2023-10-24          
+5                   10                  2                   5                   2023-11-06          2024-04-06          
+Total rows: 5
+
+=== Data from table: Registrations ===
+RegistrationID      EmployeeID          RegistrationType    RequestDate         Details             Status              ApprovedBy          
+--------------------------------------------------------------------------------------------------------------------------------------------
+1                   4                   Ăn uống             2022-01-01          Đăng ký ăn uống cho ngày 2022-01-08Đã duyệt            10                  
+2                   6                   Xe                  2023-05-14          Đăng ký xe cho ngày 2023-05-21Đã duyệt            3                   
+3                   9                   Xe                  2022-06-15          Đăng ký xe cho ngày 2022-06-22Từ chối             2                   
+4                   2                   Nghỉ phép           2022-04-14          Đăng ký nghỉ phép cho ngày 2022-04-21Đang chờ            NULL                
+5                   9                   Xe                  2023-01-21          Đăng ký xe cho ngày 2023-01-28Đã duyệt            4                   
+6                   4                   Từ chức             2022-06-04          Đăng ký từ chức cho ngày 2022-06-11Đang chờ            NULL                
+7                   7                   Làm thêm giờ        2022-02-04          Đăng ký làm thêm giờ cho ngày 2022-02-11Đã duyệt            4                   
+8                   7                   Từ chức             2022-11-20          Đăng ký từ chức cho ngày 2022-11-27Đã duyệt            3                   
+9                   3                   Làm thêm giờ        2022-04-01          Đăng ký làm thêm giờ cho ngày 2022-04-08Đã duyệt            2                   
+10                  9                   Từ chức             2022-02-18          Đăng ký từ chức cho ngày 2022-02-25Từ chối             2                   
+Total rows: 10
+
+=== Data from table: Salary ===
+SalaryID            EmployeeID          Month               Year                BasicSalary         Allowance           Deductions          NetSalary           
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+1                   1                   9                   2023                12044983.00         5717098.00          1438620.00          16323461.00         
+2                   2                   6                   2023                13434072.00         1319492.00          1417930.00          13335634.00         
+3                   3                   9                   2023                15087890.00         5356837.00          688743.00           19755984.00         
+4                   4                   3                   2023                20241445.00         3119992.00          1180785.00          22180652.00         
+5                   5                   1                   2023                20141480.00         1625716.00          2205738.00          19561458.00         
+6                   6                   10                  2023                16175466.00         1753172.00          2412025.00          15516613.00         
+7                   7                   10                  2023                10899515.00         4078934.00          521543.00           14456906.00         
+9                   9                   8                   2023                29497699.00         1782076.00          2405386.00          28874389.00         
+10                  10                  1                   2023                15819831.00         5880259.00          683076.00           21017014.00         
+Total rows: 9
+
+=== Data from table: WorkTripRequests ===
+RequestID           EmployeeID          Destination         StartDate           EndDate             Purpose             Status              
+--------------------------------------------------------------------------------------------------------------------------------------------
+3                   3                   Hồ Chí Minh         2023-01-02          2023-01-09          Gặp đối tác kinh doanhĐang chờ            
+4                   2                   Đà Lạt              2023-02-14          2023-02-20          Khảo sát thị trường Đã duyệt            
+5                   1                   Hà Nội              2023-03-07          2023-03-08          Gặp đối tác kinh doanhĐang chờ            
+Total rows: 3
+
+====================================================================
+TESTING CRUD OPERATIONS FOR ALL TABLES
+====================================================================
+
+
+----- Testing Department DAO -----
+1. Testing getAllDepartments()
+   Found 10 departments
+   - 1: Phòng QA/QC
+   - 2: Phòng QA/QC
+   - 3: Nhân sự
+   - 4: Kế toán
+   - 5: Marketing
+   - 6: Công nghệ thông tin
+   - 7: Kinh doanh
+   - 8: Sản xuất
+   - 9: Hành chính
+   - 10: Đào tạo
+
+2. Testing createDepartment()
+   Creating new department: Phòng Kiểm Soát Chất Lượng
+   Department created with ID: 13
+
+3. Testing getDepartmentById()
+   Retrieved department: ID=13, Name=Phòng Kiểm Soát Chất Lượng
+
+4. Testing updateDepartment()
+   Department updated
+   After update: ID=13, Name=Phòng QA/QC
+
+5. Testing deleteDepartment()
+   Department deleted
+
+✅ Department DAO tests completed successfully
+
+----- Testing Position DAO -----
+1. Testing getAllPositions()
+   Found 24 positions
+   - 3: Trưởng phòng (Department: Phòng QA/QC)
+   - 4: Phó phòng (Department: Phòng QA/QC)
+   - 5: Nhân viên (Department: Phòng QA/QC)
+   - 6: Kế toán trưởng (Department: Phòng QA/QC)
+   - 7: Kế toán viên (Department: Phòng QA/QC)
+
+2. Testing createPosition()
+   Creating new position: Chuyên Viên Nghiên Cứu
+   Position created with ID: 29
+
+3. Testing getPositionById()
+   Retrieved position: ID=29, Name=Chuyên Viên Nghiên Cứu, Department=Phòng QA/QC
+
+4. Testing updatePosition()
+   Position updated
+   After update: ID=29, Name=Chuyên Viên Nghiên Cứu Cao Cấp
+
+5. Testing deletePosition()
+   Position deleted
+
+✅ Position DAO tests completed successfully
+
+----- Testing Employee DAO -----
+1. Testing getAllEmployees()
+   Found 9 employees
+   - 1: Hoàng Thị An (hoang.thi.an@icloud.com)
+   - 2: Phạm Quang Phương (pham.quang.phuong@yahoo.com)
+   - 3: Phạm Hồng Hảo (pham.hồng.hao@icloud.com)
+
+2. Testing createEmployee()
+   Creating new employee: Phạm Thị Kiểm Thử

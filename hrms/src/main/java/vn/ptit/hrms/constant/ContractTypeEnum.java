@@ -1,10 +1,10 @@
 package vn.ptit.hrms.constant;
 
-public enum CompetencyTypeEnum {
-    ATTITUDE("Attitude"), SKILL("Skill"), KNOWLEDGE("Knowledge");
+public enum ContractTypeEnum {
+    FULLTIME("Toàn thời gian"), PARTTIME("Bán thời gian");
     private final String value;
 
-    CompetencyTypeEnum(String value) {
+    ContractTypeEnum(String value) {
         this.value = value;
     }
 

@@ -2,7 +2,7 @@ package vn.ptit.hrms.constant;
 
 
 public enum EmployeeStatusEnum {
-    ONLEAVE("On Leave"), INACTIVE("Inactive"), ACTIVE("Active");
+    ONLEAVE("Nghỉ phép"), INACTIVE("Nghỉ việc"), ACTIVE("Đang làm việc");
 
     EmployeeStatusEnum(String value) {
         this.value = value;

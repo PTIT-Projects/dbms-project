@@ -1,7 +1,7 @@
 package vn.ptit.hrms.constant;
 
 public enum GenderEnum {
-    OTHER("Other"), FEMALE("Female"), MALE("Male");
+    OTHER("Khác"), FEMALE("Nữ"), MALE("Nam");
     private final String value;
 
     GenderEnum(String value) {
