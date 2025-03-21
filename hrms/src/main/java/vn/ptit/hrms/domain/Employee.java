@@ -17,7 +17,6 @@ public class Employee {
     private Position position;
     private LocalDate hireDate;
     private EmployeeStatusEnum status;
-    private String username;
     private String password;
     private String roleName;
     public Integer getId() {
@@ -107,14 +106,6 @@ public class Employee {
 
     public void setPosition(Position position) {
         this.position = position;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPassword() {

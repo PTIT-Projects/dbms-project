@@ -27,7 +27,6 @@ public class EmployeeRowMapper implements RowMapper<Employee> {
         employee.setId(rs.getInt("EmployeeID"));
 
       
-        employee.setUsername(rs.getNString("userName"));
         employee.setPassword(rs.getNString("userPassword"));
         employee.setRoleName(rs.getNString("roleName"));
 

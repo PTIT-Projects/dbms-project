@@ -304,7 +304,6 @@ public class DatabaseTester {
             // CREATE
             writer.println("\n2. Testing createEmployee()");
             Employee newEmp = new Employee();
-            newEmp.setUsername("tester123");
             newEmp.setPassword("password123");
             newEmp.setRoleName("user");
             newEmp.setFullName("Phạm Thị Kiểm Thử");

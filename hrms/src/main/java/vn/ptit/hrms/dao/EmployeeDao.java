@@ -18,7 +18,7 @@ public class EmployeeDao {
     }
 
     public void createEmployee(Employee employee) {
-        String sql = "INSERT INTO Employees (FullName, DateOfBirth, Gender, Address, Phone, Email, DepartmentID, Position, HireDate, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Employees (FullName, DateOfBirth, Gender, Address, Phone, Email, DepartmentID, PositionID, HireDate, Status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 employee.getFullName(),
                 employee.getDateOfBirth(),
@@ -27,7 +27,7 @@ public class EmployeeDao {
                 employee.getPhone(),
                 employee.getEmail(),
                 employee.getDepartment() != null ? employee.getDepartment().getId() : null,
-                employee.getPosition(),
+                employee.getPosition().getId(),
                 employee.getHireDate(),
                 employee.getStatus() != null ? employee.getStatus().getValue() : null);
     }
@@ -52,7 +52,7 @@ public class EmployeeDao {
                 employee.getPhone(),
                 employee.getEmail(),
                 employee.getDepartment() != null ? employee.getDepartment().getId() : null,
-                employee.getPosition(),
+                employee.getPosition().getId(),
                 employee.getHireDate(),
                 employee.getStatus() != null ? employee.getStatus().getValue() : null,
                 employee.getId());
@@ -61,5 +61,9 @@ public class EmployeeDao {
     public void deleteEmployee(Integer id) {
         String sql = "DELETE FROM Employees WHERE EmployeeID = ?";
         jdbcTemplate.update(sql, id);
+    }
+    public Employee findEmployeeByEmail(String email) {
+        String sql = "SELECT * FROM Employees WHERE Email = ?";
+        return jdbcTemplate.queryForObject(sql, employeeRowMapper, email);
     }
 }
