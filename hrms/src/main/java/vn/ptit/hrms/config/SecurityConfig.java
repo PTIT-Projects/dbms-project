@@ -18,23 +18,20 @@ public class SecurityConfig {
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
+    // filepath: d:\workspace\intelij\dbms-project\hrms\src\main\java\vn\ptit\hrms\config\SecurityConfig.java
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable) // Vô hiệu hóa CSRF
+        http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers("/login", "/register", "/oauth2/**", "/verify","/weather").permitAll()
-//                        .requestMatchers("/players").hasAuthority("ADMIN")
-                                .anyRequest().authenticated()
+                        .requestMatchers("/login", "/register", "/verify", "/weather").permitAll()
+                        // Change the defaultSuccessUrl to a different page
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/players", true)
+                        .defaultSuccessUrl("/dashboard", true) // Change from "/players" to "/dashboard" or another page
                         .failureUrl("/login?error=true")
                         .permitAll()
-                )
-
-                .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/access-denied") // Trang báo lỗi 403
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")

@@ -14,7 +14,7 @@ public class AdminController {
         this.applicantDao = applicantDao;
     }
 
-    @GetMapping({"/", "/admin", "/admin/index", "index.html"})
+    @GetMapping({"/", "/admin", "/admin/index", "index.html", "/dashboard"})
     public String dashboard() {
         return "index";
     }
