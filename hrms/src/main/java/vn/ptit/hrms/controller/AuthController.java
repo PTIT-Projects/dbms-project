@@ -37,6 +37,11 @@ public class AuthController {
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             Model model) {
+        Employee employee = new Employee();
+        employee.setRoleName("ROLE_ADMIN");
+        employee.setEmail("admin@gmail.com");
+        employee.setPassword("123456");
+
         if (error != null) {
             model.addAttribute("error", "Invalid email or password");
         }
@@ -48,39 +53,7 @@ public class AuthController {
         return "auth/login";
     }
 
-    @GetMapping("/register")
-    public String registerPage(Model model) {
-        model.addAttribute("employee", new Employee());
-        model.addAttribute("departments", departmentService.getAllDepartments());
-        model.addAttribute("positions", positionService.getAllPositions());
-        return "auth/register";
-    }
 
-    @PostMapping("/register")
-    public String registerEmployee(@ModelAttribute Employee employee, RedirectAttributes redirectAttributes) {
-        // Check if email exists
-        try {
-            Employee existingEmployee = employeeService.getEmployeeById(employee.getId());
-            if (existingEmployee != null) {
-                redirectAttributes.addFlashAttribute("error", "Email already exists");
-                return "redirect:/register";
-            }
-        } catch (Exception e) {
-            // Employee does not exist, continue with registration
-        }
-
-        // Encode password
-        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
-
-        // Set default role
-        employee.setRoleName("ROLE_USER");
-
-        // Save employee
-        employeeService.createEmployee(employee);
-
-        redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
-        return "redirect:/login";
-    }
 
     @GetMapping("/dashboard")
     public String dashboard() {
