@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.EmployeeStatusEnum;
 import vn.ptit.hrms.constant.GenderEnum;
+import vn.ptit.hrms.dao.DepartmentDao;
 import vn.ptit.hrms.dao.PositionDao;
 import vn.ptit.hrms.domain.Department;
 import vn.ptit.hrms.domain.Employee;
@@ -14,9 +15,11 @@ import vn.ptit.hrms.domain.Position;
 
 public class EmployeeRowMapper implements RowMapper<Employee> {
     private final PositionDao positionDao;
+    private final DepartmentDao departmentDao;
 
-    public EmployeeRowMapper(PositionDao positionDao) {
+    public EmployeeRowMapper(PositionDao positionDao, DepartmentDao departmentDao) {
         this.positionDao = positionDao;
+        this.departmentDao = departmentDao;
     }
 
     @Override
@@ -58,8 +61,7 @@ public class EmployeeRowMapper implements RowMapper<Employee> {
       
         int departmentId = rs.getInt("DepartmentID");
         if (departmentId > 0) {
-            Department department = new Department();
-            department.setId(departmentId);
+            Department department = this.departmentDao.getDepartmentById(departmentId);
             employee.setDepartment(department);
         }
 

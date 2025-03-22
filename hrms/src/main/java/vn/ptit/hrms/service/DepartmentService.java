@@ -33,4 +33,7 @@ public class DepartmentService {
     public void deleteDepartment(Integer id) {
         departmentDao.deleteDepartment(id);
     }
+    public int getDepartmentCount() {
+        return this.departmentDao.countNumDepartments();
+    }
 }

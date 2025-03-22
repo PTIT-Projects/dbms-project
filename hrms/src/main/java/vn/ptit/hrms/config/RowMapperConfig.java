@@ -25,8 +25,8 @@ public class RowMapperConfig {
 
 
     @Bean
-    public EmployeeRowMapper employeeRowMapper(PositionDao positionDao) {
-        return new EmployeeRowMapper(positionDao);
+    public EmployeeRowMapper employeeRowMapper(PositionDao positionDao, DepartmentDao departmentDao) {
+        return new EmployeeRowMapper(positionDao, departmentDao);
     }
 
     @Bean

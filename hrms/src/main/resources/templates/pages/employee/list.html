@@ -1,4 +1,3 @@
-\templates\pages\employee\list.html -->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -25,40 +24,51 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary">Import</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
                     </div>
-                    <button type="button" class="btn btn-sm btn-primary">
+                    <a th:href="@{/pages/employee/create}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus"></i> Add Employee
-                    </button>
+                    </a>
                 </div>
             </div>
 
             <!-- Search and filter section -->
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search employees...">
-                        <button class="btn btn-outline-secondary" type="button">
-                            <i class="bi bi-search"></i>
-                        </button>
+            <!-- Replace the search and filter section with this form -->
+
+            <!-- Search and filter section -->
+            <form th:action="@{/admin/pages/employee/list}" method="get" class="mb-3">
+                <input type="hidden" name="page" value="0">
+                <input type="hidden" name="size" th:value="${page != null ? page.size : 5}">
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" th:value="${search}" placeholder="Search employees...">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end">
+                            <select class="form-select me-2" style="width: auto;" name="departmentId">
+                                <option value="">All Departments</option>
+                                <option th:each="dept : ${departments}"
+                                        th:value="${dept.id}"
+                                        th:text="${dept.departmentName}"
+                                        th:selected="${departmentId != null && departmentId == dept.id}">Department</option>
+                            </select>
+                            <select class="form-select me-2" style="width: auto;" name="status">
+                                <option value="">All Status</option>
+                                <option value="Đang làm việc" th:selected="${status != null && status == 'ACTIVE'}">Đang làm việc</option>
+                                <option value="Nghỉ phép" th:selected="${status != null && status == 'ONLEAVE'}">Nghỉ phép</option>
+                                <option value="Nghỉ việc" th:selected="${status != null && status == 'TERMINATED'}">Nghỉ việc</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-filter"></i> Filter
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="d-flex justify-content-end">
-                        <select class="form-select me-2" style="width: auto;">
-                            <option selected>All Departments</option>
-                            <option>IT</option>
-                            <option>HR</option>
-                            <option>Finance</option>
-                            <option>Marketing</option>
-                        </select>
-                        <select class="form-select" style="width: auto;">
-                            <option selected>All Status</option>
-                            <option>Active</option>
-                            <option>On Leave</option>
-                            <option>Terminated</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            </form>
 
             <!-- Employee table -->
             <div class="table-responsive">
@@ -76,22 +86,69 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- This would be populated with th:each in a real application -->
-                    <tr>
-                        <td>EMP001</td>
-                        <td>John Doe</td>
-                        <td>john.doe@company.com</td>
-                        <td>IT</td>
-                        <td>Software Developer</td>
-                        <td>2021-05-15</td>
-                        <td><span class="badge bg-success">Active</span></td>
+                    <!-- Display employees from the model with th:each -->
+                    <tr th:each="employee : ${employees}">
+                        <td th:text="${employee.id}">ID</td>
+                        <td th:text="${employee.fullName}">Name</td>
+                        <td th:text="${employee.email}">Email</td>
+                        <td th:text="${employee.department != null ? employee.department.departmentName : '-'}">Department</td>
+                        <td th:text="${employee.position != null ? employee.position.positionName : '-'}">Position</td>
+                        <td th:text="${#temporals.format(employee.hireDate, 'yyyy-MM-dd')}">Join Date</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            <span th:class="${'badge ' +
+                                (employee.status != null && employee.status.name() == 'ACTIVE' ? 'bg-success' :
+                                employee.status != null && employee.status.name() == 'ONLEAVE' ? 'bg-warning' :
+                                'bg-danger')}"
+                                  th:text="${employee.status != null ? employee.status.value : '-'}">Status</span>
                         </td>
+                        <td>
+                            <a th:href="@{/pages/employee/{id}/edit(id=${employee.id})}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{/pages/employee/{id}/delete(id=${employee.id})}"
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('Are you sure you want to delete this employee?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <!-- Empty state message when no employees are found -->
+                    <tr th:if="${#lists.isEmpty(employees)}">
+                        <td colspan="8" class="text-center">No employees found</td>
                     </tr>
                     </tbody>
                 </table>
+            </div>
+            <!-- Add this after your table -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div>
+        <span>Showing <strong th:text="${page.numberOfElements}">10</strong> of
+              <strong th:text="${page.totalElements}">100</strong> entries</span>
+                </div>
+                <nav aria-label="Page navigation" th:if="${page.totalPages > 0}">
+                    <ul class="pagination">
+                        <!-- Previous page -->
+                        <li class="page-item" th:classappend="${page.first ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/pages/employee/list(page=${page.number - 1}, size=${page.size}, search=${search}, departmentId=${departmentId}, status=${status})}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <!-- Page numbers -->
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+                            th:if="${i >= page.number - 2 && i <= page.number + 2}"
+                            th:classappend="${i == page.number ? 'active' : ''}">
+                            <a class="page-link" th:href="@{/admin/pages/employee/list(page=${i}, size=${page.size}, search=${search}, departmentId=${departmentId}, status=${status})}" th:text="${i + 1}">1</a>
+                        </li>
+
+                        <!-- Next page -->
+                        <li class="page-item" th:classappend="${page.last ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/admin/pages/employee/list(page=${page.number + 1}, size=${page.size}, search=${search}, departmentId=${departmentId}, status=${status})}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </main>
     </div>

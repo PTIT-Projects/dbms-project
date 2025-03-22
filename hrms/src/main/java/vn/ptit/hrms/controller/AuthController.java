@@ -9,10 +9,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import vn.ptit.hrms.constant.EmployeeStatusEnum;
+import vn.ptit.hrms.constant.GenderEnum;
 import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.EmployeeService;
 import vn.ptit.hrms.service.PositionService;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 @Controller
 public class AuthController {
@@ -37,11 +42,24 @@ public class AuthController {
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             Model model) {
-        Employee employee = new Employee();
-        employee.setRoleName("ROLE_ADMIN");
-        employee.setEmail("admin@gmail.com");
-        employee.setPassword("123456");
-
+//        if (!employeeService.isExistsEmployeeWithEmail("admin@gmail.com")) {
+//            Employee employee = new Employee();
+//            employee.setFullName("Admin");
+//            employee.setDateOfBirth(LocalDate.of(1995, 9, 24));
+//            employee.setGender(GenderEnum.MALE);
+//            employee.setAddress("Hà Nội");
+//            employee.setPhone("09182317241");
+//            employee.setDepartment(this.departmentService.getAllDepartments().get(0));
+//            employee.setPosition(this.positionService.getAllPositions().get(0));
+//            employee.setHireDate(LocalDate.now());
+//            employee.setStatus(EmployeeStatusEnum.ACTIVE);
+//            employee.setRoleName("ROLE_ADMIN");
+//            employee.setEmail("admin@gmail.com");
+//            employee.setPassword(this.passwordEncoder.encode("123456"));
+//            this.employeeService.createEmployee(employee);
+//
+//
+//        }
         if (error != null) {
             model.addAttribute("error", "Invalid email or password");
         }
@@ -55,8 +73,4 @@ public class AuthController {
 
 
 
-    @GetMapping("/dashboard")
-    public String dashboard() {
-        return "dashboard/index";
-    }
 }
