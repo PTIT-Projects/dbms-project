@@ -122,6 +122,36 @@ public class EmployeeDao {
     }
 
     public void deleteEmployee(Integer id) {
+        // 1. Delete attendance records
+        jdbcTemplate.update("DELETE FROM Attendance WHERE EmployeeID = ?", id);
+
+        // 2. Delete salary records
+        jdbcTemplate.update("DELETE FROM Salary WHERE EmployeeID = ?", id);
+
+        // 3. Delete leave balances
+        jdbcTemplate.update("DELETE FROM LeaveBalances WHERE EmployeeID = ?", id);
+
+        // 4. Delete insurance records
+        jdbcTemplate.update("DELETE FROM Insurance WHERE EmployeeID = ?", id);
+
+        // 5. Delete work trip requests
+        jdbcTemplate.update("DELETE FROM WorkTripRequests WHERE EmployeeID = ?", id);
+
+        // 6. Delete contracts
+        jdbcTemplate.update("DELETE FROM Contracts WHERE EmployeeID = ?", id);
+
+        // 7. Handle registrations (both employee's registrations and those approved by this employee)
+        jdbcTemplate.update("DELETE FROM Registrations WHERE EmployeeID = ?", id);
+        jdbcTemplate.update("UPDATE Registrations SET ApprovedBy = NULL WHERE ApprovedBy = ?", id);
+
+        // 8. Update department managers (remove this employee as manager)
+        jdbcTemplate.update("DELETE FROM DepartmentManager WHERE ManagerID = ?", id);
+
+        // 9. Handle notifications created by this employee
+        jdbcTemplate.update("UPDATE Notifications SET CreatedBy = NULL WHERE CreatedBy = ?", id);
+
+        // 10. Handle decisions for this employee
+        jdbcTemplate.update("DELETE FROM Decisions WHERE EmployeeID = ?", id);
         String sql = "DELETE FROM Employees WHERE EmployeeID = ?";
         jdbcTemplate.update(sql, id);
     }
