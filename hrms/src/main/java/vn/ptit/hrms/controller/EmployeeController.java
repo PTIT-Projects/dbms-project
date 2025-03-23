@@ -11,9 +11,6 @@ import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.EmployeeService;
 import vn.ptit.hrms.service.PositionService;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Controller
 @RequestMapping("admin/pages/employee")
 public class EmployeeController {
@@ -42,7 +39,11 @@ public class EmployeeController {
         Page<Employee> employeePage = employeeService.getEmployeesPage(pageable, search, departmentId, status);
 
         model.addAttribute("employees", employeePage.getContent());
-        model.addAttribute("page", employeePage);
+
+        model.addAttribute("currentPage", employeePage.getNumber());
+        model.addAttribute("totalPages", employeePage.getTotalPages());
+        model.addAttribute("totalItems", employeePage.getTotalElements());
+
         model.addAttribute("departments", departmentService.getAllDepartments());
         model.addAttribute("search", search);
         model.addAttribute("departmentId", departmentId);
@@ -68,7 +69,7 @@ public class EmployeeController {
     @PostMapping
     public String createEmployee(@ModelAttribute Employee employee) {
         employeeService.createEmployee(employee);
-        return "redirect:/employees";
+        return "redirect:/admin/pages/employee/list";
     }
 
     @GetMapping("/{id}/edit")
@@ -83,12 +84,12 @@ public class EmployeeController {
     public String updateEmployee(@PathVariable Integer id, @ModelAttribute Employee employee) {
         employee.setId(id);
         employeeService.updateEmployee(employee);
-        return "redirect:/employees";
+        return "redirect:/admin/pages/employee/list";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
-        return "redirect:/employees";
+        return "redirect:/admin/pages/employee/list";
     }
 }

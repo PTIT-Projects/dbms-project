@@ -40,7 +40,6 @@ public class EmployeeDao {
         dataSql.append(" ORDER BY e.EmployeeID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add(pageable.getOffset());
         params.add(pageable.getPageSize());
-        System.out.println(dataSql);
         // Execute query
         List<Employee> employees = jdbcTemplate.query(dataSql.toString(), employeeRowMapper, params.toArray());
 
@@ -106,9 +105,8 @@ public class EmployeeDao {
     }
 
     public void updateEmployee(Employee employee) {
-        String sql = "UPDATE Employees SET userPassword = ?, roleName = ?, FullName = ?, DateOfBirth = ?, Gender = ?, Address = ?, Phone = ?, Email = ?, DepartmentID = ?, PositionID = ?, HireDate = ?, Status = ? WHERE EmployeeID = ?";
+        String sql = "UPDATE Employees SET roleName = ?, FullName = ?, DateOfBirth = ?, Gender = ?, Address = ?, Phone = ?, Email = ?, DepartmentID = ?, PositionID = ?, HireDate = ?, Status = ? WHERE EmployeeID = ?";
         jdbcTemplate.update(sql,
-                employee.getPassword(),
                 employee.getRoleName(),
                 employee.getFullName(),
                 employee.getDateOfBirth(),

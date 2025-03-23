@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Employee - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Employee</h1>
+                <div>
+                    <a th:href="@{/admin/pages/employee/list}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Employee Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/employee}" method="post">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5 class="card-title mb-3">Personal Information</h5>
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="fullName" name="fullName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Gender</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderMale" value="MALE">
+                                            <label class="form-check-label" for="genderMale">Male</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="FEMALE">
+                                            <label class="form-check-label" for="genderFemale">Female</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Address</label>
+                                    <textarea class="form-control" id="address" rows="2" name="address"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="card-title mb-3">Employment Information</h5>
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="department" name="department.id" required>
+                                        <option value="">-- Select Department --</option>
+                                        <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.departmentName}"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="position" class="form-label">Position <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="position" name="position.id" required>
+                                        <option value="">-- Select Position --</option>
+                                        <option th:each="pos : ${positions}" th:value="${pos.id}" th:text="${pos.positionName}"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="hireDate" class="form-label">Hire Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="hireDate" name="hireDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="ONLEAVE">On Leave</option>
+                                        <option value="TERMINATED">Terminated</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="roleName" class="form-label">Role</label>
+                                    <select class="form-select" id="roleName" name="roleName">
+                                        <option value="ROLE_USER">Employee</option>
+                                        <option value="ROLE_ADMIN">Administrator</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="reset" class="btn btn-secondary me-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">Save Employee</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer fragment -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Scripts fragment -->
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>
