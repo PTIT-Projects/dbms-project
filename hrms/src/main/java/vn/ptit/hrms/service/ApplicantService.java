@@ -1,5 +1,7 @@
 package vn.ptit.hrms.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.ptit.hrms.dao.ApplicantDao;
 import vn.ptit.hrms.domain.Applicant;
@@ -80,4 +82,8 @@ public class ApplicantService {
     public void deleteApplicant(Integer id) {
         applicantDao.deleteApplicant(id);
     }
+    public Page<Applicant> getApplicantPage(Pageable pageable, String search, Integer recruitmentPlanId, String status) {
+        return applicantDao.findApplicantPage(pageable, search, recruitmentPlanId, status);
+    }
+
 }

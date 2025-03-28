@@ -40,18 +40,18 @@ public class AdminController {
         return "index";
     }
 
-    @GetMapping("/pages/{category}/{page}")
-    public String viewPagesDirectly(@PathVariable String category, @PathVariable String page) {
-        return "pages/" + category + "/" + page;
-    }
+//    @GetMapping("/pages/{category}/{page}")
+//    public String viewPagesDirectly(@PathVariable String category, @PathVariable String page) {
+//        return "pages/" + category + "/" + page;
+//    }
 
     @GetMapping("/admin/pages/{category}/{page}")
     public String viewAdminPages(@PathVariable String category, @PathVariable String page) {
         return "pages/" + category + "/" + page;
     }
 
-    @GetMapping("/test")
-    public void test() {
-        System.out.println(applicantDao.getAllApplicants());
-    }
+//    @GetMapping("/test")
+//    public void test() {
+//        System.out.println(applicantDao.getAllApplicants());
+//    }
 }
