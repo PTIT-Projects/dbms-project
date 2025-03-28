@@ -26,21 +26,17 @@ public class EmployeeDao {
         StringBuilder dataSql = new StringBuilder("SELECT * FROM Employees e");
         List<Object> params = new ArrayList<>();
 
-        // Add WHERE clause if needed
         if (departmentId != null || (search != null && !search.isEmpty()) || (status != null && !status.isEmpty())) {
             String whereClause = buildWhereClause(search, departmentId, status, params);
             countSql.append(whereClause);
             dataSql.append(whereClause);
         }
 
-        // Count total records
         Integer total = jdbcTemplate.queryForObject(countSql.toString(), Integer.class, params.toArray());
 
-        // Add pagination to data query
         dataSql.append(" ORDER BY e.EmployeeID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add(pageable.getOffset());
         params.add(pageable.getPageSize());
-        // Execute query
         List<Employee> employees = jdbcTemplate.query(dataSql.toString(), employeeRowMapper, params.toArray());
 
         return new PageImpl<>(employees, pageable, total != null ? total : 0);

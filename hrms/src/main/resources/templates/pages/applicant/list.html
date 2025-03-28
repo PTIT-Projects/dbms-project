@@ -99,7 +99,7 @@
                                   th:text="${applicant.status != null ? applicant.status.value : '-'}">Status</span>
                         </td>
                         <td>
-                            <div class="dropdown">
+                            <div class="dropdown" sec:authorize="hasRole('ADMIN')">
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                     Actions
                                 </button>

@@ -54,7 +54,7 @@ public class ApplicantDao {
         StringBuilder countSql = new StringBuilder("SELECT COUNT(*) FROM Applicants a");
         StringBuilder dataSql = new StringBuilder("SELECT * FROM Applicants a");
         List<Object> params = new ArrayList<>();
-        if (search != null && !search.isEmpty()) {
+        if (recruitmentPlanId != null || (search != null && !search.isEmpty()) || (status != null && !status.isEmpty())) {
             String whereClause = buildWhereClause(search, recruitmentPlanId, status, params);
             countSql.append(whereClause);
             dataSql.append(whereClause);

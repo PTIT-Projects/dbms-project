@@ -45,10 +45,10 @@ public class AdminController {
 //        return "pages/" + category + "/" + page;
 //    }
 
-    @GetMapping("/admin/pages/{category}/{page}")
-    public String viewAdminPages(@PathVariable String category, @PathVariable String page) {
-        return "pages/" + category + "/" + page;
-    }
+//    @GetMapping("/admin/pages/{category}/{page}")
+//    public String viewAdminPages(@PathVariable String category, @PathVariable String page) {
+//        return "pages/" + category + "/" + page;
+//    }
 
 //    @GetMapping("/test")
 //    public void test() {

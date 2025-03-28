@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <nav id="sidebarMenu" th:fragment="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-  <div class="position-sticky pt-3">
+  <div class="position-sticky pt-3" style="height: calc(100vh - 48px); overflow-y: auto; padding-bottom: 60px;">
     <!-- Main Modules -->
     <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-1 text-muted">
       <span>Main</span>
@@ -21,13 +21,13 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/department/list">
+        <a class="nav-link" href="/admin/pages/departments">
           <i class="bi bi-building me-2"></i>
           Departments
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/position/list">
+        <a class="nav-link" href="/admin/pages/positions">
           <i class="bi bi-briefcase me-2"></i>
           Positions
         </a>
@@ -40,19 +40,19 @@
     </h6>
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/contract/list">
+        <a class="nav-link" href="/admin/pages/contracts">
           <i class="bi bi-file-earmark-text me-2"></i>
           Contracts
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/decision/list">
+        <a class="nav-link" href="/admin/pages/decisions">
           <i class="bi bi-award me-2"></i>
           Decisions
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/leave-balance/list">
+        <a class="nav-link" href="/admin/pages/leave-balances">
           <i class="bi bi-calendar-minus me-2"></i>
           Leave Balances
         </a>
@@ -65,19 +65,19 @@
     </h6>
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/notification/list">
+        <a class="nav-link" href="/admin/pages/notifications">
           <i class="bi bi-bell me-2"></i>
           Notifications
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/registration/list">
+        <a class="nav-link" href="/admin/pages/registrations">
           <i class="bi bi-clipboard-check me-2"></i>
           Registrations
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/work-trip/list">
+        <a class="nav-link" href="/admin/pages/work-trips">
           <i class="bi bi-airplane me-2"></i>
           Work Trips
         </a>
@@ -90,19 +90,19 @@
     </h6>
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/attendance/list">
+        <a class="nav-link" href="/admin/pages/attendances">
           <i class="bi bi-calendar-check me-2"></i>
           Attendance
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/salary/list">
+        <a class="nav-link" href="/admin/pages/salaries">
           <i class="bi bi-cash-stack me-2"></i>
           Salary
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/insurance/list">
+        <a class="nav-link" href="/admin/pages/insurances">
           <i class="bi bi-shield-check me-2"></i>
           Insurance
         </a>
@@ -115,13 +115,13 @@
     </h6>
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/recruitment-plan/list">
+        <a class="nav-link" href="/admin/pages/recruitment-plans">
           <i class="bi bi-clipboard-data me-2"></i>
           Recruitment Plans
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/applicant/list">
+        <a class="nav-link" href="/admin/pages/applicants">
           <i class="bi bi-person-plus me-2"></i>
           Applicants
         </a>
@@ -134,7 +134,7 @@
     </h6>
     <ul class="nav flex-column mb-2">
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/report/list">
+        <a class="nav-link" href="/admin/pages/reports">
           <i class="bi bi-graph-up me-2"></i>
           Reports
         </a>
