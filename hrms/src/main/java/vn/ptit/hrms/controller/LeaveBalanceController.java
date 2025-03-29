@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.LeaveBalanceService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/leave-balances")
+@RequestMapping("/admin/pages/leave-balances")
 public class LeaveBalanceController {
 
     private final LeaveBalanceService leaveBalanceService;
@@ -41,7 +41,7 @@ public class LeaveBalanceController {
     @PostMapping
     public String createLeaveBalance(@ModelAttribute LeaveBalance leaveBalance) {
         leaveBalanceService.createLeaveBalance(leaveBalance);
-        return "redirect:/leave-balances";
+        return "redirect:/admin/pages/leave-balances";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class LeaveBalanceController {
     public String updateLeaveBalance(@PathVariable Integer id, @ModelAttribute LeaveBalance leaveBalance) {
         leaveBalance.setId(id);
         leaveBalanceService.updateLeaveBalance(leaveBalance);
-        return "redirect:/leave-balances";
+        return "redirect:/admin/pages/leave-balances";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteLeaveBalance(@PathVariable Integer id) {
         leaveBalanceService.deleteLeaveBalance(id);
-        return "redirect:/leave-balances";
+        return "redirect:/admin/pages/leave-balances";
     }
 }

@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.RegistrationService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/registrations")
+@RequestMapping("/admin/pages/registrations")
 public class RegistrationController {
 
     private final RegistrationService registrationService;
@@ -42,7 +42,7 @@ public class RegistrationController {
     @PostMapping
     public String createRegistration(@ModelAttribute Registration registration) {
         registrationService.createRegistration(registration);
-        return "redirect:/registrations";
+        return "redirect:/admin/pages/registrations";
     }
 
     @GetMapping("/{id}/edit")
@@ -57,19 +57,19 @@ public class RegistrationController {
     public String updateRegistration(@PathVariable Integer id, @ModelAttribute Registration registration) {
         registration.setId(id);
         registrationService.updateRegistration(registration);
-        return "redirect:/registrations";
+        return "redirect:/admin/pages/registrations";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteRegistration(@PathVariable Integer id) {
         registrationService.deleteRegistration(id);
-        return "redirect:/registrations";
+        return "redirect:/admin/pages/registrations";
     }
 
     @GetMapping("/{id}/approve")
     public String approveRegistration(@PathVariable Integer id, @RequestParam Integer approverId) {
         registrationService.approveRegistration(id, approverId);
-        return "redirect:/registrations";
+        return "redirect:/admin/pages/registrations";
     }
 
     @GetMapping("/{id}/reject")

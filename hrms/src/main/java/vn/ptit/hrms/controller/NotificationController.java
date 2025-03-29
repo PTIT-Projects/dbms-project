@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.NotificationService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/notifications")
+@RequestMapping("/admin/pages/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -41,7 +41,7 @@ public class NotificationController {
     @PostMapping
     public String createNotification(@ModelAttribute Notification notification) {
         notificationService.createNotification(notification);
-        return "redirect:/notifications";
+        return "redirect:/admin/pages/notifications";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class NotificationController {
     public String updateNotification(@PathVariable Integer id, @ModelAttribute Notification notification) {
         notification.setId(id);
         notificationService.updateNotification(notification);
-        return "redirect:/notifications";
+        return "redirect:/admin/pages/notifications";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteNotification(@PathVariable Integer id) {
         notificationService.deleteNotification(id);
-        return "redirect:/notifications";
+        return "redirect:/admin/pages/notifications";
     }
 }

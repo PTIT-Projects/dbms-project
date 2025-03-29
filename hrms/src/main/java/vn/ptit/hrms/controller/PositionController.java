@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.PositionService;
 
 @Controller
-@RequestMapping("/positions")
+@RequestMapping("/admin/pages/positions")
 public class PositionController {
 
     private final PositionService positionService;
@@ -41,7 +41,7 @@ public class PositionController {
     @PostMapping
     public String createPosition(@ModelAttribute Position position) {
         positionService.createPosition(position);
-        return "redirect:/positions";
+        return "redirect:/admin/pages/positions";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class PositionController {
     public String updatePosition(@PathVariable Integer id, @ModelAttribute Position position) {
         position.setId(id);
         positionService.updatePosition(position);
-        return "redirect:/positions";
+        return "redirect:/admin/pages/positions";
     }
 
     @GetMapping("/{id}/delete")
     public String deletePosition(@PathVariable Integer id) {
         positionService.deletePosition(id);
-        return "redirect:/positions";
+        return "redirect:/admin/pages/positions";
     }
 }

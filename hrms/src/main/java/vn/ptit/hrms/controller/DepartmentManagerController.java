@@ -9,7 +9,7 @@ import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/department-managers")
+@RequestMapping("/admin/pages/department-managers")
 public class DepartmentManagerController {
 
     private final DepartmentManagerService departmentManagerService;
@@ -47,7 +47,7 @@ public class DepartmentManagerController {
     @PostMapping
     public String createDepartmentManager(@ModelAttribute DepartmentManager departmentManager) {
         departmentManagerService.createDepartmentManager(departmentManager);
-        return "redirect:/department-managers";
+        return "redirect:/admin/pages/department-managers";
     }
 
     @GetMapping("/{departmentId}/edit")
@@ -62,12 +62,12 @@ public class DepartmentManagerController {
     public String updateDepartmentManager(@PathVariable Integer departmentId, @ModelAttribute DepartmentManager departmentManager) {
         departmentManager.setDepartment(departmentService.getDepartmentById(departmentId));
         departmentManagerService.updateDepartmentManager(departmentManager);
-        return "redirect:/department-managers";
+        return "redirect:/admin/pages/department-managers";
     }
 
     @GetMapping("/{departmentId}/delete")
     public String deleteDepartmentManager(@PathVariable Integer departmentId) {
         departmentManagerService.deleteDepartmentManager(departmentId);
-        return "redirect:/department-managers";
+        return "redirect:/admin/pages/department-managers";
     }
 }
