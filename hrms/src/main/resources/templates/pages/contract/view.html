@@ -1,0 +1,50 @@
+templates/pages/contract/view.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Contract Details</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <a th:href="@{/contracts}" class="btn btn-secondary">Back to List</a>
+            <a th:href="@{/contracts/{id}/edit(id=${contract.id})}" class="btn btn-primary">Edit</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Contract ID:</strong> <span th:text="${contract.id}"></span></p>
+                    <p><strong>Employee:</strong> <span th:text="${contract.employee != null ? contract.employee.fullName : 'N/A'}"></span></p>
+                    <p><strong>Contract Type:</strong> <span th:text="${contract.contractType != null ? contract.contractType.value : 'N/A'}"></span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Start Date:</strong> <span th:text="${contract.startDate}"></span></p>
+                    <p><strong>End Date:</strong> <span th:text="${contract.endDate}"></span></p>
+                    <p><strong>Status:</strong> <span th:text="${contract.status != null ? contract.status.value : 'N/A'}"></span></p>
+                </div>
+            </div>
+            <div class="row mt-3" th:if="${contract.salary != null}">
+                <div class="col-12">
+                    <p><strong>Salary:</strong> <span th:text="${contract.salary}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

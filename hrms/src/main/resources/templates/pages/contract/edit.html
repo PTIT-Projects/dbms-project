@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Contract</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Edit Contract</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <a th:href="@{/contracts}" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form th:action="@{/contracts/{id}(id=${contract.id})}" th:object="${contract}" method="post">
+                <div class="form-group">
+                    <label for="employee">Employee</label>
+                    <select id="employee" name="employee.id" class="form-control" required>
+                        <option value="">Select an Employee</option>
+                        <option th:each="emp : ${employees}"
+                                th:value="${emp.id}"
+                                th:text="${emp.fullName}"
+                                th:selected="${contract.employee != null && contract.employee.id == emp.id}"></option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contractType">Contract Type</label>
+                    <select id="contractType" name="contractType" class="form-control" required>
+                        <option value="">Select Contract Type</option>
+                        <option value="FULLTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'FULLTIME'}">Full Time</option>
+                        <option value="PARTTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'PARTTIME'}">Part Time</option>
+                        <option value="INTERN" th:selected="${contract.contractType != null && contract.contractType.name() == 'INTERN'}">Intern</option>
+                        <option value="TEMPORARY" th:selected="${contract.contractType != null && contract.contractType.name() == 'TEMPORARY'}">Temporary</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" required
+                           th:value="${contract.startDate}">
+                </div>
+
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control"
+                           th:value="${contract.endDate}">
+                </div>
+
+                <div class="form-group">
+                    <label for="salary">Salary</label>
+                    <input type="number" step="0.01" id="salary" name="salary" class="form-control"
+                           th:value="${contract.salary}">
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" name="status" class="form-control" required>
+                        <option value="">Select Status</option>
+                        <option value="DRAFT" th:selected="${contract.status != null && contract.status.name() == 'DRAFT'}">Draft</option>
+                        <option value="ACTIVE" th:selected="${contract.status != null && contract.status.name() == 'ACTIVE'}">Active</option>
+                        <option value="EXPIRED" th:selected="${contract.status != null && contract.status.name() == 'EXPIRED'}">Expired</option>
+                        <option value="TERMINATED" th:selected="${contract.status != null && contract.status.name() == 'TERMINATED'}">Terminated</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update Contract</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
