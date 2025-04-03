@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.WorkTripRequestService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/work-trips")
+@RequestMapping("/admin/pages/admin/pages/work-trips")
 public class WorkTripRequestController {
 
     private final WorkTripRequestService workTripRequestService;
@@ -41,7 +41,7 @@ public class WorkTripRequestController {
     @PostMapping
     public String createWorkTripRequest(@ModelAttribute WorkTripRequest workTripRequest) {
         workTripRequestService.createWorkTripRequest(workTripRequest);
-        return "redirect:/work-trips";
+        return "redirect:/admin/pages/work-trips";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,24 +55,24 @@ public class WorkTripRequestController {
     public String updateWorkTripRequest(@PathVariable Integer id, @ModelAttribute WorkTripRequest workTripRequest) {
         workTripRequest.setId(id);
         workTripRequestService.updateWorkTripRequest(workTripRequest);
-        return "redirect:/work-trips";
+        return "redirect:/admin/pages/work-trips";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteWorkTripRequest(@PathVariable Integer id) {
         workTripRequestService.deleteWorkTripRequest(id);
-        return "redirect:/work-trips";
+        return "redirect:/admin/pages/work-trips";
     }
 
     @GetMapping("/{id}/approve")
     public String approveWorkTripRequest(@PathVariable Integer id) {
         workTripRequestService.approveWorkTripRequest(id);
-        return "redirect:/work-trips";
+        return "redirect:/admin/pages/work-trips";
     }
 
     @GetMapping("/{id}/reject")
     public String rejectWorkTripRequest(@PathVariable Integer id) {
         workTripRequestService.rejectWorkTripRequest(id);
-        return "redirect:/work-trips";
+        return "redirect:/admin/pages/work-trips";
     }
 }

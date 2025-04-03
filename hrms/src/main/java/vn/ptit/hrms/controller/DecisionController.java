@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.DecisionService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/decisions")
+@RequestMapping("/admin/pages/decisions")
 public class DecisionController {
 
     private final DecisionService decisionService;
@@ -41,7 +41,7 @@ public class DecisionController {
     @PostMapping
     public String createDecision(@ModelAttribute Decision decision) {
         decisionService.createDecision(decision);
-        return "redirect:/decisions";
+        return "redirect:/admin/pages/decisions";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class DecisionController {
     public String updateDecision(@PathVariable Integer id, @ModelAttribute Decision decision) {
         decision.setId(id);
         decisionService.updateDecision(decision);
-        return "redirect:/decisions";
+        return "redirect:/admin/pages/decisions";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteDecision(@PathVariable Integer id) {
         decisionService.deleteDecision(id);
-        return "redirect:/decisions";
+        return "redirect:/admin/pages/decisions";
     }
 }

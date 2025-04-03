@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.InsuranceService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/insurance")
+@RequestMapping("/admin/pages/insurances")
 public class InsuranceController {
 
     private final InsuranceService insuranceService;
@@ -41,7 +41,7 @@ public class InsuranceController {
     @PostMapping
     public String createInsurance(@ModelAttribute Insurance insurance) {
         insuranceService.createInsurance(insurance);
-        return "redirect:/insurance";
+        return "redirect:/admin/pages/insurances";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class InsuranceController {
     public String updateInsurance(@PathVariable Integer id, @ModelAttribute Insurance insurance) {
         insurance.setId(id);
         insuranceService.updateInsurance(insurance);
-        return "redirect:/insurance";
+        return "redirect:/admin/pages/insurances";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteInsurance(@PathVariable Integer id) {
         insuranceService.deleteInsurance(id);
-        return "redirect:/insurance";
+        return "redirect:/admin/pages/insurances";
     }
 }

@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.ContractService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/contracts")
+@RequestMapping("/admin/pages/contracts")
 public class ContractController {
 
     private final ContractService contractService;
@@ -41,7 +41,7 @@ public class ContractController {
     @PostMapping
     public String createContract(@ModelAttribute Contract contract) {
         contractService.createContract(contract);
-        return "redirect:/contracts";
+        return "redirect:/admin/pages/contracts";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class ContractController {
     public String updateContract(@PathVariable Integer id, @ModelAttribute Contract contract) {
         contract.setId(id);
         contractService.updateContract(contract);
-        return "redirect:/contracts";
+        return "redirect:/admin/pages/contracts";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteContract(@PathVariable Integer id) {
         contractService.deleteContract(id);
-        return "redirect:/contracts";
+        return "redirect:/admin/pages/contracts";
     }
 }
