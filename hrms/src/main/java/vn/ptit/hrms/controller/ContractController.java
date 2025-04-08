@@ -1,5 +1,8 @@
 package vn.ptit.hrms.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +23,27 @@ public class ContractController {
     }
 
     @GetMapping
-    public String getAllContracts(Model model) {
-        model.addAttribute("contracts", contractService.getAllContracts());
+    public String getAllContracts(
+            Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String employeeSearch,
+            @RequestParam(required = false) String contractType,
+            @RequestParam(required = false) String status
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Contract> contractPage = contractService.findContractPage(
+                pageable, employeeSearch, contractType, status);
+
+        model.addAttribute("contracts", contractPage.getContent());
+        model.addAttribute("currentPage", contractPage.getNumber());
+        model.addAttribute("totalPages", contractPage.getTotalPages());
+        model.addAttribute("totalItems", contractPage.getTotalElements());
+        model.addAttribute("pageSize", size);
+        model.addAttribute("employeeSearch", employeeSearch);
+        model.addAttribute("contractType", contractType);
+        model.addAttribute("status", status);
+
         return "pages/contract/list";
     }
 

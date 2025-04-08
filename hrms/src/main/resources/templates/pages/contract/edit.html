@@ -19,46 +19,43 @@
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Edit Contract</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group me-2">
-                        <a th:href="@{/admin/pages/contracts}" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to List
-                        </a>
-                    </div>
+                <div>
+                    <a th:href="@{/admin/pages/contracts}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
                 </div>
             </div>
 
-            <!-- Contract Form Card -->
+            <!-- Contract Form -->
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0" th:text="'Editing Contract #' + ${contract.id}">Editing Contract #1</h5>
-                </div>
                 <div class="card-body">
-                    <form th:action="@{/admin/pages/contracts/{id}(id=${contract.id})}" th:object="${contract}" method="post">
+                    <form th:action="@{/admin/pages/contracts/{id}(id=${contract.id})}" method="post">
+                        <input type="hidden" name="id" th:value="${contract.id}">
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
                                     <select class="form-select" id="employee" name="employee.id" required>
-                                        <option value="">Select Employee</option>
+                                        <option value="">-- Select Employee --</option>
                                         <option th:each="emp : ${employees}"
                                                 th:value="${emp.id}"
-                                                th:text="${emp.fullName}"
-                                                th:selected="${contract.employee != null && contract.employee.id == emp.id}">John Doe</option>
+                                                th:text="${emp.fullName + ' (' + (emp.department != null ? emp.department.departmentName : 'No Department') + ')'}"
+                                                th:selected="${contract.employee != null && contract.employee.id == emp.id}">
+                                            Employee Name (Department)
+                                        </option>
                                     </select>
                                 </div>
-
                                 <div class="mb-3">
                                     <label for="contractType" class="form-label">Contract Type <span class="text-danger">*</span></label>
                                     <select class="form-select" id="contractType" name="contractType" required>
-                                        <option value="">Select Contract Type</option>
+                                        <option value="">-- Select Contract Type --</option>
                                         <option value="FULLTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'FULLTIME'}">Full Time</option>
                                         <option value="PARTTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'PARTTIME'}">Part Time</option>
                                         <option value="INTERN" th:selected="${contract.contractType != null && contract.contractType.name() == 'INTERN'}">Intern</option>
                                         <option value="TEMPORARY" th:selected="${contract.contractType != null && contract.contractType.name() == 'TEMPORARY'}">Temporary</option>
                                     </select>
                                 </div>
-
                                 <div class="mb-3">
                                     <label for="salary" class="form-label">Salary</label>
                                     <div class="input-group">
@@ -72,22 +69,19 @@
                                 <div class="mb-3">
                                     <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="startDate" name="startDate" required
-                                           th:value="${contract.startDate}">
+                                           th:value="${#temporals.format(contract.startDate, 'yyyy-MM-dd')}">
                                 </div>
-
                                 <div class="mb-3">
                                     <label for="endDate" class="form-label">End Date</label>
                                     <input type="date" class="form-control" id="endDate" name="endDate"
-                                           th:value="${contract.endDate}">
-                                    <div class="form-text">Leave empty for indefinite contracts</div>
+                                           th:value="${contract.endDate != null ? #temporals.format(contract.endDate, 'yyyy-MM-dd') : ''}">
+                                    <small class="form-text text-muted">Leave empty for indefinite contracts</small>
                                 </div>
-
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                     <select class="form-select" id="status" name="status" required>
-                                        <option value="">Select Status</option>
-                                        <option value="DRAFT" th:selected="${contract.status != null && contract.status.name() == 'DRAFT'}">Draft</option>
                                         <option value="ACTIVE" th:selected="${contract.status != null && contract.status.name() == 'ACTIVE'}">Active</option>
+                                        <option value="DRAFT" th:selected="${contract.status != null && contract.status.name() == 'DRAFT'}">Draft</option>
                                         <option value="EXPIRED" th:selected="${contract.status != null && contract.status.name() == 'EXPIRED'}">Expired</option>
                                         <option value="TERMINATED" th:selected="${contract.status != null && contract.status.name() == 'TERMINATED'}">Terminated</option>
                                     </select>
@@ -105,35 +99,23 @@
     </div>
 </div>
 
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
-<script th:src="@{/assets/js/dashboard.js}"></script>
+<!-- Footer and scripts -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
 
-<!-- Date validation script -->
+<!-- Add JavaScript for validation -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const startDateInput = document.getElementById('startDate');
-      const endDateInput = document.getElementById('endDate');
-
-      startDateInput.addEventListener('change', function() {
-        if (endDateInput.value) {
-          if (startDateInput.value > endDateInput.value) {
-            alert('Start date cannot be after end date');
-            startDateInput.value = '';
-          }
-        }
-      });
-
-      endDateInput.addEventListener('change', function() {
-        if (startDateInput.value && endDateInput.value) {
-          if (startDateInput.value > endDateInput.value) {
-            alert('End date cannot be before start date');
-            endDateInput.value = '';
-          }
-        }
-      });
+        // Validate end date is after start date
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (endDate && startDate && new Date(endDate) <= new Date(startDate)) {
+                alert('End date must be after start date');
+                event.preventDefault();
+            }
+        });
     });
 </script>
 </body>
