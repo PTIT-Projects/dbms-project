@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Attendance - HRMS</title>
+  <!-- Include the header fragment with CSS links -->
+  <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div th:replace="~{fragments/header :: header-content}"></div>
+
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Attendance Record</h1>
+        <div>
+          <a th:href="@{/admin/pages/attendances}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+          </a>
+        </div>
+      </div>
+
+      <!-- Attendance Form -->
+      <div class="card">
+        <div class="card-body">
+          <form th:action="@{/admin/pages/attendances/{id}(id=${attendance.id})}" method="post">
+            <input type="hidden" name="id" th:value="${attendance.id}">
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                  <select class="form-select" id="employee" name="employee.id" required>
+                    <option value="">-- Select Employee --</option>
+                    <option th:each="emp : ${employees}"
+                            th:value="${emp.id}"
+                            th:text="${emp.fullName + ' (' + (emp.department != null ? emp.department.departmentName : 'No Department') + ')'}"
+                            th:selected="${attendance.employee != null && attendance.employee.id == emp.id}">
+                      Employee Name (Department)
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="date" class="form-label">Date <span class="text-danger">*</span></label>
+                  <input type="date" class="form-control" id="date" name="date"
+                         th:value="${#temporals.format(attendance.date, 'yyyy-MM-dd')}" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="checkInTime" class="form-label">Check-in Time</label>
+                  <input type="time" class="form-control" id="checkInTime" name="checkInTime"
+                         th:value="${attendance.checkInTime != null ? #temporals.format(attendance.checkInTime, 'HH:mm') : ''}">
+                </div>
+                <div class="mb-3">
+                  <label for="checkOutTime" class="form-label">Check-out Time</label>
+                  <input type="time" class="form-control" id="checkOutTime" name="checkOutTime"
+                         th:value="${attendance.checkOutTime != null ? #temporals.format(attendance.checkOutTime, 'HH:mm') : ''}">
+                </div>
+                <div class="mb-3">
+                  <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                  <select class="form-select" id="status" name="status" required>
+                    <option value="PRESENT" th:selected="${attendance.status != null && attendance.status.name() == 'PRESENT'}">Present</option>
+                    <option value="ABSENT" th:selected="${attendance.status != null && attendance.status.name() == 'ABSENT'}">Absent</option>
+                    <option value="LATE" th:selected="${attendance.status != null && attendance.status.name() == 'LATE'}">Late</option>
+                    <option value="OVERTIME" th:selected="${attendance.status != null && attendance.status.name() == 'OVERTIME'}">Overtime</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+              <a th:href="@{/admin/pages/attendances}" class="btn btn-secondary me-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">Update Attendance</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Footer and scripts -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Add JavaScript to auto-update status based on times -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Auto-select status based on check-in time
+      document.getElementById('checkInTime').addEventListener('change', function() {
+          const checkInTime = this.value;
+          if(checkInTime) {
+              const hours = parseInt(checkInTime.split(':')[0]);
+              const minutes = parseInt(checkInTime.split(':')[1]);
+              const statusSelect = document.getElementById('status');
+              const currentStatus = statusSelect.value;
+
+              // Only change if not manually set to something else
+              if(currentStatus === 'PRESENT' || currentStatus === 'LATE') {
+                  if(hours > 9 || (hours === 9 && minutes > 0)) {
+                      statusSelect.value = 'LATE';
+                  } else {
+                      statusSelect.value = 'PRESENT';
+                  }
+              }
+          }
+      });
+
+      // Auto-select OVERTIME if check-out is after 17:30
+      document.getElementById('checkOutTime').addEventListener('change', function() {
+          const checkOutTime = this.value;
+          if(checkOutTime) {
+              const hours = parseInt(checkOutTime.split(':')[0]);
+              const minutes = parseInt(checkOutTime.split(':')[1]);
+              const statusSelect = document.getElementById('status');
+
+              if(hours >= 17 && minutes >= 30) {
+                  statusSelect.value = 'OVERTIME';
+              }
+          }
+      });
+  });
+</script>
+</body>
+</html>

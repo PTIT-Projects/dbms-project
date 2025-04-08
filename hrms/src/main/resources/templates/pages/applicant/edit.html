@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Applicant - HRMS</title>
+  <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div th:replace="~{fragments/header :: header-content}"></div>
+
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Applicant</h1>
+        <div>
+          <a th:href="@{/admin/pages/applicants}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+          </a>
+        </div>
+      </div>
+
+      <!-- Applicant Form -->
+      <div class="card">
+        <div class="card-body">
+          <form th:action="@{/admin/pages/applicants/{id}(id=${applicant.id})}" method="post">
+            <input type="hidden" name="id" th:value="${applicant.id}">
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <h5 class="card-title mb-3">Personal Information</h5>
+                <div class="mb-3">
+                  <label for="fullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="fullName" name="fullName" th:value="${applicant.fullName}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                  <input type="email" class="form-control" id="email" name="email" th:value="${applicant.email}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" id="phone" name="phone" th:value="${applicant.phone}" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <h5 class="card-title mb-3">Application Information</h5>
+                <div class="mb-3">
+                  <label for="plan" class="form-label">Recruitment Plan <span class="text-danger">*</span></label>
+                  <select class="form-select" id="plan" name="plan.id" required>
+                    <option value="">-- Select Recruitment Plan --</option>
+                    <option th:each="plan : ${recruitmentPlans}"
+                            th:value="${plan.id}"
+                            th:text="${plan.position != null ? plan.position.positionName + ' - ' + (plan.department != null ? plan.department.departmentName : 'No Department') : 'Unknown'}"
+                            th:selected="${applicant.plan != null && applicant.plan.id == plan.id}">
+                    </option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="status" class="form-label">Status</label>
+                  <select class="form-select" id="status" name="status">
+                    <option value="APPLIED" th:selected="${applicant.status != null && applicant.status.name() == 'APPLIED'}">Applied</option>
+                    <option value="INTERVIEWED" th:selected="${applicant.status != null && applicant.status.name() == 'INTERVIEWED'}">Interviewed</option>
+                    <option value="HIRED" th:selected="${applicant.status != null && applicant.status.name() == 'HIRED'}">Hired</option>
+                    <option value="REJECTED" th:selected="${applicant.status != null && applicant.status.name() == 'REJECTED'}">Rejected</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+              <a th:href="@{/admin/pages/applicants}" class="btn btn-secondary me-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">Update Applicant</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Footer fragment -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Scripts fragment -->
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

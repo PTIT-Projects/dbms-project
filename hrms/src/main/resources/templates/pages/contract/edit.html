@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Contract - HRMS</title>
+    <!-- Include the header fragment with CSS links -->
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Edit Contract</h1>
+                <div>
+                    <a th:href="@{/admin/pages/contracts}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contract Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/contracts/{id}(id=${contract.id})}" method="post">
+                        <input type="hidden" name="id" th:value="${contract.id}">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="employee" name="employee.id" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}"
+                                                th:value="${emp.id}"
+                                                th:text="${emp.fullName + ' (' + (emp.department != null ? emp.department.departmentName : 'No Department') + ')'}"
+                                                th:selected="${contract.employee != null && contract.employee.id == emp.id}">
+                                            Employee Name (Department)
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="contractType" class="form-label">Contract Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="contractType" name="contractType" required>
+                                        <option value="">-- Select Contract Type --</option>
+                                        <option value="FULLTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'FULLTIME'}">Full Time</option>
+                                        <option value="PARTTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'PARTTIME'}">Part Time</option>
+                                        <option value="INTERN" th:selected="${contract.contractType != null && contract.contractType.name() == 'INTERN'}">Intern</option>
+                                        <option value="TEMPORARY" th:selected="${contract.contractType != null && contract.contractType.name() == 'TEMPORARY'}">Temporary</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="salary" class="form-label">Salary</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" min="0" class="form-control" id="salary" name="salary"
+                                               th:value="${contract.salary}" placeholder="Enter salary amount">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required
+                                           th:value="${#temporals.format(contract.startDate, 'yyyy-MM-dd')}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate"
+                                           th:value="${contract.endDate != null ? #temporals.format(contract.endDate, 'yyyy-MM-dd') : ''}">
+                                    <small class="form-text text-muted">Leave empty for indefinite contracts</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="ACTIVE" th:selected="${contract.status != null && contract.status.name() == 'ACTIVE'}">Active</option>
+                                        <option value="DRAFT" th:selected="${contract.status != null && contract.status.name() == 'DRAFT'}">Draft</option>
+                                        <option value="EXPIRED" th:selected="${contract.status != null && contract.status.name() == 'EXPIRED'}">Expired</option>
+                                        <option value="TERMINATED" th:selected="${contract.status != null && contract.status.name() == 'TERMINATED'}">Terminated</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <a th:href="@{/admin/pages/contracts}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Contract</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer and scripts -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Add JavaScript for validation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validate end date is after start date
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (endDate && startDate && new Date(endDate) <= new Date(startDate)) {
+                alert('End date must be after start date');
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+</body>
+</html>
