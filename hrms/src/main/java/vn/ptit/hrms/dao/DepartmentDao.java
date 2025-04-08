@@ -42,4 +42,10 @@ public class DepartmentDao {
         String sql = "DELETE FROM departments WHERE DepartmentID = ?";
         jdbcTemplate.update(sql, id);
     }
+    public int countNumDepartments() {
+        String sql = "SELECT COUNT(*) FROM Departments";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
+        return (count != null) ? count : 0;
+    }
 }
+

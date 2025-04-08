@@ -1,14 +1,23 @@
 package vn.ptit.hrms.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import vn.ptit.hrms.constant.AttendanceStatusEnum;
+import vn.ptit.hrms.domain.Applicant;
 import vn.ptit.hrms.domain.Attendance;
 import vn.ptit.hrms.service.AttendanceService;
 import vn.ptit.hrms.service.EmployeeService;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Controller
-@RequestMapping("/attendance")
+@RequestMapping("/admin/pages/attendances")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -20,8 +29,28 @@ public class AttendanceController {
     }
 
     @GetMapping
-    public String getAllAttendance(Model model) {
-        model.addAttribute("attendanceRecords", attendanceService.getAllAttendance());
+    public String getAllAttendance(
+            Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String employeeSearch,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String status
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Attendance> attendancePage = attendanceService.findAttendancePage(
+                pageable, employeeSearch, startDate, endDate, status);
+
+        model.addAttribute("attendanceRecords", attendancePage.getContent());
+        model.addAttribute("currentPage", attendancePage.getNumber());
+        model.addAttribute("totalPages", attendancePage.getTotalPages());
+        model.addAttribute("totalItems", attendancePage.getTotalElements());
+        model.addAttribute("employeeSearch", employeeSearch);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("status", status);
+
         return "pages/attendance/list";
     }
 
@@ -40,8 +69,13 @@ public class AttendanceController {
 
     @PostMapping
     public String createAttendance(@ModelAttribute Attendance attendance) {
+        // Set default status if not provided
+        if (attendance.getStatus() == null) {
+            attendance.setStatus(AttendanceStatusEnum.PRESENT);
+        }
+
         attendanceService.createAttendance(attendance);
-        return "redirect:/attendance";
+        return "redirect:/admin/pages/attendances";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +89,12 @@ public class AttendanceController {
     public String updateAttendance(@PathVariable Integer id, @ModelAttribute Attendance attendance) {
         attendance.setId(id);
         attendanceService.updateAttendance(attendance);
-        return "redirect:/attendance";
+        return "redirect:/admin/pages/attendances";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteAttendance(@PathVariable Integer id) {
         attendanceService.deleteAttendance(id);
-        return "redirect:/attendance";
+        return "redirect:/admin/pages/attendances";
     }
 }

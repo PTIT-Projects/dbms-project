@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.EmployeeService;
 import vn.ptit.hrms.service.SalaryService;
 
 @Controller
-@RequestMapping("/salaries")
+@RequestMapping("/admin/pages/salaries")
 public class SalaryController {
 
     private final SalaryService salaryService;
@@ -41,7 +41,7 @@ public class SalaryController {
     @PostMapping
     public String createSalary(@ModelAttribute Salary salary) {
         salaryService.createSalary(salary);
-        return "redirect:/salaries";
+        return "redirect:/admin/pages/salaries";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +55,12 @@ public class SalaryController {
     public String updateSalary(@PathVariable Integer id, @ModelAttribute Salary salary) {
         salary.setId(id);
         salaryService.updateSalary(salary);
-        return "redirect:/salaries";
+        return "redirect:/admin/pages/salaries";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteSalary(@PathVariable Integer id) {
         salaryService.deleteSalary(id);
-        return "redirect:/salaries";
+        return "redirect:/admin/pages/salaries";
     }
 }

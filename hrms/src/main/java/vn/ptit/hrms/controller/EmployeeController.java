@@ -1,5 +1,8 @@
 package vn.ptit.hrms.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +12,7 @@ import vn.ptit.hrms.service.EmployeeService;
 import vn.ptit.hrms.service.PositionService;
 
 @Controller
-@RequestMapping("/employees")
+@RequestMapping("admin/pages/employee")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -24,9 +27,28 @@ public class EmployeeController {
         this.positionService = positionService;
     }
 
-    @GetMapping
-    public String getAllEmployees(Model model) {
-        model.addAttribute("employees", employeeService.getAllEmployees());
+    @GetMapping("/list")
+    public String getAllEmployees(Model model,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "5") int size,
+                                  @RequestParam(required = false) String search,
+                                  @RequestParam(required = false) Integer departmentId,
+                                  @RequestParam(required = false) String status) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Employee> employeePage = employeeService.getEmployeesPage(pageable, search, departmentId, status);
+
+        model.addAttribute("employees", employeePage.getContent());
+
+        model.addAttribute("currentPage", employeePage.getNumber());
+        model.addAttribute("totalPages", employeePage.getTotalPages());
+        model.addAttribute("totalItems", employeePage.getTotalElements());
+
+        model.addAttribute("departments", departmentService.getAllDepartments());
+        model.addAttribute("search", search);
+        model.addAttribute("departmentId", departmentId);
+        model.addAttribute("status", status);
+
         return "pages/employee/list";
     }
 
@@ -47,7 +69,7 @@ public class EmployeeController {
     @PostMapping
     public String createEmployee(@ModelAttribute Employee employee) {
         employeeService.createEmployee(employee);
-        return "redirect:/employees";
+        return "redirect:/admin/pages/employee/list";
     }
 
     @GetMapping("/{id}/edit")
@@ -62,12 +84,12 @@ public class EmployeeController {
     public String updateEmployee(@PathVariable Integer id, @ModelAttribute Employee employee) {
         employee.setId(id);
         employeeService.updateEmployee(employee);
-        return "redirect:/employees";
+        return "redirect:/admin/pages/employee/list";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteEmployee(@PathVariable Integer id) {
         employeeService.deleteEmployee(id);
-        return "redirect:/employees";
+        return "redirect:/admin/pages/employee/list";
     }
 }

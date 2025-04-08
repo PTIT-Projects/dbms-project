@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Contract - HRMS</title>
+    <!-- Include the header fragment with CSS links -->
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Contract</h1>
+                <div>
+                    <a th:href="@{/admin/pages/contracts}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Contract Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/contracts}" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="employee" name="employee.id" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}"
+                                                th:value="${emp.id}"
+                                                th:text="${emp.fullName + ' (' + (emp.department != null ? emp.department.departmentName : 'No Department') + ')'}">
+                                            Employee Name (Department)
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="contractType" class="form-label">Contract Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="contractType" name="contractType" required>
+                                        <option value="">-- Select Contract Type --</option>
+                                        <option value="FULLTIME">Full Time</option>
+                                        <option value="PARTTIME">Part Time</option>
+                                        <option value="INTERN">Intern</option>
+                                        <option value="TEMPORARY">Temporary</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="salary" class="form-label">Salary</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" min="0" class="form-control" id="salary" name="salary" placeholder="Enter salary amount">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate">
+                                    <small class="form-text text-muted">Leave empty for indefinite contracts</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option value="ACTIVE">Active</option>
+                                        <option value="DRAFT">Draft</option>
+                                        <option value="EXPIRED">Expired</option>
+                                        <option value="TERMINATED">Terminated</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="reset" class="btn btn-secondary me-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">Save Contract</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer and scripts -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Add JavaScript for validation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validate end date is after start date
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (endDate && startDate && new Date(endDate) <= new Date(startDate)) {
+                alert('End date must be after start date');
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@ import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.PositionService;
 
 @Controller
-@RequestMapping("/recruitment-plans")
+@RequestMapping("/admin/pages/recruitment-plans")
 public class RecruitmentPlanController {
 
     private final RecruitmentPlanService recruitmentPlanService;
@@ -27,13 +27,13 @@ public class RecruitmentPlanController {
     @GetMapping
     public String getAllRecruitmentPlans(Model model) {
         model.addAttribute("recruitmentPlans", recruitmentPlanService.getAllRecruitmentPlans());
-        return "pages/recruitment/plan/list";
+        return "pages/plan/list";
     }
 
     @GetMapping("/{id}")
     public String getRecruitmentPlanById(@PathVariable Integer id, Model model) {
         model.addAttribute("recruitmentPlan", recruitmentPlanService.getRecruitmentPlanById(id));
-        return "pages/recruitment/plan/view";
+        return "pages/plan/view";
     }
 
     @GetMapping("/create")
@@ -41,13 +41,13 @@ public class RecruitmentPlanController {
         model.addAttribute("recruitmentPlan", new RecruitmentPlan());
         model.addAttribute("departments", departmentService.getAllDepartments());
         model.addAttribute("positions", positionService.getAllPositions());
-        return "pages/recruitment/plan/create";
+        return "pages/plan/create";
     }
 
     @PostMapping
     public String createRecruitmentPlan(@ModelAttribute RecruitmentPlan recruitmentPlan) {
         recruitmentPlanService.createRecruitmentPlan(recruitmentPlan);
-        return "redirect:/recruitment-plans";
+        return "redirect:/admin/pages/recruitment-plans";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,19 +55,19 @@ public class RecruitmentPlanController {
         model.addAttribute("recruitmentPlan", recruitmentPlanService.getRecruitmentPlanById(id));
         model.addAttribute("departments", departmentService.getAllDepartments());
         model.addAttribute("positions", positionService.getAllPositions());
-        return "pages/recruitment/plan/edit";
+        return "pages/plan/edit";
     }
 
     @PostMapping("/{id}")
     public String updateRecruitmentPlan(@PathVariable Integer id, @ModelAttribute RecruitmentPlan recruitmentPlan) {
         recruitmentPlan.setId(id);
         recruitmentPlanService.updateRecruitmentPlan(recruitmentPlan);
-        return "redirect:/recruitment-plans";
+        return "redirect:/admin/pages/recruitment-plans";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteRecruitmentPlan(@PathVariable Integer id) {
         recruitmentPlanService.deleteRecruitmentPlan(id);
-        return "redirect:/recruitment-plans";
+        return "redirect:/admin/pages/recruitment-plans";
     }
 }

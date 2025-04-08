@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <nav id="sidebarMenu" th:fragment="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-  <div class="position-sticky pt-3">
+  <div class="position-sticky pt-3" style="height: calc(100vh - 48px); overflow-y: auto; padding-bottom: 60px;">
+    <!-- Main Modules -->
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mb-1 text-muted">
+      <span>Main</span>
+    </h6>
     <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link active" aria-current="page" href="/admin/index">
+        <a class="nav-link" href="/admin/index">
           <i class="bi bi-house-door me-2"></i>
           Dashboard
         </a>
@@ -17,51 +21,128 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/department/list">
+        <a class="nav-link" href="/admin/pages/departments">
           <i class="bi bi-building me-2"></i>
           Departments
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/attendance/list">
+        <a class="nav-link" href="/admin/pages/positions">
+          <i class="bi bi-briefcase me-2"></i>
+          Positions
+        </a>
+      </li>
+    </ul>
+
+    <!-- Human Resources -->
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+      <span>Human Resources</span>
+    </h6>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/contracts">
+          <i class="bi bi-file-earmark-text me-2"></i>
+          Contracts
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/decisions">
+          <i class="bi bi-award me-2"></i>
+          Decisions
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/leave-balances">
+          <i class="bi bi-calendar-minus me-2"></i>
+          Leave Balances
+        </a>
+      </li>
+    </ul>
+
+    <!-- Administrative -->
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+      <span>Administrative</span>
+    </h6>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/notifications">
+          <i class="bi bi-bell me-2"></i>
+          Notifications
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/registrations">
+          <i class="bi bi-clipboard-check me-2"></i>
+          Registrations
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/work-trips">
+          <i class="bi bi-airplane me-2"></i>
+          Work Trips
+        </a>
+      </li>
+    </ul>
+
+    <!-- Attendance & Payroll -->
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+      <span>Time & Compensation</span>
+    </h6>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/attendances">
           <i class="bi bi-calendar-check me-2"></i>
           Attendance
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/leave/list">
-          <i class="bi bi-calendar-x me-2"></i>
-          Leave Management
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/payroll/list">
+        <a class="nav-link" href="/admin/pages/salaries">
           <i class="bi bi-cash-stack me-2"></i>
-          Payroll
+          Salary
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/report/dashboard">
-          <i class="bi bi-graph-up me-2"></i>
-          Reports
+        <a class="nav-link" href="/admin/pages/insurances">
+          <i class="bi bi-shield-check me-2"></i>
+          Insurance
         </a>
       </li>
     </ul>
 
+    <!-- Recruitment -->
     <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-      <span>Administration</span>
+      <span>Recruitment</span>
     </h6>
-    <ul class="nav flex-column mb-2">
+    <ul class="nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/settings/general">
-          <i class="bi bi-gear me-2"></i>
-          Settings
+        <a class="nav-link" href="/admin/pages/recruitment-plans">
+          <i class="bi bi-clipboard-data me-2"></i>
+          Recruitment Plans
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/pages/user/list">
-          <i class="bi bi-person-badge me-2"></i>
-          Users
+        <a class="nav-link" href="/admin/pages/applicants">
+          <i class="bi bi-person-plus me-2"></i>
+          Applicants
+        </a>
+      </li>
+    </ul>
+
+    <!-- Reports & Settings -->
+    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+      <span>Reports & Settings</span>
+    </h6>
+    <ul class="nav flex-column mb-2">
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/reports">
+          <i class="bi bi-graph-up me-2"></i>
+          Reports
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/pages/setting/general">
+          <i class="bi bi-gear me-2"></i>
+          Settings
         </a>
       </li>
     </ul>

@@ -24,6 +24,11 @@ public class Employee {
 
     private String password;
     private String roleName;
+
+    public Employee() {
+
+    }
+
     public Integer getId() {
         return id;
     }

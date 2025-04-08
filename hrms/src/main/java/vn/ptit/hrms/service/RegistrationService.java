@@ -129,4 +129,7 @@ public class RegistrationService {
     public void deleteRegistration(Integer id) {
         registrationDao.deleteRegistration(id);
     }
+    public int getPendingRegistrationCount() {
+        return this.registrationDao.countPendingRegistration();
+    }
 }

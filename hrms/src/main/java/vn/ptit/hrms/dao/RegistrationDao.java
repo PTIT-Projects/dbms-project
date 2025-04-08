@@ -59,4 +59,9 @@ public class RegistrationDao {
         String sql = "DELETE FROM Registrations WHERE RegistrationID = ?";
         jdbcTemplate.update(sql, id);
     }
+    public int countPendingRegistration() {
+        String sql = "SELECT COUNT(*) FROM Registrations WHERE Status = N'Đang chờ'";
+        Integer res = jdbcTemplate.queryForObject(sql, Integer.class);
+        return (res != null) ? res : 0;
+    }
 }

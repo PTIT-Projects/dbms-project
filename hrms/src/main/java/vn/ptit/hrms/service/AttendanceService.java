@@ -1,5 +1,7 @@
 package vn.ptit.hrms.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.ptit.hrms.constant.AttendanceStatusEnum;
 import vn.ptit.hrms.dao.AttendanceDao;
@@ -70,5 +72,13 @@ public class AttendanceService {
 
     public void deleteAttendance(Integer id) {
         attendanceDao.deleteAttendance(id);
+    }
+    public Page<Attendance> findAttendancePage(
+            Pageable pageable,
+            String employeeSearch,
+            LocalDate startDate,
+            LocalDate endDate,
+            String status) {
+        return attendanceDao.getAttendancePage(pageable, employeeSearch, startDate, endDate, status);
     }
 }

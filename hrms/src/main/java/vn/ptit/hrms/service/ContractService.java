@@ -1,16 +1,18 @@
 package vn.ptit.hrms.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import vn.ptit.hrms.constant.ContractStatusEnum;
 import vn.ptit.hrms.dao.ContractDao;
 import vn.ptit.hrms.domain.Contract;
-import vn.ptit.hrms.constant.ContractStatusEnum;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class ContractService {
-    public final ContractDao contractDao;
+    private final ContractDao contractDao;
 
     public ContractService(ContractDao contractDao) {
         this.contractDao = contractDao;
@@ -52,6 +54,14 @@ public class ContractService {
                         contract.getEndDate() != null &&
                         contract.getEndDate().isBefore(thresholdDate))
                 .toList();
+    }
+
+    public Page<Contract> findContractPage(
+            Pageable pageable,
+            String employeeSearch,
+            String contractType,
+            String status) {
+        return contractDao.getContractPage(pageable, employeeSearch, contractType, status);
     }
 
     public void updateContract(Contract contract) {

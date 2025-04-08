@@ -1,5 +1,8 @@
 package vn.ptit.hrms.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +11,7 @@ import vn.ptit.hrms.service.ContractService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/contracts")
+@RequestMapping("/admin/pages/contracts")
 public class ContractController {
 
     private final ContractService contractService;
@@ -20,8 +23,27 @@ public class ContractController {
     }
 
     @GetMapping
-    public String getAllContracts(Model model) {
-        model.addAttribute("contracts", contractService.getAllContracts());
+    public String getAllContracts(
+            Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String employeeSearch,
+            @RequestParam(required = false) String contractType,
+            @RequestParam(required = false) String status
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Contract> contractPage = contractService.findContractPage(
+                pageable, employeeSearch, contractType, status);
+
+        model.addAttribute("contracts", contractPage.getContent());
+        model.addAttribute("currentPage", contractPage.getNumber());
+        model.addAttribute("totalPages", contractPage.getTotalPages());
+        model.addAttribute("totalItems", contractPage.getTotalElements());
+        model.addAttribute("pageSize", size);
+        model.addAttribute("employeeSearch", employeeSearch);
+        model.addAttribute("contractType", contractType);
+        model.addAttribute("status", status);
+
         return "pages/contract/list";
     }
 
@@ -41,7 +63,7 @@ public class ContractController {
     @PostMapping
     public String createContract(@ModelAttribute Contract contract) {
         contractService.createContract(contract);
-        return "redirect:/contracts";
+        return "redirect:/admin/pages/contracts";
     }
 
     @GetMapping("/{id}/edit")
@@ -55,12 +77,12 @@ public class ContractController {
     public String updateContract(@PathVariable Integer id, @ModelAttribute Contract contract) {
         contract.setId(id);
         contractService.updateContract(contract);
-        return "redirect:/contracts";
+        return "redirect:/admin/pages/contracts";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteContract(@PathVariable Integer id) {
         contractService.deleteContract(id);
-        return "redirect:/contracts";
+        return "redirect:/admin/pages/contracts";
     }
 }
