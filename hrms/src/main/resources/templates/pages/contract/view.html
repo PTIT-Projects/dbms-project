@@ -37,7 +37,6 @@
                     <h5 class="mb-0" th:text="'Contract #' + ${contract.id}">Contract #1</h5>
                     <span th:class="${'badge ' +
             (contract.status != null && contract.status.name() == 'ACTIVE' ? 'bg-success' :
-            contract.status != null && contract.status.name() == 'DRAFT' ? 'bg-warning' :
             contract.status != null && contract.status.name() == 'EXPIRED' ? 'bg-secondary' :
             'bg-danger')}"
                           th:text="${contract.status != null ? contract.status.value : 'N/A'}">Status</span>

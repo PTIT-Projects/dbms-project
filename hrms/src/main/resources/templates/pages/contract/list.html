@@ -45,17 +45,14 @@
                         <div class="d-flex justify-content-end gap-2">
                             <select class="form-select me-2" style="width: auto;" name="contractType">
                                 <option value="">All Types</option>
-                                <option value="FULLTIME" th:selected="${contractType == 'FULLTIME'}">Full Time</option>
-                                <option value="PARTTIME" th:selected="${contractType == 'PARTTIME'}">Part Time</option>
-                                <option value="INTERN" th:selected="${contractType == 'INTERN'}">Intern</option>
-                                <option value="TEMPORARY" th:selected="${contractType == 'TEMPORARY'}">Temporary</option>
+                                <option value="Toàn thời gian" th:selected="${contractType == 'FULLTIME'}">Full Time</option>
+                                <option value="Bán thời gian" th:selected="${contractType == 'PARTTIME'}">Part Time</option>
                             </select>
                             <select class="form-select me-2" style="width: auto;" name="status">
                                 <option value="">All Statuses</option>
-                                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">Active</option>
-                                <option value="DRAFT" th:selected="${status == 'DRAFT'}">Draft</option>
-                                <option value="EXPIRED" th:selected="${status == 'EXPIRED'}">Expired</option>
-                                <option value="TERMINATED" th:selected="${status == 'TERMINATED'}">Terminated</option>
+                                <option value="Hiệu lực" th:selected="${status == 'ACTIVE'}">Active</option>
+                                <option value="Hết hạn" th:selected="${status == 'EXPIRED'}">Expired</option>
+                                <option value="Chấm dứt" th:selected="${status == 'TERMINATED'}">Terminated</option>
                             </select>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-filter"></i> Filter

@@ -52,8 +52,6 @@
                                         <option value="">-- Select Contract Type --</option>
                                         <option value="FULLTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'FULLTIME'}">Full Time</option>
                                         <option value="PARTTIME" th:selected="${contract.contractType != null && contract.contractType.name() == 'PARTTIME'}">Part Time</option>
-                                        <option value="INTERN" th:selected="${contract.contractType != null && contract.contractType.name() == 'INTERN'}">Intern</option>
-                                        <option value="TEMPORARY" th:selected="${contract.contractType != null && contract.contractType.name() == 'TEMPORARY'}">Temporary</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
@@ -81,7 +79,6 @@
                                     <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
                                     <select class="form-select" id="status" name="status" required>
                                         <option value="ACTIVE" th:selected="${contract.status != null && contract.status.name() == 'ACTIVE'}">Active</option>
-                                        <option value="DRAFT" th:selected="${contract.status != null && contract.status.name() == 'DRAFT'}">Draft</option>
                                         <option value="EXPIRED" th:selected="${contract.status != null && contract.status.name() == 'EXPIRED'}">Expired</option>
                                         <option value="TERMINATED" th:selected="${contract.status != null && contract.status.name() == 'TERMINATED'}">Terminated</option>
                                     </select>
