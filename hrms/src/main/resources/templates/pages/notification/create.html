@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Notification - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Notification</h1>
+                <div>
+                    <a th:href="@{/admin/pages/notifications}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Notification Information</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/notifications}" th:object="${notification}" method="post" class="needs-validation" novalidate>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="title" th:field="*{title}" required>
+                                    <div class="invalid-feedback">Please enter a title.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                                    <select id="priority" th:field="*{priority}" class="form-select" required>
+                                        <option value="">-- Select Priority --</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="LOW">Low</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a priority level.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Target Employee</label>
+                                    <select id="employee" th:field="*{employee}" class="form-select">
+                                        <option value="">-- All Employees --</option>
+                                        <option th:each="emp : ${employees}" 
+                                                th:value="${emp.id}" 
+                                                th:text="${emp.fullName + ' (' + emp.id + ')'}">
+                                            John Doe (1)
+                                        </option>
+                                    </select>
+                                    <small class="form-text text-muted">Leave empty to send to all employees</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">Content <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="content" th:field="*{content}" rows="6" required></textarea>
+                                    <div class="invalid-feedback">Please enter content for the notification.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a th:href="@{/admin/pages/notifications}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Send Notification</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Form validation -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function() {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+</body>
+</html>

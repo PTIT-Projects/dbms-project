@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Position - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Edit Position</h1>
+                <div>
+                    <a th:href="@{/admin/pages/positions/{id}(id=${position.id})}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Details
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Position Information</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/positions/{id}(id=${position.id})}" method="post" class="needs-validation" novalidate>
+                        <input type="hidden" name="id" th:value="${position.id}" />
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="positionName" class="form-label">Position Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="positionName" name="positionName" 
+                                           th:value="${position.positionName}" required>
+                                    <div class="invalid-feedback">Please enter a position name.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select id="department" name="department.id" class="form-select" required>
+                                        <option value="">-- Select Department --</option>
+                                        <option th:each="dept : ${departments}"
+                                                th:value="${dept.id}"
+                                                th:text="${dept.departmentName}"
+                                                th:selected="${position.department != null && position.department.id == dept.id}">
+                                            IT Department
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a department.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="5" 
+                                              th:text="${position.description}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a th:href="@{/admin/pages/positions/{id}(id=${position.id})}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Form validation -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function() {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+</body>
+</html>
