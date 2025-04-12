@@ -89,10 +89,6 @@
                                     <th>End Date</th>
                                     <td th:text="${contract.endDate != null ? #temporals.format(contract.endDate, 'dd/MM/yyyy') : 'N/A'}">31/12/2023</td>
                                 </tr>
-                                <tr>
-                                    <th>Salary</th>
-                                    <td th:text="${contract.salary != null ? #numbers.formatDecimal(contract.salary, 1, 'COMMA', 2, 'POINT') + ' $' : 'N/A'}">5,000.00 $</td>
-                                </tr>
                             </table>
                         </div>
                     </div>

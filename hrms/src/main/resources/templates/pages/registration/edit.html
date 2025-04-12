@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,7 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Edit Registration</h1>
                 <div>
-                    <a th:href="@{/admin/pages/registration/list}" class="btn btn-outline-secondary">
+                    <a th:href="@{/admin/pages/registrations}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back to List
                     </a>
                 </div>
@@ -25,50 +25,62 @@
 
             <div class="card">
                 <div class="card-body">
-                    <form th:action="@{/admin/pages/registration/{id}(id=${registration.id})}" method="post">
+                    <form th:action="@{/admin/pages/registrations/{id}(id=${registration.id})}" method="post">
                         <div class="row">
                             <div class="col-md-6">
                                 <h5 class="card-title mb-3">Registration Details</h5>
                                 <div class="mb-3">
-                                    <label for="employee" class="form-label">Employee</label>
-                                    <input type="text" class="form-control" id="employee" 
-                                           th:value="${registration.employee.fullName}" readonly>
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="employee" name="employee.id" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}"
+                                                th:value="${emp.id}"
+                                                th:text="${emp.fullName}"
+                                                th:selected="${registration.employee != null && registration.employee.id == emp.id}">
+                                            Employee Name
+                                        </option>
+                                    </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="registrationType" class="form-label">Type</label>
-                                    <input type="text" class="form-control" id="registrationType" 
-                                           th:value="${registration.registrationType}" readonly>
+                                    <label for="registrationType" class="form-label">Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="registrationType" name="registrationType" required>
+                                        <option value="">-- Select Type --</option>
+                                        <option value="LEAVE" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'LEAVE'}">Leave Request</option>
+                                        <option value="OVERTIME" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'OVERTIME'}">Overtime</option>
+                                        <option value="VEHICLE" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'VEHICLE'}">VEHICLE</option>
+                                        <option value="MEAL" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'MEAL'}">MEAL</option>
+                                        <option value="MEETINGROOM" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'MEETINGROOM'}">MEETINGROOM</option>
+                                        <option value="RESIGNATION" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'RESIGNATION'}">RESIGNATION</option>
+                                        <option value="ADVANCED" th:selected="${registration.registrationType != null && registration.registrationType.name() == 'ADVANCED'}">ADVANCED</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="requestDate" class="form-label">Request Date</label>
+                                    <input type="date" class="form-control" id="requestDate" name="requestDate" th:value="${registration.requestDate}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="card-title mb-3">Request Details</h5>
+                                <div class="mb-3">
+                                    <label for="details" class="form-label">Details/Reason <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="details" name="details" rows="5" required th:text="${registration.details}"></textarea>
+                                    <div class="form-text" id="details-help">
+                                        For leave requests, include dates and number of days. For overtime, include hours and justification.
+                                    </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="status" class="form-label">Status</label>
                                     <select class="form-select" id="status" name="status">
-                                        <option value="PENDING" th:selected="${registration.status == 'PENDING'}">Pending</option>
-                                        <option value="APPROVED" th:selected="${registration.status == 'APPROVED'}">Approved</option>
-                                        <option value="REJECTED" th:selected="${registration.status == 'REJECTED'}">Rejected</option>
+                                        <option value="PENDING" th:selected="${registration.status != null && registration.status.name() == 'PENDING'}">Pending</option>
+                                        <option value="APPROVED" th:selected="${registration.status != null && registration.status.name() == 'APPROVED'}">Approved</option>
+                                        <option value="REJECTED" th:selected="${registration.status != null && registration.status.name() == 'REJECTED'}">Rejected</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <h5 class="card-title mb-3">Time Period</h5>
-                                <div class="mb-3">
-                                    <label for="startDate" class="form-label">Start Date</label>
-                                    <input type="date" class="form-control" id="startDate" 
-                                           name="startDate" th:value="${registration.startDate}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="endDate" class="form-label">End Date</label>
-                                    <input type="date" class="form-control" id="endDate" 
-                                           name="endDate" th:value="${registration.endDate}" required>
-                                </div>
-                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="details" class="form-label">Details/Reason</label>
-                            <textarea class="form-control" id="details" name="details" 
-                                      rows="3" th:text="${registration.details}"></textarea>
-                        </div>
+                        
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="submit" class="btn btn-primary">Update Registration</button>
+                            <button type="submit" class="btn btn-primary">Update</button>
                         </div>
                     </form>
                 </div>

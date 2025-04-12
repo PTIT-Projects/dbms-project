@@ -53,7 +53,18 @@ public class SalaryController {
 
     @PostMapping("/{id}")
     public String updateSalary(@PathVariable Integer id, @ModelAttribute Salary salary) {
+        // Ensure the ID is set correctly
         salary.setId(id);
+        
+        // Calculate net salary based on inputs before saving
+        if (salary.getBasicSalary() == null) salary.setBasicSalary(0.0);
+        if (salary.getAllowance() == null) salary.setAllowance(0.0);
+        if (salary.getDeductions() == null) salary.setDeductions(0.0);
+        
+        Double netSalary = salary.getBasicSalary() + salary.getAllowance() - salary.getDeductions();
+        salary.setNetSalary(netSalary);
+        
+        // Update the salary record
         salaryService.updateSalary(salary);
         return "redirect:/admin/pages/salaries";
     }

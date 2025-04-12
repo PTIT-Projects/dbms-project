@@ -8,7 +8,7 @@ import vn.ptit.hrms.service.WorkTripRequestService;
 import vn.ptit.hrms.service.EmployeeService;
 
 @Controller
-@RequestMapping("/admin/pages/admin/pages/work-trips")
+@RequestMapping("/admin/pages/work-trips")
 public class WorkTripRequestController {
 
     private final WorkTripRequestService workTripRequestService;

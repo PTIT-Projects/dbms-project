@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Work Trip - HRMS</title>
+    <title>Edit Work Trip Request - HRMS</title>
     <div th:replace="~{fragments/header :: header-css}"></div>
 </head>
 <body>
@@ -15,9 +15,9 @@
             <div th:replace="~{fragments/header :: header-content}"></div>
 
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Create Work Trip Request</h1>
+                <h1 class="h2">Edit Work Trip Request</h1>
                 <div>
-                    <a th:href="@{/admin/pages/worktrip/list}" class="btn btn-outline-secondary">
+                    <a th:href="@{/admin/pages/work-trips}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back to List
                     </a>
                 </div>
@@ -25,43 +25,52 @@
 
             <div class="card">
                 <div class="card-body">
-                    <form th:action="@{/admin/pages/worktrip}" method="post">
+                    <form th:action="@{/admin/pages/work-trips/{id}(id=${workTrip.id})}" method="post">
                         <div class="row">
                             <div class="col-md-6">
                                 <h5 class="card-title mb-3">Employee Information</h5>
                                 <div class="mb-3">
-                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="employee" name="employee.id" required>
-                                        <option value="">-- Select Employee --</option>
-                                        <option th:each="emp : ${employees}"
-                                                th:value="${emp.id}"
-                                                th:text="${emp.fullName}">Employee Name</option>
-                                    </select>
+                                    <label class="form-label">Employee</label>
+                                    <input type="text" class="form-control" 
+                                           th:value="${workTrip.employee.fullName}" readonly>
+                                    <input type="hidden" name="employee.id" th:value="${workTrip.employee.id}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="purpose" class="form-label">Purpose <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="purpose" name="purpose" rows="3" required></textarea>
+                                    <textarea class="form-control" id="purpose" name="purpose" 
+                                              rows="3" th:text="${workTrip.purpose}" required></textarea>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <h5 class="card-title mb-3">Trip Details</h5>
                                 <div class="mb-3">
                                     <label for="destination" class="form-label">Destination <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="destination" name="destination" required>
+                                    <input type="text" class="form-control" id="destination" 
+                                           name="destination" th:value="${workTrip.destination}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                    <input type="date" class="form-control" id="startDate" 
+                                           name="startDate" th:value="${workTrip.startDate}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                    <input type="date" class="form-control" id="endDate" 
+                                           name="endDate" th:value="${workTrip.endDate}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="PENDING" th:selected="${workTrip.status != null && workTrip.status.name() == 'PENDING'}">Pending</option>
+                                        <option value="APPROVED" th:selected="${workTrip.status != null && workTrip.status.name() == 'APPROVED'}">Approved</option>
+                                        <option value="REJECTED" th:selected="${workTrip.status != null && workTrip.status.name() == 'REJECTED'}">Rejected</option>
+                                        <option value="COMPLETED" th:selected="${workTrip.status != null && workTrip.status.name() == 'COMPLETED'}">Completed</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex justify-content-end mt-3">
-                            <button type="reset" class="btn btn-secondary me-2">Reset</button>
-                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                            <button type="submit" class="btn btn-primary">Update Request</button>
                         </div>
                     </form>
                 </div>

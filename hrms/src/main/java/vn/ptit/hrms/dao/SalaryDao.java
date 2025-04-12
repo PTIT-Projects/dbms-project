@@ -27,7 +27,7 @@ public class SalaryDao {
                 salary.getBasicSalary(),
                 salary.getAllowance(),
                 salary.getDeductions(),
-                salary.getNetSalary());
+                salary.getBasicSalary() + salary.getAllowance() - salary.getDeductions());
     }
 
    
@@ -44,6 +44,13 @@ public class SalaryDao {
 
    
     public void updateSalary(Salary salary) {
+        if (salary.getEmployee() == null || salary.getEmployee().getId() == null) {
+            Salary existingSalary = getSalaryById(salary.getId());
+            if (existingSalary != null && existingSalary.getEmployee() != null) {
+                salary.setEmployee(existingSalary.getEmployee());
+            }
+        }
+
         String sql = "UPDATE Salary SET EmployeeID = ?, Month = ?, Year = ?, BasicSalary = ?, Allowance = ?, Deductions = ?, NetSalary = ? WHERE SalaryID = ?";
         jdbcTemplate.update(sql,
                 salary.getEmployee() != null ? salary.getEmployee().getId() : null,

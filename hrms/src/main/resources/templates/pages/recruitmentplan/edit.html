@@ -17,7 +17,7 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h2">Edit Recruitment Plan</h1>
                 <div>
-                    <a th:href="@{/admin/pages/recruitmentplan/list}" class="btn btn-outline-secondary">
+                    <a th:href="@{/admin/pages/recruitment-plans}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back to List
                     </a>
                 </div>
@@ -25,7 +25,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <form th:action="@{/admin/pages/recruitmentplan/{id}(id=${plan.id})}" method="post">
+                    <form th:action="@{/admin/pages/recruitment-plans/{id}(id=${recruitmentPlan.id})}" method="post">
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -35,7 +35,7 @@
                                         <option th:each="pos : ${positions}"
                                                 th:value="${pos.id}"
                                                 th:text="${pos.positionName}"
-                                                th:selected="${plan.position != null && plan.position.id == pos.id}">
+                                                th:selected="${recruitmentPlan.position != null && recruitmentPlan.position.id == pos.id}">
                                             Position
                                         </option>
                                     </select>
@@ -47,7 +47,7 @@
                                         <option th:each="dept : ${departments}"
                                                 th:value="${dept.id}"
                                                 th:text="${dept.departmentName}"
-                                                th:selected="${plan.department != null && plan.department.id == dept.id}">
+                                                th:selected="${recruitmentPlan.department != null && recruitmentPlan.department.id == dept.id}">
                                             Department
                                         </option>
                                     </select>
@@ -55,17 +55,9 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="numberOfPositions" class="form-label">Number of Positions <span class="text-danger">*</span></label>
-                                    <input type="number" min="1" class="form-control" id="numberOfPositions" 
-                                           name="numberOfPositions" th:value="${plan.numberOfPositions}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select class="form-select" id="status" name="status">
-                                        <option value="OPEN" th:selected="${plan.status == 'OPEN'}">Open</option>
-                                        <option value="CLOSED" th:selected="${plan.status == 'CLOSED'}">Closed</option>
-                                        <option value="DRAFT" th:selected="${plan.status == 'DRAFT'}">Draft</option>
-                                    </select>
+                                    <label for="quantity" class="form-label">Number of Positions <span class="text-danger">*</span></label>
+                                    <input type="number" min="1" class="form-control" id="quantity" 
+                                           name="quantity" th:value="${recruitmentPlan.quantity}" required>
                                 </div>
                             </div>
                         </div>
@@ -74,14 +66,14 @@
                                 <div class="mb-3">
                                     <label for="startDate" class="form-label">Start Date <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="startDate" 
-                                           name="startDate" th:value="${plan.startDate}" required>
+                                           name="startDate" th:value="${recruitmentPlan.startDate}" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" id="endDate" 
-                                           name="endDate" th:value="${plan.endDate}" required>
+                                           name="endDate" th:value="${recruitmentPlan.endDate}" required>
                                 </div>
                             </div>
                         </div>
@@ -97,5 +89,20 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<script>
+    // Date validation
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
+            
+            if (endDate < startDate) {
+                alert('End date must be after start date');
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 </body>
 </html>
