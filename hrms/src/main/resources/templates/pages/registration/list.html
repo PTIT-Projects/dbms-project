@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave & Overtime Registrations - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Leave & Overtime Registrations</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                    </div>
+                    <a th:href="@{/admin/pages/registration/create}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus"></i> New Registration
+                    </a>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <form th:action="@{/admin/pages/registration}" method="get" class="mb-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Search by employee name..." th:value="${search}">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-end gap-2">
+                            <select class="form-select" style="width: auto;" name="type">
+                                <option value="">All Types</option>
+                                <option value="LEAVE" th:selected="${type == 'LEAVE'}">Leave Request</option>
+                                <option value="OVERTIME" th:selected="${type == 'OVERTIME'}">Overtime</option>
+                            </select>
+                            <select class="form-select" style="width: auto;" name="status">
+                                <option value="">All Statuses</option>
+                                <option value="PENDING" th:selected="${status == 'PENDING'}">Pending</option>
+                                <option value="APPROVED" th:selected="${status == 'APPROVED'}">Approved</option>
+                                <option value="REJECTED" th:selected="${status == 'REJECTED'}">Rejected</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Registrations Table -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="reg : ${registrations}">
+                            <td th:text="${reg.id}">1</td>
+                            <td>
+                                <a th:href="@{/admin/pages/employee/{id}(id=${reg.employee.id})}"
+                                   th:text="${reg.employee.fullName}"
+                                   class="text-primary">John Doe</a>
+                            </td>
+                            <td th:text="${reg.registrationType}">Leave</td>
+                            <td th:text="${#temporals.format(reg.startDate, 'dd/MM/yyyy')}">01/01/2024</td>
+                            <td th:text="${#temporals.format(reg.endDate, 'dd/MM/yyyy')}">02/01/2024</td>
+                            <td>
+                                <span th:class="${'badge ' + 
+                                    (reg.status == 'APPROVED' ? 'bg-success' : 
+                                    reg.status == 'REJECTED' ? 'bg-danger' : 'bg-warning')}"
+                                      th:text="${reg.status}">Status</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a th:href="@{/admin/pages/registration/{id}(id=${reg.id})}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a th:if="${reg.status == 'PENDING'}"
+                                       th:href="@{/admin/pages/registration/{id}/edit(id=${reg.id})}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="@{/admin/pages/registration/{id}/delete(id=${reg.id})}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Are you sure you want to delete this registration?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(registrations)}">
+                            <td colspan="7" class="text-center">No registrations found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 0}" aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${currentPage <= 0 ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/admin/pages/registration(page=${currentPage - 1})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage ? 'active' : ''}"
+                        th:if="${i >= currentPage - 2 && i <= currentPage + 2}">
+                        <a class="page-link" th:href="@{/admin/pages/registration(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1 ? 'disabled' : ''}">
+                        <a class="page-link" th:href="@{/admin/pages/registration(page=${currentPage + 1})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>
