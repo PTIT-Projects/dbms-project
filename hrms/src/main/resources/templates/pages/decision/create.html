@@ -1,10 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Decision - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
 </head>
 <body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Decision</h1>
+                <div>
+                    <a th:href="@{/admin/pages/decisions}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/decisions}" method="post" th:object="${decision}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="employee" name="employee.id" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}"
+                                                th:value="${emp.id}"
+                                                th:text="${emp.fullName}">Employee Name</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="decisionType" class="form-label">Decision Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="decisionType" name="decisionType" required>
+                                        <option value="">-- Select Type --</option>
+                                        <option value="DISCIPLINE">Discipline</option>
+                                        <option value="REWARD">Reward</option>
+                                        <option value="APPOINTMENT">Appointment</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="decisionDate" class="form-label">Decision Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="decisionDate" name="decisionDate" required
+                                           th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="details" class="form-label">Details <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="details" name="details" rows="4" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="reset" class="btn btn-secondary me-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">Create Decision</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 </html>
