@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Insurance Record - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Insurance Record</h1>
+                <div>
+                    <a th:href="@{/admin/pages/insurances}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Insurance Information</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/insurances}" th:object="${insurance}" method="post" class="needs-validation" novalidate>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Employee</label>
+                                    <select id="employee" th:field="*{employee}" class="form-select" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}" 
+                                                th:value="${emp.id}" 
+                                                th:text="${emp.fullName + ' (' + emp.id + ')'}">
+                                            John Doe (1)
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="insuranceNumber" class="form-label">Insurance Number</label>
+                                    <input type="text" class="form-control" id="insuranceNumber" 
+                                           th:field="*{insuranceNumber}" required>
+                                    <div class="invalid-feedback">Please enter an insurance number.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="insuranceType" class="form-label">Insurance Type</label>
+                                    <select id="insuranceType" th:field="*{insuranceType}" class="form-select" required>
+                                        <option value="">-- Select Insurance Type --</option>
+                                        <option value="Bảo hiểm sức khỏe">Bảo hiểm sức khỏe</option>
+                                        <option value="Bảo hiểm xã hội">Bảo hiểm xã hội</option>
+                                        <option value="Bảo hiểm y tế">Bảo hiểm y tế</option>
+                                        <option value="Bảo hiểm nhân thọ">Bảo hiểm nhân thọ</option>
+                                        <option value="Bảo hiểm tai nạn">Bảo hiểm tai nạn</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an insurance type.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="startDate" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="startDate" 
+                                           th:field="*{startDate}" required>
+                                    <div class="invalid-feedback">Please provide a start date.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="endDate" 
+                                           th:field="*{endDate}" required>
+                                    <div class="invalid-feedback">Please provide an end date.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a th:href="@{/admin/pages/insurances}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Form validation script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function() {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+</body>
+</html>

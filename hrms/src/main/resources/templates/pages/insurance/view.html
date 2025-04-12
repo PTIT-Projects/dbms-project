@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Details - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Insurance Details</h1>
+                <div>
+                    <a th:href="@{/admin/pages/insurances}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Insurance Record #<span th:text="${insurance.id}">1</span></h5>
+                    <span th:with="today=${#temporals.createToday()}"
+                          th:class="${'badge ' +
+                          (insurance.endDate == null ? 'bg-secondary' :
+                          insurance.endDate.isBefore(today) ? 'bg-danger' :
+                          insurance.endDate.isBefore(today.plusDays(30)) ? 'bg-warning' : 'bg-success')}"
+                          th:text="${insurance.endDate == null ? 'Unknown' :
+                          insurance.endDate.isBefore(today) ? 'Expired' :
+                          insurance.endDate.isBefore(today.plusDays(30)) ? 'Expiring Soon' : 'Active'}">
+                        Active
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Insurance Information</h6>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 35%">Insurance Number</th>
+                                    <td th:text="${insurance.insuranceNumber}">INS12345</td>
+                                </tr>
+                                <tr>
+                                    <th>Insurance Type</th>
+                                    <td th:text="${insurance.insuranceType}">Bảo hiểm sức khỏe</td>
+                                </tr>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <td th:text="${#temporals.format(insurance.startDate, 'dd/MM/yyyy')}">01/01/2023</td>
+                                </tr>
+                                <tr>
+                                    <th>End Date</th>
+                                    <td th:text="${#temporals.format(insurance.endDate, 'dd/MM/yyyy')}">31/12/2023</td>
+                                </tr>
+                                <tr>
+                                    <th>Duration</th>
+                                    <td th:with="duration=${insurance.startDate != null && insurance.endDate != null ? 
+                                                 T(java.time.Period).between(insurance.startDate, insurance.endDate) : null}">
+                                        <span th:if="${duration != null}">
+                                            <span th:text="${duration.years > 0 ? duration.years + ' Year(s) ' : ''}"></span>
+                                            <span th:text="${duration.months > 0 ? duration.months + ' Month(s) ' : ''}"></span>
+                                            <span th:text="${(duration.years == 0 && duration.months == 0) || duration.days > 0 ? 
+                                                      duration.days + ' Day(s)' : ''}"></span>
+                                        </span>
+                                        <span th:unless="${duration != null}">-</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Employee Information</h6>
+                            <div th:if="${insurance.employee != null}">
+                                <table class="table table-bordered">
+                                    <tr>
+                                        <th style="width: 35%">Employee ID</th>
+                                        <td th:text="${insurance.employee.id}">1</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Full Name</th>
+                                        <td>
+                                            <a th:href="@{/admin/pages/employee/{id}(id=${insurance.employee.id})}" 
+                                               th:text="${insurance.employee.fullName}"
+                                               class="text-primary">John Doe</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Department</th>
+                                        <td th:text="${insurance.employee.department != null ? 
+                                                  insurance.employee.department.departmentName : '-'}">IT Department</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Position</th>
+                                        <td th:text="${insurance.employee.position != null ? 
+                                                  insurance.employee.position.positionName : '-'}">Developer</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div th:unless="${insurance.employee != null}" class="alert alert-warning">
+                                No employee assigned to this insurance record.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3" sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/pages/insurances/{id}/edit(id=${insurance.id})}" class="btn btn-primary me-2">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a th:href="@{/admin/pages/insurances/{id}/delete(id=${insurance.id})}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this insurance record?')">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>
