@@ -39,7 +39,17 @@ public class LeaveBalanceController {
     }
 
     @PostMapping
-    public String createLeaveBalance(@ModelAttribute LeaveBalance leaveBalance) {
+    public String createLeaveBalance(@RequestParam("employee.id") Integer employeeId, 
+                                    @RequestParam Integer year,
+                                    @RequestParam Integer totalLeaveDays,
+                                    @RequestParam Integer usedLeaveDays,
+                                    @RequestParam Integer remainingLeaveDays) {
+        LeaveBalance leaveBalance = new LeaveBalance();
+        leaveBalance.setEmployee(employeeService.getEmployeeById(employeeId));
+        leaveBalance.setYear(year);
+        leaveBalance.setTotalLeaveDays(totalLeaveDays);
+        leaveBalance.setUsedLeaveDays(usedLeaveDays);
+        leaveBalance.setRemainingLeaveDays(remainingLeaveDays);
         leaveBalanceService.createLeaveBalance(leaveBalance);
         return "redirect:/admin/pages/leave-balances";
     }
@@ -52,8 +62,19 @@ public class LeaveBalanceController {
     }
 
     @PostMapping("/{id}")
-    public String updateLeaveBalance(@PathVariable Integer id, @ModelAttribute LeaveBalance leaveBalance) {
+    public String updateLeaveBalance(@PathVariable Integer id,
+                                    @RequestParam("employee.id") Integer employeeId,
+                                    @RequestParam Integer year,
+                                    @RequestParam Integer totalLeaveDays,
+                                    @RequestParam Integer usedLeaveDays,
+                                    @RequestParam Integer remainingLeaveDays) {
+        LeaveBalance leaveBalance = new LeaveBalance();
         leaveBalance.setId(id);
+        leaveBalance.setEmployee(employeeService.getEmployeeById(employeeId));
+        leaveBalance.setYear(year);
+        leaveBalance.setTotalLeaveDays(totalLeaveDays);
+        leaveBalance.setUsedLeaveDays(usedLeaveDays);
+        leaveBalance.setRemainingLeaveDays(remainingLeaveDays);
         leaveBalanceService.updateLeaveBalance(leaveBalance);
         return "redirect:/admin/pages/leave-balances";
     }

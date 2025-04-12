@@ -41,40 +41,37 @@
                                     <th>Department Name</th>
                                     <td th:text="${department.departmentName}">HR Department</td>
                                 </tr>
-<!--                                <tr>-->
-<!--                                    <th>Description</th>-->
-<!--                                    <td th:text="${department.description}">Human Resources Department responsible for managing personnel.</td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <th>Location</th>-->
-<!--                                    <td th:text="${department.location}">Building A, Floor 3</td>-->
-<!--                                </tr>-->
                             </table>
                         </div>
                         <div class="col-md-6">
                             <h6 class="fw-bold">Management Information</h6>
-<!--                            <table class="table table-bordered">-->
-<!--                                <tr>-->
-<!--                                    <th width="30%">Manager</th>-->
-<!--                                    <td>-->
-<!--                                        <span th:if="${department.manager != null}">-->
-<!--                                            <a th:href="@{/admin/pages/employee/{id}(id=${department.manager.id})}" class="text-primary"-->
-<!--                                               th:text="${department.manager.fullName}">John Doe</a>-->
-<!--                                        </span>-->
-<!--                                        <span th:unless="${department.manager != null}">Not assigned</span>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <th>Employee Count</th>-->
-<!--                                    <td th:text="${employeeCount ?: 0}">5</td>-->
-<!--                                </tr>-->
-<!--                            </table>-->
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th width="30%">Manager</th>
+                                    <td>
+                                        <span th:if="${departmentManager != null && departmentManager.manager != null}">
+                                            <a th:href="@{/admin/pages/employee/{id}(id=${departmentManager.manager.id})}" class="text-primary"
+                                               th:text="${departmentManager.manager.fullName}">John Doe</a>
+                                        </span>
+                                        <span th:unless="${departmentManager != null && departmentManager.manager != null}" 
+                                              class="text-muted fst-italic">Not assigned</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Employee Count</th>
+                                    <td th:text="${employeeCount ?: 0}">5</td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end mt-3" sec:authorize="hasRole('ADMIN')">
                         <a th:href="@{/admin/pages/departments/{id}/edit(id=${department.id})}" class="btn btn-primary me-2">
                             <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a th:href="@{/admin/pages/department-managers/{id}/edit(id=${department.id})}" 
+                           class="btn btn-info me-2">
+                            <i class="bi bi-person-badge"></i> Assign Manager
                         </a>
                         <a th:href="@{/admin/pages/departments/{id}/delete(id=${department.id})}"
                            class="btn btn-danger"
