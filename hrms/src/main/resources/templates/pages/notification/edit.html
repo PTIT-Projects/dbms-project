@@ -39,25 +39,15 @@
                                     <div class="invalid-feedback">Please enter a title.</div>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
-                                    <select id="priority" name="priority" class="form-select" required>
-                                        <option value="">-- Select Priority --</option>
-                                        <option value="HIGH" th:selected="${notification.priority == 'HIGH'}">High</option>
-                                        <option value="MEDIUM" th:selected="${notification.priority == 'MEDIUM'}">Medium</option>
-                                        <option value="LOW" th:selected="${notification.priority == 'LOW'}">Low</option>
-                                    </select>
-                                    <div class="invalid-feedback">Please select a priority level.</div>
-                                </div>
                                 
                                 <div class="mb-3">
-                                    <label for="employee" class="form-label">Target Employee</label>
+                                    <label for="employee" class="form-label">Created by</label>
                                     <select id="employee" name="employee.id" class="form-select">
                                         <option value="">-- All Employees --</option>
                                         <option th:each="emp : ${employees}" 
                                                 th:value="${emp.id}" 
                                                 th:text="${emp.fullName + ' (' + emp.id + ')'}"
-                                                th:selected="${notification.employee != null && notification.employee.id == emp.id}">
+                                                th:selected="${notification.createdBy != null && notification.createdBy.id == emp.id}">
                                             John Doe (1)
                                         </option>
                                     </select>
@@ -73,9 +63,9 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="notificationTime" class="form-label">Date & Time</label>
-                                    <input type="datetime-local" class="form-control" id="notificationTime" 
-                                           name="notificationTime" th:value="${#temporals.format(notification.notificationTime, 'yyyy-MM-dd''T''HH:mm')}" readonly>
+                                    <label for="createdDate" class="form-label">Date & Time</label>
+                                    <input type="datetime-local" class="form-control" id="createdDate" 
+                                           name="createdDate" th:value="${#temporals.format(notification.createdDate, 'yyyy-MM-dd''T''HH:mm')}" readonly>
                                     <small class="text-muted">Original notification time cannot be changed</small>
                                 </div>
                             </div>
