@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department Managers - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Department Managers</h1>
+                <div>
+                    <a th:href="@{/admin/pages/department-managers/create}" class="btn btn-success" sec:authorize="hasRole('ADMIN')">
+                        <i class="bi bi-plus-lg"></i> Assign New Manager
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">Department Manager List</h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-primary" th:text="${departmentManagers.size() + ' Records'}">0 Records</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Manager</th>
+                                <th>Manager Email</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="mgr : ${departmentManagers}">
+                                <td>
+                                    <a th:href="@{/admin/pages/departments/{id}(id=${mgr.department?.id})}" 
+                                       th:text="${mgr.department?.departmentName}" 
+                                       class="text-primary">
+                                        Human Resources
+                                    </a>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/pages/employee/{id}(id=${mgr.manager?.id})}" 
+                                       th:text="${mgr.manager?.fullName}"
+                                       class="text-primary">
+                                        John Doe
+                                    </a>
+                                </td>
+                                <td th:text="${mgr.manager?.email}">john.doe@example.com</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" sec:authorize="hasRole('ADMIN')">
+                                        <a th:href="@{/admin/pages/department-managers/{id}(id=${mgr.department?.id})}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a th:href="@{/admin/pages/department-managers/{id}/edit(id=${mgr.department?.id})}" 
+                                           class="btn btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/admin/pages/department-managers/{id}/delete(id=${mgr.department?.id})}" 
+                                           class="btn btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to remove this department manager assignment?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(departmentManagers)}">
+                                <td colspan="4" class="text-center">No department managers found</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

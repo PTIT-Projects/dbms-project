@@ -62,7 +62,6 @@
                         <th>Title</th>
                         <th>Employee</th>
                         <th>Date & Time</th>
-                        <th>Priority</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -71,17 +70,13 @@
                         <td th:text="${notification.id}">1</td>
                         <td th:text="${notification.title}">Important Notice</td>
                         <td>
-                            <a th:if="${notification.employee != null}"
-                               th:href="@{/admin/pages/employee/{id}(id=${notification.employee.id})}"
-                               th:text="${notification.employee.fullName}"
+                            <a th:if="${notification.createdBy != null}"
+                               th:href="@{/admin/pages/employee/{id}(id=${notification.createdBy.id})}"
+                               th:text="${notification.createdBy.fullName}"
                                class="text-primary">Employee Name</a>
-                            <span th:if="${notification.employee == null}" class="badge bg-secondary">All Employees</span>
+                            <span th:if="${notification.createdBy == null}" class="badge bg-secondary">All Employees</span>
                         </td>
-                        <td th:text="${#temporals.format(notification.notificationTime, 'dd/MM/yyyy HH:mm')}">01/01/2023 14:30</td>
-                        <td>
-                            <span th:class="${'badge ' + (notification.priority == 'HIGH' ? 'bg-danger' : (notification.priority == 'MEDIUM' ? 'bg-warning' : 'bg-info'))}"
-                                  th:text="${notification.priority}">HIGH</span>
-                        </td>
+                        <td th:text="${#temporals.format(notification.createdDate, 'dd/MM/yyyy HH:mm')}">01/01/2023 14:30</td>
                         <td>
                             <div class="btn-group">
                                 <a th:href="@{/admin/pages/notifications/{id}(id=${notification.id})}"

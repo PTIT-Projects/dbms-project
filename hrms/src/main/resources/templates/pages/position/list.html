@@ -63,7 +63,6 @@
                         <th>ID</th>
                         <th>Position Name</th>
                         <th>Department</th>
-                        <th>Description</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
@@ -77,11 +76,6 @@
                                th:text="${position.department.departmentName}"
                                class="text-primary">IT Department</a>
                             <span th:unless="${position.department != null}" class="text-muted">Not assigned</span>
-                        </td>
-                        <td>
-                            <span th:text="${#strings.abbreviate(position.description, 50)}">
-                                Responsible for developing and maintaining software...
-                            </span>
                         </td>
                         <td>
                             <div class="btn-group">
