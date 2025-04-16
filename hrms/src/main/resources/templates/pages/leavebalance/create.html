@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Leave Balance - HRMS</title>
+
+    <!-- CSS chung -->
+    <div th:replace="~{fragments/header :: header-css}"></div>
+
+    <!-- Nếu có CSS riêng -->
+    <link rel="stylesheet" href="/hrms/src/main/resources/templates/pages/insurance/congdao.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Leave Balance</h1>
+                <div>
+                    <a th:href="@{/admin/pages/leave-balances}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <!-- Leave Balance Form -->
+            <div class="card">
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/leave-balances}" th:object="${leaveBalance}" method="post">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5 class="card-title mb-3">Leave Balance Information</h5>
+
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="employee" th:field="*{employee.id}" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}" 
+                                                th:value="${emp.id}" 
+                                                th:text="${emp.fullName}"></option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="year" class="form-label">Year <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="year" th:field="*{year}" min="2000" max="2100" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5 class="card-title mb-3">Leave Days</h5>
+
+                                <div class="mb-3">
+                                    <label for="totalLeaveDays" class="form-label">Total Leave Days <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="totalLeaveDays" th:field="*{totalLeaveDays}" min="0" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="usedLeaveDays" class="form-label">Used Leave Days</label>
+                                    <input type="number" class="form-control" id="usedLeaveDays" th:field="*{usedLeaveDays}" min="0">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="remainingLeaveDays" class="form-label">Remaining Leave Days</label>
+                                    <input type="number" class="form-control" id="remainingLeaveDays" th:field="*{remainingLeaveDays}" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="reset" class="btn btn-secondary me-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">Save Leave Balance</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Scripts -->
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

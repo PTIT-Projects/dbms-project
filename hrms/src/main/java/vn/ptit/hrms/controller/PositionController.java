@@ -7,7 +7,7 @@ import vn.ptit.hrms.domain.Position;
 import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.PositionService;
 
-@Controller
+@Controller 
 @RequestMapping("/admin/pages/positions")
 public class PositionController {
 

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position List - HRMS</title>
+    <!-- Link đến header fragment chứa CSS -->
+    <div th:replace="~{fragments/header :: header-css}"></div>
+
+    <link rel="stylesheet" href="/hrms/src/main/resources/templates/pages/insurance/congdao.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row"> 
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Position Management</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/pages/positions/create}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus"></i> Add Position
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng dữ liệu vị trí -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Position Name</th>
+                        <th>Department</th>
+                        <th>Actions</th>
+                    </tr> 
+                    </thead>
+                    <tbody>
+                    <tr th:each="position : ${positions}">
+                        <td th:text="${position.id}">1</td>
+                        <td th:text="${position.positionName}">Developer</td>
+                        <td th:text="${position.department != null ? position.department.departmentName : 'N/A'}">IT</td>
+                        <td>
+                            <div sec:authorize="hasRole('ADMIN')">
+                                <a th:href="@{/admin/pages/positions/{id}/edit(id=${position.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/admin/pages/positions/{id}/delete(id=${position.id})}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this position?')">
+                                    <i class="bi bi-trash">Delete</i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Hiển thị nếu không có bản ghi -->
+                    <tr th:if="${#lists.isEmpty(positions)}">
+                        <td colspan="4" class="text-center">No positions found</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer và JS -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

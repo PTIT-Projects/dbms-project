@@ -24,12 +24,14 @@ public class LeaveBalanceController {
         model.addAttribute("leaveBalances", leaveBalanceService.getAllLeaveBalances());
         return "pages/leave/list";
     }
+    //Trả về link pages/leave/list.html
 
     @GetMapping("/{id}")
     public String getLeaveBalanceById(@PathVariable Integer id, Model model) {
         model.addAttribute("leaveBalance", leaveBalanceService.getLeaveBalanceById(id));
         return "pages/leave/view";
     }
+    //Trả về link pages/leave/view.html để xem thông tin theo từng id nhân viên.
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {

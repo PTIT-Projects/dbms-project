@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Balance List - HRMS</title>
+    
+    <!-- Link đến header fragment chứa CSS -->
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    
+    <!-- Nếu có CSS riêng cho leave balance, gắn link tại đây -->
+    <link rel="stylesheet" href="/hrms/src/main/resources/templates/pages/insurance/congdao.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Leave Balance Management</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/pages/leave/create}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus"></i> Add Leave Balance
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng dữ liệu Leave Balance -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Employee Name</th>
+                        <th>Year</th>
+                        <th>Total Leave Days</th>
+                        <th>Used Leave Days</th>
+                        <th>Remaining Leave Days</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="balance : ${leaveBalances}">
+                        <td th:text="${balance.id}">1</td>
+                        <td th:text="${balance.employee != null ? balance.employee.fullName : 'N/A'}">John Doe</td>
+                        <td th:text="${balance.year}">2024</td>
+                        <td th:text="${balance.totalLeaveDays}">12</td>
+                        <td th:text="${balance.usedLeaveDays}">5</td>
+                        <td th:text="${balance.remainingLeaveDays}">7</td>
+                        <td>
+                            <div sec:authorize="hasRole('ADMIN')">
+                                <a th:href="@{/admin/pages/leave/{id}/edit(id=${balance.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/admin/pages/leave/{id}/delete(id=${balance.id})}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this leave balance record?')">
+                                    <i class="bi bi-trash">Delete</i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Hiển thị nếu không có bản ghi -->
+                    <tr th:if="${#lists.isEmpty(leaveBalances)}">
+                        <td colspan="7" class="text-center">No leave balance records found</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer và JS -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

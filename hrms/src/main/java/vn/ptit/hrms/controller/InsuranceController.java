@@ -24,12 +24,22 @@ public class InsuranceController {
         model.addAttribute("insuranceRecords", insuranceService.getAllInsurances());
         return "pages/insurance/list";
     }
+    /*****
+     * URL: /admin/pages/insurances
+     * Hiển thị: danh sách tất cả bản ghi bảo hiểm (insuranceRecords)
+     * View HTML: pages/insurance/list.html
+     */
 
     @GetMapping("/{id}")
     public String getInsuranceById(@PathVariable Integer id, Model model) {
         model.addAttribute("insurance", insuranceService.getInsuranceById(id));
         return "pages/insurance/view";
     }
+    /****
+     * URL: /admin/pages/insurances/1 (ví dụ)
+     * Hiển thị: chi tiết 1 bảo hiểm
+     * View HTML: pages/insurance/view.html
+     */
 
     @GetMapping("/create")
     public String showCreateForm(Model model) {
@@ -37,6 +47,7 @@ public class InsuranceController {
         model.addAttribute("employees", employeeService.getAllEmployees());
         return "pages/insurance/create";
     }
+    
 
     @PostMapping
     public String createInsurance(@ModelAttribute Insurance insurance) {

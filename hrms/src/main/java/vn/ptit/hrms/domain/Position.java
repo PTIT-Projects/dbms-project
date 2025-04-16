@@ -11,7 +11,7 @@ public class Position {
 
     public void setId(Integer id) {
         this.id = id;
-    }
+    } 
 
     public String getPositionName() {
         return positionName;

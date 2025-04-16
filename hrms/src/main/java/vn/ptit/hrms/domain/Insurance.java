@@ -7,7 +7,7 @@ public class Insurance {
     private Employee employee;
     private String insuranceNumber;
     private String insuranceType;
-    private LocalDate startDate;
+    private LocalDate startDate; 
     private LocalDate endDate;
 
     public Integer getId() {

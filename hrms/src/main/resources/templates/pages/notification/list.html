@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification List - HRMS</title>
+    <!-- Link đến header fragment chứa CSS -->
+    <div th:replace="~{fragments/header :: header-css}"></div>
+
+    <link rel="stylesheet" href="/hrms/src/main/resources/templates/pages/insurance/congdao.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Notification Management</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/pages/notifications/create}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus"></i> Add Notification
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng dữ liệu thông báo -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Created By</th>
+                        <th>Title</th>
+                        <th>Content</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="notification : ${notifications}">
+                        <td th:text="${notification.id}">1</td>
+                        <td th:text="${notification.createdBy != null ? notification.createdBy.fullName : 'N/A'}">John Doe</td>
+                        <td th:text="${notification.title}">Annual Meeting</td>
+                        <td th:text="${notification.content}">The company will hold...</td>
+                        <td th:text="${#temporals.format(notification.createdDate, 'dd/MM/yyyy')}">15/04/2025</td>
+                        <td>
+                            <div sec:authorize="hasRole('ADMIN')">
+                                <a th:href="@{/admin/pages/notifications/{id}/edit(id=${notification.id})}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/admin/pages/notifications/{id}/delete(id=${notification.id})}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this notification?')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div> 
+                        </td>
+                    </tr>
+
+                    <!-- Nếu không có thông báo -->
+                    <tr th:if="${#lists.isEmpty(notifications)}">
+                        <td colspan="6" class="text-center">No notifications found</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Footer và JS -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+</body>
+</html>

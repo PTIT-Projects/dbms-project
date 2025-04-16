@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 public class Employee {
     private Integer id;
-    private String fullName;
+    private String fullName; 
     private LocalDate dateOfBirth;
     private GenderEnum gender;
     private String address;
