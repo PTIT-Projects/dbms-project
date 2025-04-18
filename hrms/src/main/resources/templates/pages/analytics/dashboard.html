@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Add Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Analytics Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-sm btn-outline-primary me-2" id="runEtlBtn">
+                        <i class="bi bi-arrow-repeat"></i> Run ETL
+                    </button>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Average Working Hours by Department</h5>
+                            <h6 class="card-subtitle text-muted" th:text="${'Period: ' + currentMonth + '/' + currentYear}">Period: 9/2023</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="deptHoursChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Attendance Status Distribution</h5>
+                            <h6 class="card-subtitle text-muted" th:text="${'Period: ' + currentMonth + '/' + currentYear}">Period: 9/2023</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="attendanceStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Chart & ETL Scripts -->
+<script th:inline="javascript">
+    // Get data from Thymeleaf
+    const attendanceByDept = /*[[${attendanceByDept}]]*/ {};
+    const attendanceStatus = /*[[${attendanceStatus}]]*/ {};
+
+    // Prepare departments chart
+    const deptLabels = Object.keys(attendanceByDept);
+    const deptData = Object.values(attendanceByDept);
+
+    new Chart(document.getElementById('deptHoursChart'), {
+        type: 'bar',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                label: 'Average Hours',
+                data: deptData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Prepare status chart
+    const statusLabels = Object.keys(attendanceStatus);
+    const statusData = Object.values(attendanceStatus);
+    const backgroundColors = [
+        'rgba(54, 162, 235, 0.6)',
+        'rgba(255, 99, 132, 0.6)',
+        'rgba(255, 206, 86, 0.6)',
+        'rgba(75, 192, 192, 0.6)'
+    ];
+
+    new Chart(document.getElementById('attendanceStatusChart'), {
+        type: 'pie',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusData,
+                backgroundColor: backgroundColors.slice(0, statusLabels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+</body>
+</html>

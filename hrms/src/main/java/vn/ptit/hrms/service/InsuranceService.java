@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.InsuranceDao;
-import vn.ptit.hrms.domain.Insurance;
+import vn.ptit.hrms.dao.primary.InsuranceDao;
+import vn.ptit.hrms.domain.primary.Insurance;
 
 import java.time.LocalDate;
 import java.util.List;

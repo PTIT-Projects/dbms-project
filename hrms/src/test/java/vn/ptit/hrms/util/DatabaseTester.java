@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import vn.ptit.hrms.constant.*;
-import vn.ptit.hrms.dao.*;
-import vn.ptit.hrms.domain.*;
+import vn.ptit.hrms.dao.primary.*;
+import vn.ptit.hrms.domain.primary.*;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;

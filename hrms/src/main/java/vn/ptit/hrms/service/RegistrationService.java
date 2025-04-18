@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.RegistrationDao;
-import vn.ptit.hrms.domain.Registration;
+import vn.ptit.hrms.dao.primary.RegistrationDao;
+import vn.ptit.hrms.domain.primary.Registration;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
 import vn.ptit.hrms.constant.RegistrationTypeEnum;
 

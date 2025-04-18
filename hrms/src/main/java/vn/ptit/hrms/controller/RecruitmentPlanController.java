@@ -3,7 +3,7 @@ package vn.ptit.hrms.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import vn.ptit.hrms.domain.RecruitmentPlan;
+import vn.ptit.hrms.domain.primary.RecruitmentPlan;
 import vn.ptit.hrms.service.RecruitmentPlanService;
 import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.PositionService;

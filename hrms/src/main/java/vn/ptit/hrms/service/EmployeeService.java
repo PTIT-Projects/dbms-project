@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.EmployeeDao;
-import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Employee;
 
 import java.util.List;
 import java.util.stream.Collectors;

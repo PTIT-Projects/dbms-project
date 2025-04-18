@@ -5,8 +5,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.EmployeeDao;
-import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Employee;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -19,6 +19,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Employee employee = this.employeeDao.findEmployeeByEmail(username);
+        if (employee == null) {
+            throw new UsernameNotFoundException("User not found: " + username);
+        }
         return User.withUsername(employee.getEmail())
                 .password(employee.getPassword())
                 .authorities(employee.getRoleName()).build();

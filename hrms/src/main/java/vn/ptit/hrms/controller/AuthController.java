@@ -5,19 +5,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import vn.ptit.hrms.constant.EmployeeStatusEnum;
-import vn.ptit.hrms.constant.GenderEnum;
-import vn.ptit.hrms.domain.Employee;
 import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.EmployeeService;
 import vn.ptit.hrms.service.PositionService;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
 
 @Controller
 public class AuthController {

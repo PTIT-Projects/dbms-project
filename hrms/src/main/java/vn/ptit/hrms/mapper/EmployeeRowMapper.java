@@ -7,11 +7,11 @@ import java.time.LocalDate;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.EmployeeStatusEnum;
 import vn.ptit.hrms.constant.GenderEnum;
-import vn.ptit.hrms.dao.DepartmentDao;
-import vn.ptit.hrms.dao.PositionDao;
-import vn.ptit.hrms.domain.Department;
-import vn.ptit.hrms.domain.Employee;
-import vn.ptit.hrms.domain.Position;
+import vn.ptit.hrms.dao.primary.DepartmentDao;
+import vn.ptit.hrms.dao.primary.PositionDao;
+import vn.ptit.hrms.domain.primary.Department;
+import vn.ptit.hrms.domain.primary.Employee;
+import vn.ptit.hrms.domain.primary.Position;
 
 public class EmployeeRowMapper implements RowMapper<Employee> {
     private final PositionDao positionDao;
