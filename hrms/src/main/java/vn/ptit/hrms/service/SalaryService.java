@@ -1,9 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.SalaryDao;
-import vn.ptit.hrms.domain.Salary;
-import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.dao.primary.SalaryDao;
+import vn.ptit.hrms.domain.primary.Salary;
 
 import java.util.List;
 

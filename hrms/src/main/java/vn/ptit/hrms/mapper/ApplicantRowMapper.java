@@ -6,9 +6,9 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
 
 import vn.ptit.hrms.constant.ApplicantStatusEnum;
-import vn.ptit.hrms.dao.RecruitmentPlanDao;
-import vn.ptit.hrms.domain.Applicant;
-import vn.ptit.hrms.domain.RecruitmentPlan;
+import vn.ptit.hrms.dao.primary.RecruitmentPlanDao;
+import vn.ptit.hrms.domain.primary.Applicant;
+import vn.ptit.hrms.domain.primary.RecruitmentPlan;
 
 public class ApplicantRowMapper implements RowMapper<Applicant> {
 

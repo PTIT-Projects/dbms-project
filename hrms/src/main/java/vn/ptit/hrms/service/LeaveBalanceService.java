@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.LeaveBalanceDao;
-import vn.ptit.hrms.domain.LeaveBalance;
+import vn.ptit.hrms.dao.primary.LeaveBalanceDao;
+import vn.ptit.hrms.domain.primary.LeaveBalance;
 
 import java.util.List;
 import java.util.Optional;

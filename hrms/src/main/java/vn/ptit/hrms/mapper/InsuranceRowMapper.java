@@ -4,9 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
-import vn.ptit.hrms.domain.Employee;
-import vn.ptit.hrms.domain.Insurance;
-import vn.ptit.hrms.dao.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Employee;
+import vn.ptit.hrms.domain.primary.Insurance;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
 
 public class InsuranceRowMapper implements RowMapper<Insurance> {
 

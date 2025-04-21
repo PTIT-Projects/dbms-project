@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.RecruitmentPlanDao;
-import vn.ptit.hrms.domain.RecruitmentPlan;
+import vn.ptit.hrms.dao.primary.RecruitmentPlanDao;
+import vn.ptit.hrms.domain.primary.RecruitmentPlan;
 
 import java.time.LocalDate;
 import java.util.List;

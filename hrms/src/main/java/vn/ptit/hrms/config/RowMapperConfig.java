@@ -2,7 +2,10 @@ package vn.ptit.hrms.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import vn.ptit.hrms.dao.*;
+import vn.ptit.hrms.dao.primary.DepartmentDao;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
+import vn.ptit.hrms.dao.primary.PositionDao;
+import vn.ptit.hrms.dao.primary.RecruitmentPlanDao;
 import vn.ptit.hrms.mapper.*;
 
 @Configuration

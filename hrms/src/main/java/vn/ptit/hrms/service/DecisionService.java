@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.DecisionDao;
-import vn.ptit.hrms.domain.Decision;
+import vn.ptit.hrms.dao.primary.DecisionDao;
+import vn.ptit.hrms.domain.primary.Decision;
 import vn.ptit.hrms.constant.DecisionTypeEnum;
 
 import java.time.LocalDate;

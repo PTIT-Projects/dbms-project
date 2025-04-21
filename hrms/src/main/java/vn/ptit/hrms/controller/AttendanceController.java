@@ -8,13 +8,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import vn.ptit.hrms.constant.AttendanceStatusEnum;
-import vn.ptit.hrms.domain.Applicant;
-import vn.ptit.hrms.domain.Attendance;
+import vn.ptit.hrms.domain.primary.Attendance;
 import vn.ptit.hrms.service.AttendanceService;
 import vn.ptit.hrms.service.EmployeeService;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Controller
 @RequestMapping("/admin/pages/attendances")

@@ -3,9 +3,9 @@ package vn.ptit.hrms.mapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.springframework.jdbc.core.RowMapper;
-import vn.ptit.hrms.domain.Employee;
-import vn.ptit.hrms.domain.Salary;
-import vn.ptit.hrms.dao.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Employee;
+import vn.ptit.hrms.domain.primary.Salary;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
 
 public class SalaryRowMapper implements RowMapper<Salary> {
 

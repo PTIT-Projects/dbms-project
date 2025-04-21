@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.DecisionTypeEnum;
-import vn.ptit.hrms.dao.EmployeeDao;
-import vn.ptit.hrms.domain.Decision;
-import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Decision;
+import vn.ptit.hrms.domain.primary.Employee;
 
 public class DecisionRowMapper implements RowMapper<Decision> {
 

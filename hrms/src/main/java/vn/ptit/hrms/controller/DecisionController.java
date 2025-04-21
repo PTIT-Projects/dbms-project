@@ -3,7 +3,7 @@ package vn.ptit.hrms.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import vn.ptit.hrms.domain.Decision;
+import vn.ptit.hrms.domain.primary.Decision;
 import vn.ptit.hrms.service.DecisionService;
 import vn.ptit.hrms.service.EmployeeService;
 

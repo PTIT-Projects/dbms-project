@@ -4,11 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
-import vn.ptit.hrms.dao.DepartmentDao;
-import vn.ptit.hrms.dao.PositionDao;
-import vn.ptit.hrms.domain.Department;
-import vn.ptit.hrms.domain.Position;
-import vn.ptit.hrms.domain.RecruitmentPlan;
+import vn.ptit.hrms.dao.primary.DepartmentDao;
+import vn.ptit.hrms.dao.primary.PositionDao;
+import vn.ptit.hrms.domain.primary.Department;
+import vn.ptit.hrms.domain.primary.Position;
+import vn.ptit.hrms.domain.primary.RecruitmentPlan;
 
 public class RecruitmentPlanRowMapper implements RowMapper<RecruitmentPlan> {
 

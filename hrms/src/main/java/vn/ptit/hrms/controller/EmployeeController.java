@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.domain.primary.Employee;
 import vn.ptit.hrms.service.DepartmentService;
 import vn.ptit.hrms.service.EmployeeService;
 import vn.ptit.hrms.service.PositionService;
