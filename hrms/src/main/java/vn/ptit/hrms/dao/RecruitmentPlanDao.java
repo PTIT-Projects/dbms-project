@@ -1,5 +1,6 @@
 package vn.ptit.hrms.dao;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import vn.ptit.hrms.domain.RecruitmentPlan;
@@ -30,14 +31,21 @@ public class RecruitmentPlanDao {
 
     // Method to get a recruitment plan by ID
     public RecruitmentPlan getRecruitmentPlanById(Integer id) {
-        String sql = "SELECT * FROM RecruitmentPlans WHERE PlanID = ?";
-        return jdbcTemplate.queryForObject(sql, recruitmentPlanRowMapper, id);
+        try {
+            String sql = "SELECT * FROM RecruitmentPlans WHERE PlanID = ?";
+            return jdbcTemplate.queryForObject(sql, recruitmentPlanRowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
-    // Method to get all recruitment plans
     public List<RecruitmentPlan> getAllRecruitmentPlans() {
-        String sql = "SELECT * FROM RecruitmentPlans";
-        return jdbcTemplate.query(sql, recruitmentPlanRowMapper);
+        try {
+            String sql = "SELECT * FROM RecruitmentPlans";
+            return jdbcTemplate.query(sql, recruitmentPlanRowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     // Method to update a recruitment plan
@@ -54,6 +62,8 @@ public class RecruitmentPlanDao {
 
     // Method to delete a recruitment plan
     public void deleteRecruitmentPlan(Integer id) {
+        String updateApplicantsSql = "UPDATE Applicants SET PlanID = NULL WHERE PlanID = ?";
+        jdbcTemplate.update(updateApplicantsSql, id);
         String sql = "DELETE FROM RecruitmentPlans WHERE PlanID = ?";
         jdbcTemplate.update(sql, id);
     }

@@ -8,6 +8,7 @@ import vn.ptit.hrms.dao.EmployeeDao;
 import vn.ptit.hrms.domain.Employee;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
@@ -46,6 +47,14 @@ public class EmployeeService {
     public boolean isExistsEmployeeWithEmail(String email) {
         return this.employeeDao.findEmployeeByEmail(email) != null;
     }
+
+    public List<Employee> getEmployeesByDepartmentId(Integer departmentId) {
+        return getAllEmployees().stream()
+                .filter(emp -> emp.getDepartment() != null && 
+                       emp.getDepartment().getId().equals(departmentId))
+                .collect(Collectors.toList());
+    }
+
     public int getEmployeeCount() {
         return employeeDao.countNumEmployees();
     }

@@ -1,10 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Decision - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
 </head>
 <body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Decision Details</h1>
+                <div>
+                    <a th:href="@{/admin/pages/decisions}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0" th:text="${'Decision #' + decision.id}">Decision #1</h5>
+                    <span th:class="${'badge ' + 
+                        (decision.decisionType.name() == 'REWARD' ? 'bg-success' : 
+                        decision.decisionType.name() == 'DISCIPLINE' ? 'bg-danger' : 'bg-info')}"
+                          th:text="${decision.decisionType}">Type</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Employee Information</h6>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 35%">Employee ID</th>
+                                    <td th:text="${decision.employee.id}">1</td>
+                                </tr>
+                                <tr>
+                                    <th>Employee Name</th>
+                                    <td>
+                                        <a th:href="@{/admin/pages/employee/{id}(id=${decision.employee.id})}"
+                                           th:text="${decision.employee.fullName}"
+                                           class="text-primary">John Doe</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Department</th>
+                                    <td th:text="${decision.employee.department != null ? decision.employee.department.departmentName : '-'}">IT Department</td>
+                                </tr>
+                                <tr>
+                                    <th>Position</th>
+                                    <td th:text="${decision.employee.position != null ? decision.employee.position.positionName : '-'}">Developer</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Decision Details</h6>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th style="width: 35%">Decision Type</th>
+                                    <td>
+                                        <span th:class="${'badge ' + 
+                                            (decision.decisionType.name() == 'REWARD' ? 'bg-success' : 
+                                            decision.decisionType.name() == 'DISCIPLINE' ? 'bg-danger' : 'bg-info')}"
+                                              th:text="${decision.decisionType}">Type</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Decision Date</th>
+                                    <td th:text="${#temporals.format(decision.decisionDate, 'dd/MM/yyyy')}">01/01/2023</td>
+                                </tr>
+                                <tr>
+                                    <th style="vertical-align: middle">Details</th>
+                                    <td>
+                                        <div class="p-2 border rounded bg-light">
+                                            <p th:text="${decision.details}" class="mb-0" style="white-space: pre-wrap;">Decision details here...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3" sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{/admin/pages/decisions/{id}/edit(id=${decision.id})}" 
+                           class="btn btn-primary me-2">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a th:href="@{/admin/pages/decisions/{id}/delete(id=${decision.id})}"
+                           class="btn btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this decision?')">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
 </body>
 </html>

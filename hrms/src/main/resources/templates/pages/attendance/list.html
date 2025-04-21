@@ -105,10 +105,10 @@
                 <a th:href="@{/admin/pages/attendances/{id}(id=${attendance.id})}" class="btn btn-sm btn-outline-secondary">
                   <i class="bi bi-eye"></i>
                 </a>
-                <a th:href="@{/admin/pages/attendances/{id}/edit(id=${attendance.id})}" class="btn btn-sm btn-outline-primary">
+                <a th:href="@{/admin/pages/attendances/{id}/edit(id=${attendance.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasRole('ADMIN')">
                   <i class="bi bi-pencil"></i>
                 </a>
-                <a th:href="@{/admin/pages/attendances/{id}/delete(id=${attendance.id})}"
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/pages/attendances/{id}/delete(id=${attendance.id})}"
                    class="btn btn-sm btn-outline-danger"
                    onclick="return confirm('Are you sure you want to delete this attendance record?')">
                   <i class="bi bi-trash"></i>

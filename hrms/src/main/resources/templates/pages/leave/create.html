@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Leave Balance - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Create New Leave Balance</h1>
+                <div>
+                    <a th:href="@{/admin/pages/leave-balances}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Leave Balance Information</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/leave-balances}" method="post" class="needs-validation" novalidate>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="employee" class="form-label">Employee <span class="text-danger">*</span></label>
+                                    <select id="employee" name="employee.id" class="form-select" required>
+                                        <option value="">-- Select Employee --</option>
+                                        <option th:each="emp : ${employees}" 
+                                                th:value="${emp.id}" 
+                                                th:text="${emp.fullName + ' (' + emp.id + ')'}">
+                                            John Doe (1)
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="year" class="form-label">Year <span class="text-danger">*</span></label>
+                                    <select id="year" name="year" class="form-select" required>
+                                        <option value="">-- Select Year --</option>
+                                        <option th:each="y : ${#numbers.sequence(2020, 2030)}" th:value="${y}" th:text="${y}"></option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a year.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="totalLeaveDays" class="form-label">Total Leave Days <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="totalLeaveDays" 
+                                           name="totalLeaveDays" min="0" value="0" required>
+                                    <div class="invalid-feedback">Please enter total leave days.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="usedLeaveDays" class="form-label">Used Leave Days</label>
+                                    <input type="number" class="form-control" id="usedLeaveDays" 
+                                           name="usedLeaveDays" value="0" min="0">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="remainingLeaveDays" class="form-label">Remaining Leave Days</label>
+                                    <input type="number" class="form-control" id="remainingLeaveDays" 
+                                           name="remainingLeaveDays" readonly value="0">
+                                    <small class="text-muted">This will be calculated automatically</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a th:href="@{/admin/pages/leave-balances}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Script to calculate remaining days -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalInput = document.getElementById('totalLeaveDays');
+        const usedInput = document.getElementById('usedLeaveDays');
+        const remainingInput = document.getElementById('remainingLeaveDays');
+        
+        function calculateRemaining() {
+            const total = parseInt(totalInput.value) || 0;
+            const used = parseInt(usedInput.value) || 0;
+            remainingInput.value = Math.max(0, total - used);
+        }
+        
+        totalInput.addEventListener('input', calculateRemaining);
+        usedInput.addEventListener('input', calculateRemaining);
+        
+        // Initial calculation
+        calculateRemaining();
+    });
+
+    // Form validation
+    (function() {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+</body>
+</html>

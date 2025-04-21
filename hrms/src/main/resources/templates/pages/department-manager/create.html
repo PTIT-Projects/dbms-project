@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Department Manager - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Assign Department Manager</h1>
+                <div>
+                    <a th:href="@{/admin/pages/department-managers}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Department Manager Assignment Form</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/pages/department-managers}" method="post" class="needs-validation" novalidate>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select id="department" name="department.id" class="form-select" required>
+                                        <option value="">-- Select Department --</option>
+                                        <option th:each="dept : ${departments}" 
+                                                th:value="${dept.id}" 
+                                                th:text="${dept.departmentName}">
+                                            Human Resources
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a department.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="manager" class="form-label">Manager <span class="text-danger">*</span></label>
+                                    <select id="manager" name="manager.id" class="form-select" required>
+                                        <option value="">-- Select Manager --</option>
+                                        <option th:each="emp : ${employees}" 
+                                                th:value="${emp.id}" 
+                                                th:text="${emp.fullName + ' (' + emp.email + ')'}">
+                                            John Doe (john.doe@example.com)
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a manager.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            Assigning a manager to a department that already has a manager will override the existing assignment.
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <a th:href="@{/admin/pages/department-managers}" class="btn btn-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Assign Manager</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Form validation script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function() {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+</body>
+</html>

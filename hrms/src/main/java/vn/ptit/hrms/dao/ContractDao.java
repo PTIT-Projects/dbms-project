@@ -22,15 +22,14 @@ public class ContractDao {
     }
 
     public void createContract(Contract contract) {
-        String sql = "INSERT INTO Contracts (EmployeeID, ContractType, StartDate, EndDate, Status, Salary) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Contracts (EmployeeID, ContractType, StartDate, EndDate, Status) VALUES (?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 contract.getEmployee() != null ? contract.getEmployee().getId() : null,
                 contract.getContractType() != null ? contract.getContractType().getValue() : null,
                 contract.getStartDate() != null ? java.sql.Date.valueOf(contract.getStartDate()) : null,
                 contract.getEndDate() != null ? java.sql.Date.valueOf(contract.getEndDate()) : null,
-                contract.getStatus() != null ? contract.getStatus().getValue() : null,
-                contract.getSalary());
+                contract.getStatus() != null ? contract.getStatus().getValue() : null);
     }
 
     public Contract getContractById(Integer id) {
@@ -73,7 +72,7 @@ public class ContractDao {
     }
 
     public void updateContract(Contract contract) {
-        String sql = "UPDATE Contracts SET EmployeeID = ?, ContractType = ?, StartDate = ?, EndDate = ?, Status = ?, Salary = ? WHERE ContractID = ?";
+        String sql = "UPDATE Contracts SET EmployeeID = ?, ContractType = ?, StartDate = ?, EndDate = ?, Status = ? WHERE ContractID = ?";
 
         jdbcTemplate.update(sql,
                 contract.getEmployee() != null ? contract.getEmployee().getId() : null,
@@ -81,7 +80,6 @@ public class ContractDao {
                 contract.getStartDate() != null ? java.sql.Date.valueOf(contract.getStartDate()) : null,
                 contract.getEndDate() != null ? java.sql.Date.valueOf(contract.getEndDate()) : null,
                 contract.getStatus() != null ? contract.getStatus().getValue() : null,
-                contract.getSalary(),
                 contract.getId());
     }
 

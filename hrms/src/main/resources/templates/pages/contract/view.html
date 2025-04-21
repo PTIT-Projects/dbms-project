@@ -37,7 +37,6 @@
                     <h5 class="mb-0" th:text="'Contract #' + ${contract.id}">Contract #1</h5>
                     <span th:class="${'badge ' +
             (contract.status != null && contract.status.name() == 'ACTIVE' ? 'bg-success' :
-            contract.status != null && contract.status.name() == 'DRAFT' ? 'bg-warning' :
             contract.status != null && contract.status.name() == 'EXPIRED' ? 'bg-secondary' :
             'bg-danger')}"
                           th:text="${contract.status != null ? contract.status.value : 'N/A'}">Status</span>
@@ -88,10 +87,6 @@
                                 <tr>
                                     <th>End Date</th>
                                     <td th:text="${contract.endDate != null ? #temporals.format(contract.endDate, 'dd/MM/yyyy') : 'N/A'}">31/12/2023</td>
-                                </tr>
-                                <tr>
-                                    <th>Salary</th>
-                                    <td th:text="${contract.salary != null ? #numbers.formatDecimal(contract.salary, 1, 'COMMA', 2, 'POINT') + ' $' : 'N/A'}">5,000.00 $</td>
                                 </tr>
                             </table>
                         </div>

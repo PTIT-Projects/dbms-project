@@ -27,13 +27,13 @@ public class RecruitmentPlanController {
     @GetMapping
     public String getAllRecruitmentPlans(Model model) {
         model.addAttribute("recruitmentPlans", recruitmentPlanService.getAllRecruitmentPlans());
-        return "pages/plan/list";
+        return "pages/recruitmentplan/list";
     }
 
     @GetMapping("/{id}")
     public String getRecruitmentPlanById(@PathVariable Integer id, Model model) {
         model.addAttribute("recruitmentPlan", recruitmentPlanService.getRecruitmentPlanById(id));
-        return "pages/plan/view";
+        return "pages/recruitmentplan/view";
     }
 
     @GetMapping("/create")
@@ -41,7 +41,7 @@ public class RecruitmentPlanController {
         model.addAttribute("recruitmentPlan", new RecruitmentPlan());
         model.addAttribute("departments", departmentService.getAllDepartments());
         model.addAttribute("positions", positionService.getAllPositions());
-        return "pages/plan/create";
+        return "pages/recruitmentplan/create";
     }
 
     @PostMapping
@@ -55,7 +55,7 @@ public class RecruitmentPlanController {
         model.addAttribute("recruitmentPlan", recruitmentPlanService.getRecruitmentPlanById(id));
         model.addAttribute("departments", departmentService.getAllDepartments());
         model.addAttribute("positions", positionService.getAllPositions());
-        return "pages/plan/edit";
+        return "pages/recruitmentplan/edit";
     }
 
     @PostMapping("/{id}")
