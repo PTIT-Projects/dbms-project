@@ -1,0 +1,213 @@
+[33mcommit 5a25b1f6c7297459aeb79072fe3a29e6ef888930[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mquan[m[33m)[m
+Author: hoanganhquanCS04 <hanhquan027.ndt@gmail.com>
+Date:   Mon Apr 21 21:53:46 2025 +0700
+
+    Thêm bài toán phân tích
+
+baitoanphantich.sql
+
+[33mcommit 97e980b5b8429e5681304d6127561138f2a7d3ea[m[33m ([m[1;31morigin/quan[m[33m)[m
+Author: hoanganhquanCS04 <hanhquan027.ndt@gmail.com>
+Date:   Mon Apr 21 10:41:23 2025 +0700
+
+    Xóa file altertable.sql và dwh.sql không còn sử dụng
+
+altertable.sql
+dwh.sql
+
+[33mcommit f67228c1a22b78dc2f00545d1c9a142abc623cc2[m
+Author: hoanganhquanCS04 <hanhquan027.ndt@gmail.com>
+Date:   Mon Apr 21 10:38:30 2025 +0700
+
+    Scripts create dwh_table
+
+dwh1.sql
+
+[33mcommit c9e28817ba78aa285ad52a1daed882d501b40722[m
+Author: hoanganhquanCS04 <hanhquan027.ndt@gmail.com>
+Date:   Sun Apr 20 23:19:32 2025 +0700
+
+    chinh sua column
+
+altertable.sql
+
+[33mcommit 0523fced7c1a26ccb03ccd05c9ebb436b9ad4d64[m
+Author: Hoang Anh Quan <118801573+hoanganhquanCS04@users.noreply.github.com>
+Date:   Sat Apr 19 20:35:35 2025 +0700
+
+    Delete .vscode directory
+
+.vscode/settings.json
+
+[33mcommit 5caf5da4a788b0a61163b5fa667a66dd23c61d1a[m
+Author: hoanganhquanCS04 <hanhquan027.ndt@gmail.com>
+Date:   Sat Apr 19 16:49:17 2025 +0700
+
+    Thêm file test.sql ho?c c?p nh?t n?i dung
+
+.vscode/settings.json
+dwh.sql
+
+[33mcommit d66652d175f06045a927e22c13cf7a6624d0572e[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Merge: 6a76c45 988010b
+Author: Cong Tuan Duong Vu <117791793+vucongtuanduong@users.noreply.github.com>
+Date:   Tue Apr 8 11:06:17 2025 +0700
+
+    Merge pull request #4 from PTIT-Projects/duong-setup-controller
+    
+    Update dashboard
+
+[33mcommit 988010b3824ea3a2bde83e52f236cda41bd57a58[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Tue Apr 8 10:57:26 2025 +0700
+
+    update contract
+
+hrms/src/main/java/vn/ptit/hrms/controller/ContractController.java
+hrms/src/main/java/vn/ptit/hrms/dao/ContractDao.java
+hrms/src/main/java/vn/ptit/hrms/service/ContractService.java
+hrms/src/main/resources/templates/pages/contract/create.html
+hrms/src/main/resources/templates/pages/contract/edit.html
+hrms/src/main/resources/templates/pages/contract/list.html
+hrms/src/main/resources/templates/pages/contract/view.html
+
+[33mcommit 8e2f1913897583732b8a92f8bf070da872eeb825[m
+Author: TTTNTH <DuongVCT.B22KH024@stu.ptit.edu.vn>
+Date:   Thu Apr 3 15:19:06 2025 +0700
+
+    add contract list, view, create,edit
+
+hrms/src/main/resources/templates/pages/contract/create.html
+hrms/src/main/resources/templates/pages/contract/edit.html
+hrms/src/main/resources/templates/pages/contract/list.html
+hrms/src/main/resources/templates/pages/contract/view.html
+
+[33mcommit 36d61818d24b2108df1b7b1fb06f259b023638b5[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Thu Apr 3 14:54:52 2025 +0700
+
+    update
+
+hrms/src/main/resources/nhansucongty.bak
+
+[33mcommit c524412607e206bde498004a66ba5cb20a35e913[m
+Author: TTTNTH <DuongVCT.B22KH024@stu.ptit.edu.vn>
+Date:   Thu Apr 3 14:54:24 2025 +0700
+
+    update
+
+hrms/src/main/resources/templates/pages/contract/create.html
+hrms/src/main/resources/templates/pages/contract/edit.html
+hrms/src/main/resources/templates/pages/contract/list.html
+hrms/src/main/resources/templates/pages/contract/view.html
+hrms/src/main/resources/templates/pages/decision/create.html
+hrms/src/main/resources/templates/pages/decision/edit.html
+hrms/src/main/resources/templates/pages/decision/list.html
+hrms/src/main/resources/templates/pages/decision/view.html
+hrms/src/main/resources/templates/pages/department/list.html
+hrms/src/main/resources/templates/pages/department/view.html
+
+[33mcommit 2ca8a51dfa5f0eb8b69c711d71f27c976c8d28d6[m
+Merge: 99a05de f06df3a
+Author: TTTNTH <DuongVCT.B22KH024@stu.ptit.edu.vn>
+Date:   Thu Apr 3 14:44:10 2025 +0700
+
+    Merge branch 'duong-setup-controller' of https://github.com/PTIT-Projects/dbms-project into duong-setup-controller
+
+[33mcommit 99a05de7a7bc35c4edf12c96164b42f613236698[m
+Author: TTTNTH <DuongVCT.B22KH024@stu.ptit.edu.vn>
+Date:   Thu Apr 3 14:40:12 2025 +0700
+
+    update application.properties
+
+hrms/src/main/resources/application.properties
+
+[33mcommit f06df3a96e1faf94853a72dfc6f1b820e0645cb8[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Sat Mar 29 07:56:11 2025 +0700
+
+    update controller endpoints
+
+hrms/src/main/java/vn/ptit/hrms/controller/ContractController.java
+hrms/src/main/java/vn/ptit/hrms/controller/DecisionController.java
+hrms/src/main/java/vn/ptit/hrms/controller/DepartmentController.java
+hrms/src/main/java/vn/ptit/hrms/controller/DepartmentManagerController.java
+hrms/src/main/java/vn/ptit/hrms/controller/InsuranceController.java
+hrms/src/main/java/vn/ptit/hrms/controller/LeaveBalanceController.java
+hrms/src/main/java/vn/ptit/hrms/controller/NotificationController.java
+hrms/src/main/java/vn/ptit/hrms/controller/PositionController.java
+hrms/src/main/java/vn/ptit/hrms/controller/RecruitmentPlanController.java
+hrms/src/main/java/vn/ptit/hrms/controller/RegistrationController.java
+hrms/src/main/java/vn/ptit/hrms/controller/SalaryController.java
+hrms/src/main/java/vn/ptit/hrms/controller/WorkTripRequestController.java
+
+[33mcommit fef83678c5b17a00c7d632aff879692fc0a1009d[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Fri Mar 28 17:38:49 2025 +0700
+
+    Add attendance
+
+hrms/src/main/java/vn/ptit/hrms/controller/AdminController.java
+hrms/src/main/java/vn/ptit/hrms/controller/AttendanceController.java
+hrms/src/main/java/vn/ptit/hrms/dao/ApplicantDao.java
+hrms/src/main/java/vn/ptit/hrms/dao/AttendanceDao.java
+hrms/src/main/java/vn/ptit/hrms/dao/EmployeeDao.java
+hrms/src/main/java/vn/ptit/hrms/service/AttendanceService.java
+hrms/src/main/resources/templates/fragments/sidebar.html
+hrms/src/main/resources/templates/pages/applicant/list.html
+hrms/src/main/resources/templates/pages/applicant/view.html
+hrms/src/main/resources/templates/pages/attendance/create.html
+hrms/src/main/resources/templates/pages/attendance/edit.html
+hrms/src/main/resources/templates/pages/attendance/list.html
+hrms/src/main/resources/templates/pages/attendance/view.html
+
+[33mcommit 4115b660f3e8ddc4ff5c2068f3c48cb7add41a7f[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Fri Mar 28 15:04:12 2025 +0700
+
+    finish applicants
+
+hrms/src/main/java/vn/ptit/hrms/controller/AdminController.java
+hrms/src/main/java/vn/ptit/hrms/controller/ApplicantController.java
+hrms/src/main/java/vn/ptit/hrms/dao/ApplicantDao.java
+hrms/src/main/java/vn/ptit/hrms/service/ApplicantService.java
+hrms/src/main/resources/templates/pages/applicant/create.html
+hrms/src/main/resources/templates/pages/applicant/edit.html
+hrms/src/main/resources/templates/pages/applicant/list.html
+hrms/src/main/resources/templates/pages/applicant/view.html
+
+[33mcommit 9c3a10a15e6ac0ffda2a7caf16a86721705f708e[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Sun Mar 23 16:48:01 2025 +0700
+
+    Update sidebar
+
+hrms/src/main/resources/templates/fragments/sidebar.html
+
+[33mcommit 3ca028f23bc7cd0a0a22e2f93350a01ece4bf41a[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Sun Mar 23 16:42:33 2025 +0700
+
+    update delete
+
+hrms/src/main/java/vn/ptit/hrms/dao/EmployeeDao.java
+
+[33mcommit aac61ddbcb3e2b39c53626f60d97bf875a48e0b5[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Sun Mar 23 16:32:31 2025 +0700
+
+    complete crud employee
+
+hrms/pom.xml
+hrms/src/main/java/vn/ptit/hrms/controller/EmployeeController.java
+hrms/src/main/java/vn/ptit/hrms/dao/EmployeeDao.java
+hrms/src/main/java/vn/ptit/hrms/service/EmployeeService.java
+hrms/src/main/resources/templates/fragments/header.html
+hrms/src/main/resources/templates/pages/employee/create.html
+hrms/src/main/resources/templates/pages/employee/edit.html
+hrms/src/main/resources/templates/pages/employee/list.html
+hrms/src/main/resources/templates/pages/employee/view.html
+
+[33mcommit 5ec480a5d3a542e371ebac701547219109309505[m
+Author: duong vu cong tuan <vucongtuanduong2409@gmail.com>
+Date:   Sat Mar 22 18:26
