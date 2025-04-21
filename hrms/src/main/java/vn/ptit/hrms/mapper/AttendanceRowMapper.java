@@ -8,9 +8,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.AttendanceStatusEnum;
-import vn.ptit.hrms.dao.EmployeeDao;
-import vn.ptit.hrms.domain.Attendance;
-import vn.ptit.hrms.domain.Employee;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Attendance;
+import vn.ptit.hrms.domain.primary.Employee;
 
 public class AttendanceRowMapper implements RowMapper<Attendance> {
     private final EmployeeDao employeeDAO;

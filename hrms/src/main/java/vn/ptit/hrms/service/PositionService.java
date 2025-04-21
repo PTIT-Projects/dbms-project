@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.PositionDao;
-import vn.ptit.hrms.domain.Position;
+import vn.ptit.hrms.dao.primary.PositionDao;
+import vn.ptit.hrms.domain.primary.Position;
 
 import java.util.List;
 

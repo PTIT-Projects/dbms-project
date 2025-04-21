@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.ptit.hrms.constant.ContractStatusEnum;
-import vn.ptit.hrms.dao.ContractDao;
-import vn.ptit.hrms.domain.Contract;
+import vn.ptit.hrms.dao.primary.ContractDao;
+import vn.ptit.hrms.domain.primary.Contract;
 
 import java.time.LocalDate;
 import java.util.List;

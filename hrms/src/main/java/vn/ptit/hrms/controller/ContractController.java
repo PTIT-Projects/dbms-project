@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import vn.ptit.hrms.domain.Contract;
+import vn.ptit.hrms.domain.primary.Contract;
 import vn.ptit.hrms.service.ContractService;
 import vn.ptit.hrms.service.EmployeeService;
 

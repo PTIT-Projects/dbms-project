@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.WorkTripRequestDao;
-import vn.ptit.hrms.domain.WorkTripRequest;
+import vn.ptit.hrms.dao.primary.WorkTripRequestDao;
+import vn.ptit.hrms.domain.primary.WorkTripRequest;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
 
 import java.time.LocalDate;

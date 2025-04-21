@@ -4,8 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import vn.ptit.hrms.constant.AttendanceStatusEnum;
-import vn.ptit.hrms.dao.AttendanceDao;
-import vn.ptit.hrms.domain.Attendance;
+import vn.ptit.hrms.dao.primary.AttendanceDao;
+import vn.ptit.hrms.domain.primary.Attendance;
 
 import java.time.LocalDate;
 import java.util.List;

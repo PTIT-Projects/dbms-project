@@ -4,11 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
-import vn.ptit.hrms.domain.Employee;
-import vn.ptit.hrms.domain.Registration;
+import vn.ptit.hrms.domain.primary.Employee;
+import vn.ptit.hrms.domain.primary.Registration;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
 import vn.ptit.hrms.constant.RegistrationTypeEnum;
-import vn.ptit.hrms.dao.EmployeeDao;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
 
 public class RegistrationRowMapper implements RowMapper<Registration> {
 

@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.DepartmentManagerDao;
-import vn.ptit.hrms.domain.DepartmentManager;
+import vn.ptit.hrms.dao.primary.DepartmentManagerDao;
+import vn.ptit.hrms.domain.primary.DepartmentManager;
 
 import java.util.List;
 

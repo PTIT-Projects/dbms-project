@@ -1,8 +1,8 @@
 package vn.ptit.hrms.service;
 
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.NotificationDao;
-import vn.ptit.hrms.domain.Notification;
+import vn.ptit.hrms.dao.primary.NotificationDao;
+import vn.ptit.hrms.domain.primary.Notification;
 
 import java.time.LocalDateTime;
 import java.util.List;

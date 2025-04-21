@@ -5,9 +5,9 @@ import java.sql.SQLException;
 import java.sql.Date;
 import org.springframework.jdbc.core.RowMapper;
 import vn.ptit.hrms.constant.RegistrationStatusEnum;
-import vn.ptit.hrms.dao.EmployeeDao;
-import vn.ptit.hrms.domain.Employee;
-import vn.ptit.hrms.domain.WorkTripRequest;
+import vn.ptit.hrms.dao.primary.EmployeeDao;
+import vn.ptit.hrms.domain.primary.Employee;
+import vn.ptit.hrms.domain.primary.WorkTripRequest;
 
 public class WorkTripRequestRowMapper implements RowMapper<WorkTripRequest> {
 

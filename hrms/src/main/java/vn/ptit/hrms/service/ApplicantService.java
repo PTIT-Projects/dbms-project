@@ -3,8 +3,8 @@ package vn.ptit.hrms.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import vn.ptit.hrms.dao.ApplicantDao;
-import vn.ptit.hrms.domain.Applicant;
+import vn.ptit.hrms.dao.primary.ApplicantDao;
+import vn.ptit.hrms.domain.primary.Applicant;
 import vn.ptit.hrms.constant.ApplicantStatusEnum;
 
 import java.util.List;
