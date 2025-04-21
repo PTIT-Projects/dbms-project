@@ -14,7 +14,7 @@ import java.util.List;
 public class EmployeeDimensionDao {
     private final JdbcTemplate jdbcTemplate;
 
-    public EmployeeDimensionDao(JdbcTemplate jdbcTemplate) {
+    public EmployeeDimensionDao(@Qualifier("warehouseJdbcTemplate") JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
