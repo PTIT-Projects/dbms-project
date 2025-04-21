@@ -1,4 +1,4 @@
-﻿-- Bảng dim_date: Lưu trữ thông tin về ngày tháng để hỗ trợ phân tích theo thời gian.
+-- Bảng dim_date: Lưu trữ thông tin về ngày tháng để hỗ trợ phân tích theo thời gian.
 CREATE TABLE dim_date (
     date_sk INT PRIMARY KEY,
     date DATE,
@@ -12,10 +12,9 @@ CREATE TABLE dim_date (
 CREATE TABLE dim_positions (
     position_sk INT PRIMARY KEY,
     position_id INT,  -- ID gốc từ bảng Positions
-    position_name VARCHAR(100)
-	department_sk INT --khoá ngoại đến dim_departments
+    position_name VARCHAR(100),
+	department_sk INT, --khoá ngoại đến dim_departments
 	department_name VARCHAR(100)
-	FOREIGN KEY (department_sk) REFERENCES dim_departments(department_sk);
 );
 -- Bảng dim_departments: Lưu trữ thông tin về các phòng ban.
 CREATE TABLE dim_departments (
@@ -24,7 +23,6 @@ CREATE TABLE dim_departments (
     department_name VARCHAR(100),
     manager_sk INT,  -- Khóa ngoại tới dim_employees
 	manager_name VARCHAR(100),
-    FOREIGN KEY (manager_sk) REFERENCES dim_employees(employee_sk)
 );
 
 -- Bảng dim_employees: Lưu trữ thông tin chi tiết về nhân viên.
@@ -56,6 +54,16 @@ CREATE TABLE dim_employees (
     FOREIGN KEY (department_sk) REFERENCES dim_departments(department_sk),
     FOREIGN KEY (position_sk) REFERENCES dim_positions(position_sk)
 );
+
+-- dim_positions → dim_departments
+ALTER TABLE dim_positions
+ADD CONSTRAINT fk_positions_department
+FOREIGN KEY (department_sk) REFERENCES dim_departments(department_sk);
+
+-- dim_departments → dim_employees (manager_sk là nhân viên)
+ALTER TABLE dim_departments
+ADD CONSTRAINT fk_departments_manager
+FOREIGN KEY (manager_sk) REFERENCES dim_employees(employee_sk);
 
 -- Bảng fact_attendance: Lưu trữ dữ liệu điểm danh của nhân viên.
 CREATE TABLE fact_attendance (
@@ -103,7 +111,7 @@ CREATE TABLE fact_leave_balance (
     employee_sk INT,  -- Khóa ngoại tới dim_employees
 	employee_name VARCHAR(100),
     department_name VARCHAR(100),
-    position_name VARCHAR(100),
+    position_name VARCHAR(100),   
 
 	leave_type VARCHAR(50) DEFAULT 'Nghỉ năm',
 	date_sk INT,
