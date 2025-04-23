@@ -1,172 +1,72 @@
--- Cấu trúc 
-Fact Tables
-    
-FactEmployee
-    EmployeeID (Primary Key)
-    DepartmentID
-    PositionID
-    HireDate
-    Status
-    Gender
-    DateOfBirth
+-- Stored Procedure for dim_date
+CREATE PROCEDURE sp_transfer_dim_date
+AS
+BEGIN
+    INSERT INTO hrms_warehouse.dbo.dim_date (date_sk, date, year, month, day, week, quarter)
+    SELECT date_sk, date, year, month, day, week, quarter
+    FROM original_database.dbo.dim_date;
+END;
+--Stored Procedure for dim_positions
+CREATE PROCEDURE sp_transfer_dim_positions
+AS
+BEGIN
+    INSERT INTO hrms_warehouse.dbo.dim_positions (position_sk, position_id, position_name, department_sk, department_name)
+    SELECT position_sk, position_id, position_name, department_sk, department_name
+    FROM original_database.dbo.dim_positions;
+END;
+--Stored Procedure for dim_departments
+CREATE PROCEDURE sp_transfer_dim_departments
+AS
+BEGIN
+    INSERT INTO hrms_warehouse.dbo.dim_departments (department_sk, department_id, department_name, manager_sk, manager_name)
+    SELECT department_sk, department_id, department_name, manager_sk, manager_name
+    FROM original_database.dbo.dim_departments;
+END;
+--Stored Procedure for dim_employees
+CREATE PROCEDURE sp_transfer_dim_employees
+AS
+BEGIN
+    INSERT INTO hrms_warehouse.dbo.dim_employees (employee_sk, employee_id, full_name, date_of_birth, gender, address, phone, email, department_sk, department_name, position_sk, position_name, age, hire_date, current_contract_type, contract_start_date, contract_end_date, contract_duration, total_years_worked, insurance_number, insurance_type, insurance_start_date, insurance_end_date, insurance_duration)
+    SELECT employee_sk, employee_id, full_name, date_of_birth, gender, address, phone, email, department_sk, department_name, position_sk, position_name, age, hire_date, current_contract_type, contract_start_date, contract_end_date, contract_duration, total_years_worked, insurance_number, insurance_type, insurance_start_date, insurance_end_date, insurance_duration
+    FROM original_database.dbo.dim_employees;
+END;
+--Creating a Job to Run Procedures Daily
+USE msdb;
+GO
 
-FactSalary
-    SalaryID (Primary Key)
-    EmployeeID
-    Month
-    Year
-    BasicSalary
-    Allowance
-    Deductions
-    NetSalary
-    
-FactAttendance
-    AttendanceID (Primary Key)
-    EmployeeID
-    Date
-    CheckInTime
-    CheckOutTime
-    Status
-    
-FactContracts
-    ContractID (Primary Key)
-    EmployeeID
-    ContractType
-    StartDate
-    EndDate
-    Status
-    
-FactDecisions
-    DecisionID (Primary Key)
-    EmployeeID
-    DecisionType
-    DecisionDate
-    Details
-    
-FactLeaveBalances
-    LeaveBalanceID (Primary Key)
-    EmployeeID
-    Year
-    TotalLeaveDays
-    UsedLeaveDays
-    RemainingLeaveDays
-    
-Dimension Tables
-    
-DimEmployee
-    EmployeeID (Primary Key)
-    FullName
-    Address
-    Phone
-    Email
-    
-DimDepartment
-    DepartmentID (Primary Key)
-    DepartmentName
-    
-DimPosition
-    PositionID (Primary Key)
-    PositionName
-    
-DimDate
-    DateKey (Primary Key)
-    Date
-    Day
-    Month
-    Year
-    Quarter
+EXEC dbo.sp_add_job
+    @job_name = N'TransferDataJob';
 
--- SQL
--- Dimension Tables
-CREATE TABLE DimEmployee (
-    EmployeeID INT PRIMARY KEY,
-    FullName NVARCHAR(100),
-    Address NVARCHAR(255),
-    Phone NVARCHAR(15),
-    Email NVARCHAR(100)
-);
+EXEC dbo.sp_add_jobstep
+    @job_name = N'TransferDataJob',
+    @step_name = N'Transfer dim_date',
+    @subsystem = N'TSQL',
+    @command = N'EXEC hrms_warehouse.dbo.sp_transfer_dim_date',
+    @retry_attempts = 5,
+    @retry_interval = 5;
 
-CREATE TABLE DimDepartment (
-    DepartmentID INT PRIMARY KEY,
-    DepartmentName NVARCHAR(100)
-);
+EXEC dbo.sp_add_jobstep
+    @job_name = N'TransferDataJob',
+    @step_name = N'Transfer dim_positions',
+    @subsystem = N'TSQL',
+    @command = N'EXEC hrms_warehouse.dbo.sp_transfer_dim_positions',
+    @retry_attempts = 5,
+    @retry_interval = 5;
 
-CREATE TABLE DimPosition (
-    PositionID INT PRIMARY KEY,
-    PositionName NVARCHAR(100)
-);
+-- Add more steps for other procedures...
 
-CREATE TABLE DimDate (
-    DateKey INT PRIMARY KEY,
-    Date DATE,
-    Day INT,
-    Month INT,
-    Year INT,
-    Quarter INT
-);
+EXEC dbo.sp_add_schedule
+    @job_name = N'TransferDataJob',
+    @name = N'DailySchedule',
+    @freq_type = 4,  -- Daily
+    @freq_interval = 1,
+    @active_start_time = 010000;  -- 1:00 AM
 
--- Fact Tables
-CREATE TABLE FactEmployee (
-    EmployeeID INT PRIMARY KEY,
-    DepartmentID INT,
-    PositionID INT,
-    HireDate DATE,
-    Status NVARCHAR(50),
-    Gender NVARCHAR(10),
-    DateOfBirth DATE,
-    FOREIGN KEY (EmployeeID) REFERENCES DimEmployee(EmployeeID),
-    FOREIGN KEY (DepartmentID) REFERENCES DimDepartment(DepartmentID),
-    FOREIGN KEY (PositionID) REFERENCES DimPosition(PositionID)
-);
+EXEC dbo.sp_attach_schedule
+    @job_name = N'TransferDataJob',
+    @schedule_name = N'DailySchedule';
 
-CREATE TABLE FactSalary (
-    SalaryID INT PRIMARY KEY,
-    EmployeeID INT,
-    Month INT,
-    Year INT,
-    BasicSalary DECIMAL(18, 2),
-    Allowance DECIMAL(18, 2),
-    Deductions DECIMAL(18, 2),
-    NetSalary DECIMAL(18, 2),
-    FOREIGN KEY (EmployeeID) REFERENCES DimEmployee(EmployeeID)
-);
-
-CREATE TABLE FactAttendance (
-    AttendanceID INT PRIMARY KEY,
-    EmployeeID INT,
-    Date DATE,
-    CheckInTime TIME,
-    CheckOutTime TIME,
-    Status NVARCHAR(50),
-    FOREIGN KEY (EmployeeID) REFERENCES DimEmployee(EmployeeID),
-    FOREIGN KEY (Date) REFERENCES DimDate(Date)
-);
-
-CREATE TABLE FactContracts (
-    ContractID INT PRIMARY KEY,
-    EmployeeID INT,
-    ContractType NVARCHAR(50),
-    StartDate DATE,
-    EndDate DATE,
-    Status NVARCHAR(50),
-    FOREIGN KEY (EmployeeID) REFERENCES DimEmployee(EmployeeID)
-);
-
-CREATE TABLE FactDecisions (
-    DecisionID INT PRIMARY KEY,
-    EmployeeID INT,
-    DecisionType NVARCHAR(50),
-    DecisionDate DATE,
-    Details NVARCHAR(MAX),
-    FOREIGN KEY (EmployeeID) REFERENCES DimEmployee(EmployeeID)
-);
-
-CREATE TABLE FactLeaveBalances (
-    LeaveBalanceID INT PRIMARY KEY,
-    EmployeeID INT,
-    Year INT,
-    TotalLeaveDays INT,
-    UsedLeaveDays INT,
-    RemainingLeaveDays INT,
-    FOREIGN KEY (EmployeeID) REFERENCES DimEmployee(EmployeeID)
-);
+EXEC dbo.sp_add_jobserver
+    @job_name = N'TransferDataJob',
+    @server_name = N'(local)';
+GO
