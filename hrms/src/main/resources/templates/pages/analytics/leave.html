@@ -80,7 +80,6 @@
                                         <tr>
                                             <th>Employee</th>
                                             <th>Department</th>
-                                            <th>Leave Type</th>
                                             <th>Remaining</th>
                                             <th>Used</th>
                                             <th>Total</th>
@@ -90,10 +89,9 @@
                                         <tr th:each="emp : ${lowRemainingLeave}">
                                             <td th:text="${emp.employeeName}">John Doe</td>
                                             <td th:text="${emp.departmentName}">IT</td>
-                                            <td th:text="${emp.leaveType}">Annual</td>
-                                            <td th:text="${emp.remainingDays}" class="text-danger font-weight-bold">2</td>
-                                            <td th:text="${emp.usedDays}">18</td>
-                                            <td th:text="${emp.totalDays}">20</td>
+                                            <td th:text="${emp.remainingLeaveDays}" class="text-danger font-weight-bold">2</td>
+                                            <td th:text="${emp.usedLeaveDays}">18</td>
+                                            <td th:text="${emp.totalLeaveDays}">20</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -131,9 +129,6 @@
                                             <th>Position</th>
                                             <th>Employee Count</th>
                                             <th>Avg Annual Used</th>
-                                            <th>Avg Sick Used</th>
-                                            <th>Avg Other Used</th>
-                                            <th>Avg Total Used</th>
                                             <th>Avg Remaining</th>
                                         </tr>
                                     </thead>
@@ -142,10 +137,7 @@
                                             <td th:text="${stat.departmentName}">IT</td>
                                             <td th:text="${stat.positionName}">Developer</td>
                                             <td th:text="${stat.employeeCount}">8</td>
-                                            <td th:text="${#numbers.formatDecimal(stat.avgAnnualLeaveUsed, 1, 1)}">12.5</td>
-                                            <td th:text="${#numbers.formatDecimal(stat.avgSickLeaveUsed, 1, 1)}">4.2</td>
-                                            <td th:text="${#numbers.formatDecimal(stat.avgOtherLeaveUsed, 1, 1)}">1.0</td>
-                                            <td th:text="${#numbers.formatDecimal(stat.avgTotalLeaveUsed, 1, 1)}">17.7</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgUsedLeave, 1, 1)}">12.5</td>
                                             <td th:text="${#numbers.formatDecimal(stat.avgRemainingLeave, 1, 1)}">5.3</td>
                                         </tr>
                                     </tbody>
@@ -393,7 +385,7 @@
                     labels: leaveByExperience.map(item => item.experienceRange),
                     datasets: [{
                         label: 'Annual Leave Usage',
-                        data: leaveByExperience.map(item => item.avgAnnualLeaveUsed),
+                        data: leaveByExperience.map(item => item.avgUsedLeave),
                         backgroundColor: 'rgba(54, 185, 204, 0.8)',
                         borderColor: 'rgba(54, 185, 204, 1)',
                         borderWidth: 1

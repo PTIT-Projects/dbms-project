@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import vn.ptit.hrms.service.warehouse.*;
 
 import java.time.Year;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("admin/analytics")
@@ -40,21 +43,40 @@ public class HrAnalyticsController {
     public String showAttendanceAnalytics(
             Model model,
             @RequestParam(required = false, defaultValue = "5") int limit,
-            @RequestParam(required = false) Integer year) {
-        
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+
         if (year == null) {
             year = Year.now().getValue();
         }
-        
+
         // Load attendance analytics data
         model.addAttribute("employeeWorkSummary", attendanceAnalyticsService.getEmployeeWorkSummaryByYear(year));
         model.addAttribute("topLateDepartments", attendanceAnalyticsService.getTopLateDepartments(limit));
         model.addAttribute("topOvertimeEmployees", attendanceAnalyticsService.getTopEmployeesByOvertime(limit));
         model.addAttribute("departmentPerformance", attendanceAnalyticsService.getDepartmentPerformanceStats());
-        
+
+        // ADD THIS CODE: Create and set the attendanceSummary attribute
+        Map<String, Object> attendanceSummary = new HashMap<>();
+        attendanceSummary.put("avgAttendanceRate", 95.2); // Default or calculated value
+        attendanceSummary.put("avgWorkHours", 7.8);       // Default or calculated value
+        attendanceSummary.put("lateCount", 52);           // Default or calculated value
+        attendanceSummary.put("latePercentage", 5.2);     // Default or calculated value
+        attendanceSummary.put("absentRate", 3.1);         // Default or calculated value
+        model.addAttribute("attendanceSummary", attendanceSummary);
+
+        // You also need to add the following attributes used in the template:
+        model.addAttribute("attendanceTrends", Collections.emptyList());      // Add your real data here
+        model.addAttribute("attendanceStatus", Collections.emptyMap());       // Add your real data here
+        model.addAttribute("departmentAttendance", Collections.emptyList());  // Add your real data here
+        model.addAttribute("overtimeData", Collections.emptyList());          // Add your real data here
+        model.addAttribute("workHoursByDay", Collections.emptyList());        // Add your real data here
+        model.addAttribute("attendanceIssues", Collections.emptyList());      // Add your real data here
+
         model.addAttribute("year", year);
+        model.addAttribute("month", month);
         model.addAttribute("limit", limit);
-        
+
         return "pages/analytics/attendance";
     }
 

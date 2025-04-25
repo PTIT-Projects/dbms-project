@@ -58,8 +58,8 @@ public class FactSalaryDao {
 
     // 2.b Top nhân viên có tổng lương cao nhất
     public List<TopSalaryEmployeeDTO> getTopEmployeesByHighestSalary(int limit) {
-        String sql = """
-            SELECT TOP ? 
+        String sql = String.format("""
+            SELECT TOP %d 
                 employee_name,
                 department_name,
                 position_name,
@@ -71,8 +71,8 @@ public class FactSalaryDao {
             FROM fact_salary
             WHERE payment_status = 'Đã thanh toán'
             ORDER BY total_salary DESC
-        """;
-        return jdbcTemplate.query(sql, new Object[]{limit}, new RowMapper<TopSalaryEmployeeDTO>() {
+        """, limit);
+        return jdbcTemplate.query(sql, new RowMapper<TopSalaryEmployeeDTO>() {
             @Override
             public TopSalaryEmployeeDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 TopSalaryEmployeeDTO dto = new TopSalaryEmployeeDTO();
@@ -91,8 +91,8 @@ public class FactSalaryDao {
 
     // 2.b Top nhân viên có tổng lương thấp nhất
     public List<TopSalaryEmployeeDTO> getTopEmployeesByLowestSalary(int limit) {
-        String sql = """
-            SELECT TOP ? 
+        String sql = String.format("""
+            SELECT TOP %d 
                 employee_name,
                 department_name,
                 position_name,
@@ -103,8 +103,8 @@ public class FactSalaryDao {
             FROM fact_salary
             WHERE payment_status = 'Đã thanh toán'
             ORDER BY total_salary ASC
-        """;
-        return jdbcTemplate.query(sql, new Object[]{limit}, new RowMapper<TopSalaryEmployeeDTO>() {
+        """, limit);
+        return jdbcTemplate.query(sql, new RowMapper<TopSalaryEmployeeDTO>() {
             @Override
             public TopSalaryEmployeeDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 TopSalaryEmployeeDTO dto = new TopSalaryEmployeeDTO();

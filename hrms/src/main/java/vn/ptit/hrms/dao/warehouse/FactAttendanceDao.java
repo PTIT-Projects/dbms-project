@@ -36,7 +36,7 @@ public class FactAttendanceDao {
             GROUP BY employee_name, department_name
             ORDER BY total_hours_worked DESC
         """;
-        return jdbcTemplate.query(sql, new Object[]{year}, new RowMapper<EmployeeWorkSummaryDTO>() {
+        return jdbcTemplate.query(sql, new RowMapper<EmployeeWorkSummaryDTO>() {
             @Override
             public EmployeeWorkSummaryDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 EmployeeWorkSummaryDTO dto = new EmployeeWorkSummaryDTO();
@@ -46,22 +46,26 @@ public class FactAttendanceDao {
                 dto.setWorkingDays(rs.getInt("working_days"));
                 return dto;
             }
-        });
+        }, year);
     }
 
     // 1.b Phòng ban có tỷ lệ đi muộn cao nhất
+    // Fix for SQL syntax error in getTopLateDepartments method
     public List<DepartmentLateStatsDTO> getTopLateDepartments(int limit) {
-        String sql = """
-            SELECT TOP ? 
-                department_name,
-                COUNT(*) AS total_days,
-                SUM(CAST(is_late AS INT)) AS late_days,
-                ROUND(SUM(CAST(is_late AS FLOAT)) * 100 / COUNT(*), 2) AS late_percentage
-            FROM fact_attendance
-            GROUP BY department_name
-            ORDER BY late_percentage DESC
-        """;
-        return jdbcTemplate.query(sql, new Object[]{limit}, new RowMapper<DepartmentLateStatsDTO>() {
+        // Instead of using TOP ? with a parameter placeholder
+        String sql = String.format("""
+        SELECT TOP %d 
+            department_name,
+            COUNT(*) AS total_days,
+            SUM(CAST(is_late AS INT)) AS late_days,
+            ROUND(SUM(CAST(is_late AS FLOAT)) * 100 / COUNT(*), 2) AS late_percentage
+        FROM fact_attendance
+        GROUP BY department_name
+        ORDER BY late_percentage DESC
+    """, limit);
+
+        // Now the query doesn't need the limit parameter
+        return jdbcTemplate.query(sql, new RowMapper<DepartmentLateStatsDTO>() {
             @Override
             public DepartmentLateStatsDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 DepartmentLateStatsDTO dto = new DepartmentLateStatsDTO();
@@ -76,8 +80,8 @@ public class FactAttendanceDao {
 
     // 1.c Top nhân viên có tổng giờ làm thêm cao nhất
     public List<EmployeeOvertimeDTO> getTopEmployeesByOvertime(int limit) {
-        String sql = """
-            SELECT TOP ? 
+        String sql = String.format("""
+            SELECT TOP %d 
                 employee_name,
                 department_name,
                 SUM(overtime_hours) AS total_overtime,
@@ -86,8 +90,9 @@ public class FactAttendanceDao {
             WHERE overtime_hours > 0
             GROUP BY employee_name, department_name
             ORDER BY total_overtime DESC
-        """;
-        return jdbcTemplate.query(sql, new Object[]{limit}, new RowMapper<EmployeeOvertimeDTO>() {
+        """, limit
+        );
+        return jdbcTemplate.query(sql, new RowMapper<EmployeeOvertimeDTO>() {
             @Override
             public EmployeeOvertimeDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 EmployeeOvertimeDTO dto = new EmployeeOvertimeDTO();

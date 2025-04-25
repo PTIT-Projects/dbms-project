@@ -23,9 +23,6 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
                             <i class="bi bi-printer"></i> Print
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-download"></i> Export
-                        </button>
                     </div>
                     <form th:action="@{/admin/analytics/salary}" method="get" class="d-flex">
                         <select name="year" class="form-select form-select-sm me-2" onchange="this.form.submit()">
@@ -74,7 +71,6 @@
                                             <th>Department</th>
                                             <th>Position</th>
                                             <th>Total Salary</th>
-                                            <th>% of Max</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -83,15 +79,6 @@
                                             <td th:text="${emp.departmentName}">IT</td>
                                             <td th:text="${emp.positionName}">Senior Developer</td>
                                             <td th:text="${#numbers.formatDecimal(emp.totalSalary, 0, 'COMMA', 0, 'POINT')}">10,000</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div th:style="'width:' + ${emp.salaryPercentage} + '%'" 
-                                                         class="progress-bar bg-success" 
-                                                         role="progressbar">
-                                                         <span th:text="${#numbers.formatDecimal(emp.salaryPercentage, 0, 0)}">100</span>%
-                                                    </div>
-                                                </div>
-                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>

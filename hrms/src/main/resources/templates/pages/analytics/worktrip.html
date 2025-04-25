@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Trip Analytics | HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stats-card {
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            border: none;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/analytics}">Analytics</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Work Trip Analytics</li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="fw-bold">Work Trip Analytics Dashboard</h2>
+                    <div class="d-flex gap-2 align-items-center">
+                        <form th:action="@{/admin/analytics/worktrip}" method="get" class="d-flex gap-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Show Top</span>
+                                <select class="form-select" name="limit" onchange="this.form.submit()">
+                                    <option th:value="5" th:selected="${limit == 5}">5</option>
+                                    <option th:value="10" th:selected="${limit == 10}">10</option>
+                                    <option th:value="15" th:selected="${limit == 15}">15</option>
+                                    <option th:value="20" th:selected="${limit == 20}">20</option>
+                                </select>
+                            </div>
+                            <a th:href="@{/admin/pages/work-trips}" class="btn btn-outline-primary">
+                                <i class="bi bi-airplane"></i> Manage Work Trips
+                            </a>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Key Metrics Row -->
+                <div class="row mb-4">
+                    <!-- Total Trips -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card shadow h-100 py-2 stats-card bg-gradient-primary">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <div class="card-icon bg-primary bg-opacity-25 text-primary">
+                                        <i class="bi bi-airplane"></i>
+                                    </div>
+                                    <div class="metric-value" th:text="${#lists.size(trendByMonth)}">24</div>
+                                    <div class="metric-label">Total Trips</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Destinations -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card shadow h-100 py-2 stats-card bg-gradient-success">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <div class="card-icon bg-success bg-opacity-25 text-success">
+                                        <i class="bi bi-geo-alt"></i>
+                                    </div>
+                                    <div class="metric-value" th:text="${#lists.size(topDestinations)}">8</div>
+                                    <div class="metric-label">Destinations</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Purpose -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card shadow h-100 py-2 stats-card bg-gradient-info">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <div class="card-icon bg-info bg-opacity-25 text-info">
+                                        <i class="bi bi-clipboard-check"></i>
+                                    </div>
+                                    <div class="metric-value" th:if="${not #lists.isEmpty(purposeStats)}" th:text="${purposeStats[0].purpose}">Training</div>
+                                    <div class="metric-value" th:if="${#lists.isEmpty(purposeStats)}">N/A</div>
+                                    <div class="metric-label">Top Purpose</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Cost -->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card shadow h-100 py-2 stats-card bg-gradient-warning">
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <div class="card-icon bg-warning bg-opacity-25 text-warning">
+                                        <i class="bi bi-currency-dollar"></i>
+                                    </div>
+                                    <div class="metric-value" th:if="${not #lists.isEmpty(costByDepartment)}" th:text="${#numbers.formatDecimal(#aggregates.sum(costByDepartment.![totalCost]), 0, 'COMMA', 2, 'POINT') + ' USD'}">9,977.30</div>
+                                    <div class="metric-value" th:if="${#lists.isEmpty(costByDepartment)}">0.00 USD</div>
+                                    <div class="metric-label">Total Cost</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <!-- Monthly Trend Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Monthly Work Trip Trend</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="monthlyTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Purpose Distribution Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-success">Trip Purpose Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="purposeDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <!-- Department Cost Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-warning">Cost by Department</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="departmentCostChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Destinations Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow h-100">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-info">Top Destinations</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="topDestinationsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Tables Row -->
+                <div class="row">
+                    <!-- Top Employees Table -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Top Employees by Work Trips</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Employee</th>
+                                                <th>Trips</th>
+                                                <th>Cost (USD)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="emp, stat : ${topEmployees}">
+                                                <td th:text="${stat.count}">1</td>
+                                                <td>
+                                                    <a th:text="${emp.employeeName}" class="text-primary">John Doe</a>
+                                                </td>
+                                                <td th:text="${emp.totalTrips}">5</td>
+                                                <td th:text="${#numbers.formatDecimal(emp.totalTripCost, 0, 'COMMA', 2, 'POINT')}">1,234.56</td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(topEmployees)}">
+                                                <td colspan="4" class="text-center">No data available</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Position Cost Table -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-warning">Cost by Position</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Position</th>
+                                                <th>Trips</th>
+                                                <th>Cost (VND)</th>
+                                                <th>Avg Cost/Trip</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="pos, stat : ${costByPosition}">
+                                                <td th:text="${stat.count}">1</td>
+                                                <td th:text="${pos.positionName}">Manager</td>
+                                                <td th:text="${pos.tripCount}">8</td>
+                                                <td th:text="${#numbers.formatDecimal(pos.totalCost, 0, 'COMMA', 2, 'POINT')}">2,500.00</td>
+                                                <td th:text="${#numbers.formatDecimal(pos.totalCost / pos.tripCount, 0, 'COMMA', 2, 'POINT')}">312.50</td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(costByPosition)}">
+                                                <td colspan="5" class="text-center">No data available</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monthly Trend Chart
+            const trendData = /*[[${trendByMonth}]]*/ [];
+            const monthlyLabels = trendData.map(item => item.month);
+            const monthlyValues = trendData.map(item => item.tripCount);
+            const monthlyCosts = trendData.map(item => item.totalCost);
+            
+            new Chart(document.getElementById('monthlyTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [
+                        {
+                            label: 'Trip Count',
+                            data: monthlyValues,
+                            borderColor: '#4e73df',
+                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'y',
+                        },
+                        {
+                            label: 'Total Cost (USD)',
+                            data: monthlyCosts,
+                            borderColor: '#f6c23e',
+                            backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            yAxisID: 'y1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Number of Trips'
+                            },
+                            beginAtZero: true
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Cost (USD)'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Purpose Distribution Chart
+            const purposeData = /*[[${purposeStats}]]*/ [];
+            const purposeLabels = purposeData.map(item => item.purpose);
+            const purposeCounts = purposeData.map(item => item.tripCount);
+            const purposeColors = [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', 
+                '#e74a3b', '#858796', '#5a5c69', '#6610f2',
+                '#fd7e14', '#20c997', '#6f42c1', '#dc3545'
+            ];
+            
+            new Chart(document.getElementById('purposeDistributionChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: purposeLabels,
+                    datasets: [{
+                        data: purposeCounts,
+                        backgroundColor: purposeColors.slice(0, purposeLabels.length),
+                        hoverBackgroundColor: purposeColors.map(color => color + 'CC'),
+                        hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+            
+            // Department Cost Chart
+            const deptData = /*[[${costByDepartment}]]*/ [];
+            const deptLabels = deptData.map(item => item.departmentName);
+            const deptCosts = deptData.map(item => item.totalCost);
+            const deptCounts = deptData.map(item => item.tripCount);
+            
+            new Chart(document.getElementById('departmentCostChart'), {
+                type: 'bar',
+                data: {
+                    labels: deptLabels,
+                    datasets: [
+                        {
+                            label: 'Total Cost (USD)',
+                            data: deptCosts,
+                            backgroundColor: 'rgba(246, 194, 62, 0.8)'
+                        },
+                        {
+                            label: 'Trip Count',
+                            data: deptCounts,
+                            backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cost (USD)'
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Trip Count'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Top Destinations Chart
+            const destData = /*[[${topDestinations}]]*/ [];
+            const destLabels = destData.map(item => item.destination);
+            const destCounts = destData.map(item => item.tripCount);
+            const destCosts = destData.map(item => item.totalCost);
+            
+            new Chart(document.getElementById('topDestinationsChart'), {
+                type: 'bar',
+                data: {
+                    labels: destLabels,
+                    datasets: [{
+                        label: 'Total Cost',
+                        data: destCosts,
+                        backgroundColor: 'rgba(26, 188, 156, 0.7)',
+                        borderColor: 'rgba(26, 188, 156, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Trip Count',
+                        data: destCounts,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y1',
+                        type: 'line',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'category'
+                        },
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cost (USD)'
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

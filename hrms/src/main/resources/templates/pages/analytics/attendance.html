@@ -205,26 +205,14 @@
                                         <tr>
                                             <th>Employee</th>
                                             <th>Department</th>
-                                            <th>Position</th>
                                             <th>Overtime Hours</th>
-                                            <th>Overtime %</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr th:each="emp : ${topOvertimeEmployees}">
                                             <td th:text="${emp.employeeName}">John Doe</td>
                                             <td th:text="${emp.departmentName}">IT</td>
-                                            <td th:text="${emp.positionName}">Developer</td>
-                                            <td th:text="${#numbers.formatDecimal(emp.overtimeHours, 1, 1)}">12.5</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div th:style="'width:' + ${emp.overtimePercentage} + '%'" 
-                                                         class="progress-bar bg-success" 
-                                                         role="progressbar">
-                                                         <span th:text="${#numbers.formatDecimal(emp.overtimePercentage, 0, 0) + '%'}">25%</span>
-                                                    </div>
-                                                </div>
-                                            </td>
+                                            <td th:text="${#numbers.formatDecimal(emp.totalOvertime, 1, 1)}">12.5</td>
                                         </tr>
                                     </tbody>
                                 </table>

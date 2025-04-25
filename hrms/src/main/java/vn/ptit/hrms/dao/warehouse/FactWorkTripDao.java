@@ -26,8 +26,8 @@ public class FactWorkTripDao {
 
     // 4.a Top nhân viên có nhiều chuyến công tác nhất
     public List<WorkTripStatsByEmployeeDTO> getTopEmployeesByWorkTrips(int limit) {
-        String sql = """
-            SELECT TOP ? 
+        String sql = String.format("""
+            SELECT TOP %d 
                 employee_name,
                 department_name,
                 position_name,
@@ -38,8 +38,8 @@ public class FactWorkTripDao {
             WHERE status = 'Hoàn thành'
             GROUP BY employee_name, department_name, position_name
             ORDER BY total_trips DESC, total_days_on_trip DESC
-        """;
-        return jdbcTemplate.query(sql, new Object[]{limit}, new RowMapper<WorkTripStatsByEmployeeDTO>() {
+        """, limit);
+        return jdbcTemplate.query(sql, new RowMapper<WorkTripStatsByEmployeeDTO>() {
             @Override
             public WorkTripStatsByEmployeeDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 WorkTripStatsByEmployeeDTO dto = new WorkTripStatsByEmployeeDTO();
@@ -56,8 +56,8 @@ public class FactWorkTripDao {
 
     // 4.b Top điểm đến công tác phổ biến
     public List<WorkTripStatsByDestinationDTO> getTopDestinations(int limit) {
-        String sql = """
-            SELECT TOP ? 
+        String sql = String.format("""
+            SELECT TOP %d 
                 destination,
                 COUNT(*) AS trip_count,
                 COUNT(DISTINCT employee_name) AS distinct_employees,
@@ -68,8 +68,8 @@ public class FactWorkTripDao {
             WHERE status = 'Hoàn thành'
             GROUP BY destination
             ORDER BY trip_count DESC
-        """;
-        return jdbcTemplate.query(sql, new Object[]{limit}, new RowMapper<WorkTripStatsByDestinationDTO>() {
+        """, limit);
+        return jdbcTemplate.query(sql, new RowMapper<WorkTripStatsByDestinationDTO>() {
             @Override
             public WorkTripStatsByDestinationDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
                 WorkTripStatsByDestinationDTO dto = new WorkTripStatsByDestinationDTO();
