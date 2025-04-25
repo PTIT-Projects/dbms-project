@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Analytics - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Salary Analytics</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                    <form th:action="@{/admin/analytics/salary}" method="get" class="d-flex">
+                        <select name="year" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                            <option value="2022" th:selected="${year == 2022}">2022</option>
+                            <option value="2023" th:selected="${year == 2023}">2023</option>
+                            <option value="2024" th:selected="${year == 2024}">2024</option>
+                        </select>
+                        <select name="limit" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="5" th:selected="${limit == 5}">Top 5</option>
+                            <option value="10" th:selected="${limit == 10}">Top 10</option>
+                            <option value="20" th:selected="${limit == 20}">Top 20</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Salary Distribution by Department/Position -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-success">Salary Distribution by Department and Position</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="salaryDistributionChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Earners and Lowest Earners -->
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-success">Top <span th:text="${limit}">10</span> Highest Paid Employees</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Total Salary</th>
+                                            <th>% of Max</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="emp : ${highestPaidEmployees}">
+                                            <td th:text="${emp.employeeName}">John Doe</td>
+                                            <td th:text="${emp.departmentName}">IT</td>
+                                            <td th:text="${emp.positionName}">Senior Developer</td>
+                                            <td th:text="${#numbers.formatDecimal(emp.totalSalary, 0, 'COMMA', 0, 'POINT')}">10,000</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div th:style="'width:' + ${emp.salaryPercentage} + '%'" 
+                                                         class="progress-bar bg-success" 
+                                                         role="progressbar">
+                                                         <span th:text="${#numbers.formatDecimal(emp.salaryPercentage, 0, 0)}">100</span>%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-danger">Top <span th:text="${limit}">10</span> Lowest Paid Employees</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Basic Salary</th>
+                                            <th>Total Salary</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="emp : ${lowestPaidEmployees}">
+                                            <td th:text="${emp.employeeName}">Jane Smith</td>
+                                            <td th:text="${emp.departmentName}">HR</td>
+                                            <td th:text="${emp.positionName}">HR Assistant</td>
+                                            <td th:text="${#numbers.formatDecimal(emp.basicSalary, 0, 'COMMA', 0, 'POINT')}">3,000</td>
+                                            <td th:text="${#numbers.formatDecimal(emp.totalSalary, 0, 'COMMA', 0, 'POINT')}">3,500</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Components Analysis -->
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Salary Component Ratio by Department</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="salaryRatioByDeptChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-info">Salary Trend by Month in <span th:text="${year}">2024</span></h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="salaryTrendChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demographic Analysis -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Salary Analysis by Age Group and Gender</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div class="chart-area">
+                                        <canvas id="salaryDemographicChart" height="300"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <table class="table table-bordered table-sm">
+                                        <thead class="table-primary">
+                                            <tr>
+                                                <th>Age Group</th>
+                                                <th>Gender</th>
+                                                <th>Avg Salary</th>
+                                                <th>Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="data : ${salaryByAgeGender}">
+                                                <td th:text="${data.ageGroup}">25-35</td>
+                                                <td th:text="${data.gender}">Male</td>
+                                                <td th:text="${#numbers.formatDecimal(data.avgSalary, 0, 'COMMA', 0, 'POINT')}">5,500</td>
+                                                <td th:text="${data.employeeCount}">12</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary by Department and Position -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Detailed Salary Statistics by Department and Position</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Employee Count</th>
+                                            <th>Avg Basic Salary</th>
+                                            <th>Avg Allowance</th>
+                                            <th>Avg Deductions</th>
+                                            <th>Avg Total Salary</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="stat : ${salaryByDeptPosition}">
+                                            <td th:text="${stat.departmentName}">IT</td>
+                                            <td th:text="${stat.positionName}">Developer</td>
+                                            <td th:text="${stat.employeeCount}">8</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgBasicSalary, 0, 'COMMA', 0, 'POINT')}">5,000</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgAllowance, 0, 'COMMA', 0, 'POINT')}">1,200</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgDeductions, 0, 'COMMA', 0, 'POINT')}">500</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgTotalSalary, 0, 'COMMA', 0, 'POINT')}">5,700</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Charts Initialization -->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get data from Thymeleaf
+        const salaryByDeptPosition = /*[[${salaryByDeptPosition}]]*/ [];
+        const salaryRatioByDepartment = /*[[${salaryRatioByDepartment}]]*/ [];
+        const salaryTrends = /*[[${salaryTrends}]]*/ [];
+        const salaryByAgeGender = /*[[${salaryByAgeGender}]]*/ [];
+        
+        // Salary Distribution Chart
+        if (salaryByDeptPosition && salaryByDeptPosition.length > 0) {
+            const salaryDistCtx = document.getElementById('salaryDistributionChart').getContext('2d');
+            
+            // Group data by department
+            const departmentsData = {};
+            
+            salaryByDeptPosition.forEach(item => {
+                if (!departmentsData[item.departmentName]) {
+                    departmentsData[item.departmentName] = [];
+                }
+                departmentsData[item.departmentName].push({
+                    position: item.positionName,
+                    avgSalary: item.avgTotalSalary
+                });
+            });
+            
+            // Prepare chart data
+            const datasets = [];
+            const departments = Object.keys(departmentsData);
+            const positions = [...new Set(salaryByDeptPosition.map(item => item.positionName))];
+            
+            // Color palette
+            const colors = [
+                'rgba(78, 115, 223, 0.8)',
+                'rgba(28, 200, 138, 0.8)',
+                'rgba(54, 185, 204, 0.8)',
+                'rgba(246, 194, 62, 0.8)',
+                'rgba(231, 74, 59, 0.8)',
+                'rgba(133, 135, 150, 0.8)'
+            ];
+            
+            // Create dataset for each department
+            departments.forEach((dept, index) => {
+                const data = positions.map(position => {
+                    const match = departmentsData[dept].find(item => item.position === position);
+                    return match ? match.avgSalary : 0;
+                });
+                
+                datasets.push({
+                    label: dept,
+                    data: data,
+                    backgroundColor: colors[index % colors.length],
+                    borderColor: colors[index % colors.length].replace('0.8', '1'),
+                    borderWidth: 1
+                });
+            });
+            
+            new Chart(salaryDistCtx, {
+                type: 'bar',
+                data: {
+                    labels: positions,
+                    datasets: datasets
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Salary'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Salary Ratio by Department Chart
+        if (salaryRatioByDepartment && salaryRatioByDepartment.length > 0) {
+            const ratioCtx = document.getElementById('salaryRatioByDeptChart').getContext('2d');
+            
+            new Chart(ratioCtx, {
+                type: 'bar',
+                data: {
+                    labels: salaryRatioByDepartment.map(item => item.departmentName),
+                    datasets: [{
+                        label: 'Basic Salary',
+                        data: salaryRatioByDepartment.map(item => item.basicSalaryRatio),
+                        backgroundColor: 'rgba(78, 115, 223, 0.8)'
+                    }, {
+                        label: 'Allowances',
+                        data: salaryRatioByDepartment.map(item => item.allowanceRatio),
+                        backgroundColor: 'rgba(28, 200, 138, 0.8)'
+                    }, {
+                        label: 'Deductions',
+                        data: salaryRatioByDepartment.map(item => item.deductionsRatio),
+                        backgroundColor: 'rgba(231, 74, 59, 0.8)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            },
+                            stacked: true,
+                            max: 100
+                        },
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Salary Trend Chart
+        if (salaryTrends && salaryTrends.length > 0) {
+            const trendCtx = document.getElementById('salaryTrendChart').getContext('2d');
+            
+            // Sort data by month
+            salaryTrends.sort((a, b) => a.month - b.month);
+            
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: salaryTrends.map(item => {
+                        // Convert month number to name
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return monthNames[item.month - 1];
+                    }),
+                    datasets: [{
+                        label: 'Average Basic Salary',
+                        data: salaryTrends.map(item => item.avgBasic),
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }, {
+                        label: 'Average Total Salary',
+                        data: salaryTrends.map(item => item.avgTotal),
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Salary Amount'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Salary by Age and Gender Chart
+        if (salaryByAgeGender && salaryByAgeGender.length > 0) {
+            const demographicCtx = document.getElementById('salaryDemographicChart').getContext('2d');
+            
+            // Group data by age group and gender
+            const ageGroups = [...new Set(salaryByAgeGender.map(item => item.ageGroup))];
+            const maleData = [];
+            const femaleData = [];
+            
+            ageGroups.forEach(age => {
+                const maleItem = salaryByAgeGender.find(item => item.ageGroup === age && item.gender === 'Male');
+                const femaleItem = salaryByAgeGender.find(item => item.ageGroup === age && item.gender === 'Female');
+                
+                maleData.push(maleItem ? maleItem.avgSalary : 0);
+                femaleData.push(femaleItem ? femaleItem.avgSalary : 0);
+            });
+            
+            new Chart(demographicCtx, {
+                type: 'bar',
+                data: {
+                    labels: ageGroups,
+                    datasets: [{
+                        label: 'Male',
+                        data: maleData,
+                        backgroundColor: 'rgba(78, 115, 223, 0.8)'
+                    }, {
+                        label: 'Female',
+                        data: femaleData,
+                        backgroundColor: 'rgba(246, 114, 167, 0.8)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Salary'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

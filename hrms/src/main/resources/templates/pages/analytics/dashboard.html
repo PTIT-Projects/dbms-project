@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Analytics Dashboard - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">HR Analytics Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="yearDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calendar"></i>
+                            <span th:text="${currentYear}">2024</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="yearDropdown">
+                            <li><a class="dropdown-item" th:href="@{/admin/analytics/dashboard(year=2022)}">2022</a></li>
+                            <li><a class="dropdown-item" th:href="@{/admin/analytics/dashboard(year=2023)}">2023</a></li>
+                            <li><a class="dropdown-item" th:href="@{/admin/analytics/dashboard(year=2024)}">2024</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Navigation Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-primary">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Attendance Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Work Hours & Performance</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-clock fs-2 text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/attendance" class="btn btn-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-success">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Salary Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Compensation & Trends</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-cash-stack fs-2 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/salary" class="btn btn-success w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-info">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Leave Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Time Off & Patterns</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-calendar2-minus fs-2 text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/leave" class="btn btn-info w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-warning">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Work Trip Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Travel & Expenses</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-airplane fs-2 text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/worktrip" class="btn btn-warning w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overview Charts Section -->
+            <div class="row mb-4">
+                <!-- Attendance Overview -->
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Attendance Overview</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="attendanceOverviewChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Salary Distribution -->
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-success">Salary Distribution by Department</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie">
+                                <canvas id="salaryDistributionChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <!-- Leave Analytics Overview -->
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-info">Leave Usage Trends</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="leaveUsageChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Work Trip Expenses -->
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-warning">Work Trip Expenses by Quarter</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="tripExpensesChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Charts Initialization -->
+<script>
+    // Sample data - in a real implementation, this would come from your backend
+    document.addEventListener('DOMContentLoaded', function() {
+        // Attendance Overview Chart
+        const attendanceCtx = document.getElementById('attendanceOverviewChart').getContext('2d');
+        new Chart(attendanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Present',
+                    data: [92, 91, 94, 93, 95, 90, 88, 92, 93, 91, 87, 89],
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3
+                }, {
+                    label: 'Late',
+                    data: [5, 6, 4, 5, 3, 7, 9, 5, 4, 7, 10, 8],
+                    borderColor: 'rgba(246, 194, 62, 1)',
+                    backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3
+                }, {
+                    label: 'Absent',
+                    data: [3, 3, 2, 2, 2, 3, 3, 3, 3, 2, 3, 3],
+                    borderColor: 'rgba(231, 74, 59, 1)',
+                    backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Percentage (%)'
+                        },
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Salary Distribution Chart
+        const salaryCtx = document.getElementById('salaryDistributionChart').getContext('2d');
+        new Chart(salaryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['IT', 'HR', 'Finance', 'Marketing', 'Sales', 'Operations'],
+                datasets: [{
+                    data: [35, 15, 20, 10, 12, 8],
+                    backgroundColor: [
+                        'rgba(78, 115, 223, 0.8)',
+                        'rgba(28, 200, 138, 0.8)',
+                        'rgba(54, 185, 204, 0.8)',
+                        'rgba(246, 194, 62, 0.8)',
+                        'rgba(231, 74, 59, 0.8)',
+                        'rgba(133, 135, 150, 0.8)'
+                    ],
+                    hoverBackgroundColor: [
+                        'rgba(78, 115, 223, 1)',
+                        'rgba(28, 200, 138, 1)',
+                        'rgba(54, 185, 204, 1)',
+                        'rgba(246, 194, 62, 1)',
+                        'rgba(231, 74, 59, 1)',
+                        'rgba(133, 135, 150, 1)'
+                    ],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.parsed}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Leave Usage Chart
+        const leaveCtx = document.getElementById('leaveUsageChart').getContext('2d');
+        new Chart(leaveCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Annual Leave',
+                    data: [32, 28, 34, 42, 54, 38, 60, 65, 45, 38, 30, 52],
+                    backgroundColor: 'rgba(54, 185, 204, 0.8)'
+                }, {
+                    label: 'Sick Leave',
+                    data: [18, 25, 20, 15, 12, 10, 8, 9, 17, 22, 24, 28],
+                    backgroundColor: 'rgba(231, 74, 59, 0.8)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Days'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Work Trip Expenses Chart
+        const tripCtx = document.getElementById('tripExpensesChart').getContext('2d');
+        new Chart(tripCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [{
+                    label: 'Domestic Trips',
+                    data: [25000, 32000, 28000, 35000],
+                    backgroundColor: 'rgba(246, 194, 62, 0.8)'
+                }, {
+                    label: 'International Trips',
+                    data: [45000, 38000, 65000, 52000],
+                    backgroundColor: 'rgba(78, 115, 223, 0.8)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Expenses (USD)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>

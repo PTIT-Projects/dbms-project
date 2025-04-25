@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Analytics - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Attendance Analytics</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                    <form th:action="@{/admin/analytics/attendance}" method="get" class="d-flex">
+                        <select name="year" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                            <option value="2022" th:selected="${year == 2022}">2022</option>
+                            <option value="2023" th:selected="${year == 2023}">2023</option>
+                            <option value="2024" th:selected="${year == 2024}">2024</option>
+                        </select>
+                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Months</option>
+                            <option value="1" th:selected="${month == 1}">January</option>
+                            <option value="2" th:selected="${month == 2}">February</option>
+                            <option value="3" th:selected="${month == 3}">March</option>
+                            <option value="4" th:selected="${month == 4}">April</option>
+                            <option value="5" th:selected="${month == 5}">May</option>
+                            <option value="6" th:selected="${month == 6}">June</option>
+                            <option value="7" th:selected="${month == 7}">July</option>
+                            <option value="8" th:selected="${month == 8}">August</option>
+                            <option value="9" th:selected="${month == 9}">September</option>
+                            <option value="10" th:selected="${month == 10}">October</option>
+                            <option value="11" th:selected="${month == 11}">November</option>
+                            <option value="12" th:selected="${month == 12}">December</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Attendance Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Average Attendance Rate</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#numbers.formatDecimal(attendanceSummary.avgAttendanceRate, 1, 1) + '%'}">92.5%</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-person-check fs-2 text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Average Work Hours</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#numbers.formatDecimal(attendanceSummary.avgWorkHours, 1, 1) + ' hrs'}">7.8 hrs</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-clock-history fs-2 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Late Arrivals</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${attendanceSummary.lateCount + ' (' + #numbers.formatDecimal(attendanceSummary.latePercentage, 1, 1) + '%)'}"
+                                        >52 (5.2%)</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-exclamation-triangle fs-2 text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-danger shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Absent Rate</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#numbers.formatDecimal(attendanceSummary.absentRate, 1, 1) + '%'}">3.1%</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-person-x fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Trend Charts -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Monthly Attendance Trends</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="attendanceTrendChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Attendance Status Distribution</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4">
+                                <canvas id="attendanceStatusChart" height="300"></canvas>
+                            </div>
+                            <div class="mt-4 text-center small">
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-primary"></i> On Time
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-warning"></i> Late
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-danger"></i> Absent
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department-wise Attendance -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Department-wise Attendance Analysis</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-bar">
+                                <canvas id="departmentAttendanceChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overtime Analysis -->
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-success">Overtime Analysis</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="overtimeChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-success">Top Overtime Employees</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Overtime Hours</th>
+                                            <th>Overtime %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="emp : ${topOvertimeEmployees}">
+                                            <td th:text="${emp.employeeName}">John Doe</td>
+                                            <td th:text="${emp.departmentName}">IT</td>
+                                            <td th:text="${emp.positionName}">Developer</td>
+                                            <td th:text="${#numbers.formatDecimal(emp.overtimeHours, 1, 1)}">12.5</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div th:style="'width:' + ${emp.overtimePercentage} + '%'" 
+                                                         class="progress-bar bg-success" 
+                                                         role="progressbar">
+                                                         <span th:text="${#numbers.formatDecimal(emp.overtimePercentage, 0, 0) + '%'}">25%</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Issues -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4 border-left-danger">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-danger">Attendance Issues & Patterns</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-danger">
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Late Count</th>
+                                            <th>Absent Count</th>
+                                            <th>Most Common Day</th>
+                                            <th>Avg Late (mins)</th>
+                                            <th>Trend</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="emp : ${attendanceIssues}">
+                                            <td th:text="${emp.employeeName}">Jane Smith</td>
+                                            <td th:text="${emp.departmentName}">Marketing</td>
+                                            <td th:text="${emp.positionName}">Marketing Specialist</td>
+                                            <td th:text="${emp.lateCount}">8</td>
+                                            <td th:text="${emp.absentCount}">2</td>
+                                            <td th:text="${emp.mostCommonDay}">Monday</td>
+                                            <td th:text="${emp.avgLateDuration + ' mins'}">22 mins</td>
+                                            <td>
+                                                <span th:if="${emp.trend == 'improving'}" class="badge bg-success">Improving</span>
+                                                <span th:if="${emp.trend == 'worsening'}" class="badge bg-danger">Worsening</span>
+                                                <span th:if="${emp.trend == 'stable'}" class="badge bg-secondary">Stable</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Hours by Day -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Average Work Hours by Day of Week</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-bar">
+                                <canvas id="workHoursByDayChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Charts Initialization -->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get data from Thymeleaf
+        const attendanceTrends = /*[[${attendanceTrends}]]*/ [];
+        const attendanceStatus = /*[[${attendanceStatus}]]*/ {};
+        const departmentAttendance = /*[[${departmentAttendance}]]*/ [];
+        const overtimeData = /*[[${overtimeData}]]*/ [];
+        const workHoursByDay = /*[[${workHoursByDay}]]*/ [];
+        
+        // Attendance Trend Chart
+        if (attendanceTrends && attendanceTrends.length > 0) {
+            const trendCtx = document.getElementById('attendanceTrendChart').getContext('2d');
+            
+            // Sort data by month
+            attendanceTrends.sort((a, b) => a.month - b.month);
+            
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: attendanceTrends.map(item => {
+                        // Convert month number to name
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return monthNames[item.month - 1];
+                    }),
+                    datasets: [{
+                        label: 'Present (%)',
+                        data: attendanceTrends.map(item => item.presentPercentage),
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }, {
+                        label: 'Late (%)',
+                        data: attendanceTrends.map(item => item.latePercentage),
+                        borderColor: 'rgba(246, 194, 62, 1)',
+                        backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }, {
+                        label: 'Absent (%)',
+                        data: attendanceTrends.map(item => item.absentPercentage),
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            },
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Attendance Status Distribution Chart
+        if (attendanceStatus) {
+            const statusCtx = document.getElementById('attendanceStatusChart').getContext('2d');
+            
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['On Time', 'Late', 'Absent'],
+                    datasets: [{
+                        data: [
+                            attendanceStatus.onTimePercentage || 0,
+                            attendanceStatus.latePercentage || 0,
+                            attendanceStatus.absentPercentage || 0
+                        ],
+                        backgroundColor: [
+                            'rgba(78, 115, 223, 0.8)',
+                            'rgba(246, 194, 62, 0.8)',
+                            'rgba(231, 74, 59, 0.8)'
+                        ],
+                        hoverBackgroundColor: [
+                            'rgba(78, 115, 223, 1)',
+                            'rgba(246, 194, 62, 1)',
+                            'rgba(231, 74, 59, 1)'
+                        ],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Department-wise Attendance Chart
+        if (departmentAttendance && departmentAttendance.length > 0) {
+            const deptCtx = document.getElementById('departmentAttendanceChart').getContext('2d');
+            
+            new Chart(deptCtx, {
+                type: 'bar',
+                data: {
+                    labels: departmentAttendance.map(item => item.departmentName),
+                    datasets: [{
+                        label: 'On Time (%)',
+                        data: departmentAttendance.map(item => item.onTimePercentage),
+                        backgroundColor: 'rgba(78, 115, 223, 0.8)'
+                    }, {
+                        label: 'Late (%)',
+                        data: departmentAttendance.map(item => item.latePercentage),
+                        backgroundColor: 'rgba(246, 194, 62, 0.8)'
+                    }, {
+                        label: 'Absent (%)',
+                        data: departmentAttendance.map(item => item.absentPercentage),
+                        backgroundColor: 'rgba(231, 74, 59, 0.8)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            },
+                            stacked: true,
+                            max: 100
+                        },
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Overtime Chart
+        if (overtimeData && overtimeData.length > 0) {
+            const overtimeCtx = document.getElementById('overtimeChart').getContext('2d');
+            
+            // Sort data by month
+            overtimeData.sort((a, b) => a.month - b.month);
+            
+            new Chart(overtimeCtx, {
+                type: 'line',
+                data: {
+                    labels: overtimeData.map(item => {
+                        // Convert month number to name
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return monthNames[item.month - 1];
+                    }),
+                    datasets: [{
+                        label: 'Total Overtime Hours',
+                        data: overtimeData.map(item => item.totalOvertimeHours),
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Employees Working Overtime',
+                        data: overtimeData.map(item => item.employeeCount),
+                        borderColor: 'rgba(54, 185, 204, 1)',
+                        backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Total Hours'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Employee Count'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Work Hours by Day Chart
+        if (workHoursByDay && workHoursByDay.length > 0) {
+            const workHoursCtx = document.getElementById('workHoursByDayChart').getContext('2d');
+            
+            // Map day numbers to names and sort
+            const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            workHoursByDay.sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+            
+            new Chart(workHoursCtx, {
+                type: 'bar',
+                data: {
+                    labels: workHoursByDay.map(item => daysOfWeek[item.dayOfWeek - 1]),
+                    datasets: [{
+                        label: 'Average Work Hours',
+                        data: workHoursByDay.map(item => item.avgWorkHours),
+                        backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Average Overtime Hours',
+                        data: workHoursByDay.map(item => item.avgOvertimeHours),
+                        backgroundColor: 'rgba(28, 200, 138, 0.8)',
+                        borderColor: 'rgba(28, 200, 138, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Hours'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>
