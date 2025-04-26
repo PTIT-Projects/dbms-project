@@ -250,7 +250,7 @@ FROM fact_work_trips
 WHERE status = 'Hoàn thành'
 GROUP BY employee_name, department_name, position_name
 ORDER BY total_trips DESC, total_days_on_trip DESC;
---3.b Điểm đến công tác phổ biến 
+--4.b Điểm đến công tác phổ biến 
 SELECT TOP 10
     destination,
     COUNT(*) AS trip_count,
@@ -262,7 +262,7 @@ FROM fact_work_trips
 WHERE status = 'Hoàn thành'
 GROUP BY destination
 ORDER BY trip_count DESC;
---3.c -- Tổng chi phí công tác theo phòng ban
+--4.c -- Tổng chi phí công tác theo phòng ban
 SELECT 
     department_name,
     COUNT(*) AS total_trips,
@@ -275,7 +275,7 @@ WHERE status = 'Hoàn thành'
 GROUP BY department_name
 ORDER BY total_cost DESC;
 
---3.d -- Phân tích theo mục đích công tác
+--4.d -- Phân tích theo mục đích công tác
 SELECT 
     purpose,
     COUNT(*) AS trip_count,
@@ -288,7 +288,7 @@ WHERE status = 'Hoàn thành'
 GROUP BY purpose
 ORDER BY total_cost DESC;
 
---3.e -- Xu hướng công tác theo tháng
+--4.e -- Xu hướng công tác theo tháng
 SELECT 
     dd.year,
     dd.month,
@@ -300,7 +300,7 @@ JOIN dim_date dd ON fwt.start_date_sk = dd.date_sk
 WHERE fwt.status = 'Hoàn thành'
 GROUP BY dd.year, dd.month
 ORDER BY dd.year, dd.month;
---3.f -- Chi phí công tác theo phòng ban
+--4.f -- Chi phí công tác theo phòng ban
 SELECT 
     department_name,
     COUNT(DISTINCT employee_name) AS employees_with_trips,
@@ -313,7 +313,7 @@ WHERE status = 'Hoàn thành'
 GROUP BY department_name
 ORDER BY cost_per_day DESC;
 
---3.g-- Chi phí công tác theo vị trí/chức vụ
+--4.g-- Chi phí công tác theo vị trí/chức vụ
 SELECT 
     position_name,
     COUNT(*) AS trip_count,
@@ -324,4 +324,356 @@ FROM fact_work_trips
 WHERE status = 'Hoàn thành'
 GROUP BY position_name
 ORDER BY total_cost DESC;
+
+--5.Phân tích tuyển dụng 
+--  Mục đích : Đánh giá hiệu quả kế hoạch tuyển dụng, tối ưu quy trình và dự báo nhu cầu nhân sự.
+--5.a số lượng vị trí còn trống theo phòng ban / vị trí
+SELECT 
+    department_name,
+    position_name,
+    SUM(quantity) AS total_positions,
+    SUM(remaining_positions) AS remaining_positions,
+    SUM(quantity - remaining_positions) AS filled_positions
+FROM fact_recruitment_plan
+GROUP BY department_name, position_name
+ORDER BY remaining_positions DESC;
+
+--5.b Thời gian trung bình hoàn thành kế hoạch 
+SELECT
+    rp.recruitment_id AS plan_id,
+    rp.position_name,
+    rp.department_name,
+    DATEDIFF(DAY, start_date.date, end_date.date) AS completion_days,
+    start_date.date AS start_date,
+    end_date.date AS end_date
+FROM fact_recruitment_plan rp
+JOIN dim_date start_date ON rp.start_date_sk = start_date.date_sk
+JOIN dim_date end_date ON rp.end_date_sk = end_date.date_sk
+WHERE end_date.date <= GETDATE()
+ORDER BY DATEDIFF(DAY, start_date.date, end_date.date) DESC;  -- Sửa tại đây: Thay bằng biểu thức gốc hoặc alias
+
+--5.c Tỷ lệ ứng viên được duyệt 
+SELECT 
+    rp.recruitment_id,
+    rp.position_name,
+    rp.department_name,
+    rp.quantity AS target_quantity,
+    COUNT(app.applicant_id) AS total_applicants,
+    SUM(CASE WHEN app.status = 'Đã duyệt' THEN 1 ELSE 0 END) AS approved_applicants,
+    ROUND(
+        CASE 
+            WHEN COUNT(app.applicant_id) = 0 THEN 0 
+            ELSE SUM(CASE WHEN app.status = 'Đã duyệt' THEN 1 ELSE 0 END) * 100.0 / COUNT(app.applicant_id) 
+        END, 2
+    ) AS approval_rate_percentage
+FROM 
+    fact_recruitment_plan rp
+LEFT JOIN 
+    fact_application app ON rp.recruitment_sk = app.recruitment_sk
+GROUP BY 
+    rp.recruitment_id,
+    rp.position_name,
+    rp.department_name,
+    rp.quantity
+ORDER BY 
+    approval_rate_percentage DESC;
+
+--5.d Tỷ lệ hoàn thành chỉ tiêu tuyển dụng theo phòng ban
+SELECT 
+    rp.department_name,
+    SUM(rp.quantity) AS total_target,
+    SUM(rp.quantity - rp.remaining_positions) AS filled_positions,
+    ROUND(SUM(rp.quantity - rp.remaining_positions) * 100.0 / SUM(rp.quantity), 2) AS fulfillment_rate
+FROM 
+    fact_recruitment_plan rp
+GROUP BY 
+    rp.department_name
+ORDER BY 
+    fulfillment_rate DESC;
+
+--5.e XU hướng tuyển dụng theo tháng 
+SELECT 
+    d.year,
+    d.month,
+    COUNT(rp.recruitment_sk) AS total_plans
+FROM 
+    fact_recruitment_plan rp
+JOIN 
+    dim_date d ON rp.start_date_sk = d.date_sk
+GROUP BY 
+    d.year, d.month
+ORDER BY 
+    d.year, d.month;
+
+
+--5.f số lượng ứng viên trung bình cho mỗi vị trí 
+SELECT 
+    rp.position_name,
+    AVG(applicant_count) AS avg_applicants_per_position
+FROM 
+    fact_recruitment_plan rp
+LEFT JOIN (
+    SELECT 
+        recruitment_sk, 
+        COUNT(applicant_id) AS applicant_count
+    FROM 
+        fact_application
+    GROUP BY 
+        recruitment_sk
+) app ON rp.recruitment_sk = app.recruitment_sk
+GROUP BY 
+    rp.position_name;
+
+--5.g Cảnh báo kế hoạch có nguy cơ không hoàn thành
+SELECT 
+    rp.recruitment_id,
+    rp.position_name,
+    rp.remaining_positions,
+    d_end.date AS end_date,
+    DATEDIFF(DAY, CAST(GETDATE() AS DATE), d_end.date) AS days_remaining
+FROM 
+    fact_recruitment_plan rp
+JOIN 
+    dim_date d_end ON rp.end_date_sk = d_end.date_sk
+WHERE 
+    rp.remaining_positions > 0
+    AND d_end.date BETWEEN CAST(GETDATE() AS DATE) AND DATEADD(DAY, 30, CAST(GETDATE() AS DATE))
+ORDER BY 
+    days_remaining ASC;
+
+--6. Phân tích đăng ký (nghỉ phép, làm thêm, công tác)
+--Mục đích: Quản lý các yêu cầu đăng ký của nhân viên để đảm bảo quy trình phê duyệt hợp lý.
+--6.a Số lượng đăng ký theo loại và phòng ban
+SELECT 
+    r.department_name,
+    r.registration_type,
+    COUNT(r.registration_sk) AS total_registrations
+FROM 
+    fact_registrations r
+GROUP BY 
+    r.department_name, 
+    r.registration_type
+ORDER BY 
+    r.department_name, 
+    total_registrations DESC;
+
+--6.b Số lượng đăng ký theo loại của từng nhân viên
+SELECT 
+    e.full_name,
+    r.registration_type,
+    COUNT(r.registration_sk) AS total_registrations
+FROM 
+    fact_registrations r
+JOIN 
+    dim_employees e ON r.employee_sk = e.employee_sk
+GROUP BY 
+    e.full_name, 
+    r.registration_type
+ORDER BY 
+    e.full_name, 
+    total_registrations DESC;
+
+--6.c Tỷ lệ duyệt đăng ký theo loại
+SELECT 
+    registration_type,
+    COUNT(*) AS total_registrations,
+    SUM(CASE WHEN status = 'Đã duyệt' THEN 1 ELSE 0 END) AS approved_count,
+    ROUND(
+        SUM(CASE WHEN status = 'Đã duyệt' THEN 1.0 ELSE 0 END) / COUNT(*) * 100, 
+        2
+    ) AS approval_rate_percentage
+FROM 
+    fact_registrations
+GROUP BY 
+    registration_type
+ORDER BY 
+    approval_rate_percentage DESC;
+
+--6.d Xu hướng đăng ký theo thời gian
+
+SELECT 
+    d.year,
+    d.month,
+    r.registration_type,
+    COUNT(r.registration_sk) AS total_registrations
+FROM 
+    fact_registrations r
+JOIN 
+    dim_date d ON r.request_date_sk = d.date_sk
+GROUP BY 
+    d.year, 
+    d.month, 
+    r.registration_type
+ORDER BY 
+    d.year, 
+    d.month;
+
+--6.e top 5 phòng ban có số đăng ký cao nhất 
+SELECT TOP 5
+    department_name,
+    COUNT(registration_sk) AS total_registrations
+FROM 
+    fact_registrations
+GROUP BY 
+    department_name
+ORDER BY 
+    total_registrations DESC;
+
+--6.f thống kê đăng ký theo trạng thái  
+SELECT 
+    status,
+    registration_type,
+    COUNT(*) AS count,
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY registration_type), 2) AS percentage
+FROM 
+    fact_registrations
+GROUP BY 
+    registration_type, 
+    status;
+
+--6.g số gio làm thêm trung bình được duyệt
+SELECT 
+    AVG(registration_duration) AS avg_overtime_hours
+FROM 
+    fact_registrations
+WHERE 
+    registration_type = 'Làm thêm' 
+    AND status = 'Đã duyệt';
+
+--7. Phân tích quyết định khen thưởng và kỷ luật
+--Mục đích: Đánh giá tác động của các quyết định đến hiệu suất làm việc và văn hóa tổ chức.
+--7.a Số lượng quyết định theo loại và phòng ban
+SELECT 
+    d.department_name,
+    fd.decision_type,
+    COUNT(fd.decision_sk) AS total_decisions
+FROM 
+    fact_decision fd
+JOIN 
+    dim_departments d ON fd.department_name = d.department_name
+GROUP BY 
+    d.department_name, 
+    fd.decision_type
+ORDER BY 
+    total_decisions DESC;
+
+--7.b Phân tích số lượng quyết định theo tháng/năm.
+SELECT 
+    dd.year,
+    dd.month,
+    fd.decision_type,
+    COUNT(fd.decision_sk) AS total_decisions
+FROM 
+    fact_decision fd
+JOIN 
+    dim_date dd ON fd.decision_date_sk = dd.date_sk
+GROUP BY 
+    dd.year, 
+    dd.month, 
+    fd.decision_type
+ORDER BY 
+    dd.year, 
+    dd.month;
+
+--7.c Tỷ lệ khen thưởng vs kỷ luật 
+SELECT 
+    decision_type,
+    COUNT(*) AS total_decisions,
+    ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM fact_decision), 2) AS percentage
+FROM 
+    fact_decision
+GROUP BY 
+    decision_type;
+
+--7.d Ảnh hưởng đến hành vi làm việc (Kiểm tra xem quyết định kỷ luật có giảm tỷ lệ đi muộn không).
+SELECT 
+    e.employee_sk,
+    e.full_name,
+    COUNT(CASE WHEN fd.decision_type = 'Kỷ luật' THEN 1 END) AS disciplinary_count,
+    AVG(CAST(fa.is_late AS FLOAT)) AS avg_late_rate_after_decision
+FROM 
+    fact_decision fd
+JOIN 
+    dim_employees e ON fd.employee_sk = e.employee_sk
+JOIN 
+    fact_attendance fa ON e.employee_sk = fa.employee_sk
+    AND fa.date_sk > fd.decision_date_sk -- Xét dữ liệu sau quyết định
+WHERE 
+    fd.decision_type = 'Kỷ luật'
+GROUP BY 
+    e.employee_sk, 
+    e.full_name;
+
+--7.e thời gian hiệu lực trung bình của quyết định (đánh giá thời gian tác động của quyết định)
+SELECT 
+    decision_type,
+    AVG(DATEDIFF(DAY, decision_effective_date, decision_expiry_date)) AS avg_duration_days
+FROM 
+    fact_decision
+WHERE 
+    decision_expiry_date IS NOT NULL
+GROUP BY 
+    decision_type;
+
+--7.f Top 5 nhân viên được khen thưởng nhiều nhất
+SELECT TOP 5
+    e.full_name,
+    d.department_name,
+    COUNT(fd.decision_sk) AS reward_count
+FROM 
+    fact_decision fd
+JOIN 
+    dim_employees e ON fd.employee_sk = e.employee_sk
+JOIN 
+    dim_departments d ON e.department_sk = d.department_sk
+WHERE 
+    fd.decision_type = 'Khen thưởng'
+GROUP BY 
+    e.full_name, 
+    d.department_name
+ORDER BY 
+    reward_count DESC;
+
+--7.g tương quan giữa khen thưởng và giờ làm thêm 
+SELECT 
+    e.employee_sk,
+    e.full_name,
+    COUNT(fd.decision_sk) AS reward_count,
+    SUM(fr.registration_duration) AS total_overtime_hours
+FROM 
+    fact_decision fd
+JOIN 
+    dim_employees e ON fd.employee_sk = e.employee_sk
+LEFT JOIN 
+    fact_registrations fr ON e.employee_sk = fr.employee_sk
+    AND fr.registration_type = 'Làm thêm'
+WHERE 
+    fd.decision_type = 'Khen thưởng'
+GROUP BY 
+    e.employee_sk, 
+    e.full_name;
+
+--7.h phân tích theo chức vụ 
+SELECT 
+    p.position_name,
+    fd.decision_type,
+    COUNT(*) AS decision_count
+FROM 
+    fact_decision fd
+JOIN 
+    dim_employees e ON fd.employee_sk = e.employee_sk
+JOIN 
+    dim_positions p ON e.position_sk = p.position_sk
+GROUP BY 
+    p.position_name, 
+    fd.decision_type
+ORDER BY 
+    decision_count DESC;
+
+
+--8. Phân tích thời gian 
+--Mục đích: Theo dõi xu hướng và biến động của các chỉ số nhân sự theo thời gian.
+
+--8.a Lương trung bình của nhân viên qua các năm 
+
 
