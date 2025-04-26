@@ -675,5 +675,213 @@ ORDER BY
 --Mục đích: Theo dõi xu hướng và biến động của các chỉ số nhân sự theo thời gian.
 
 --8.a Lương trung bình của nhân viên qua các năm 
+SELECT 
+    d.year,
+    ROUND(AVG(fs.total_salary), 2) AS avg_salary
+FROM 
+    fact_salary fs
+JOIN 
+    dim_date d ON fs.date_sk = d.date_sk
+GROUP BY 
+    d.year
+ORDER BY 
+    d.year;
 
+--8.b tỷ lệ lương hàng năm 
+WITH yearly_salary AS (
+    SELECT 
+        year,
+        ROUND(AVG(total_salary), 2) AS avg_salary
+    FROM 
+        fact_salary fs
+    JOIN 
+        dim_date d ON fs.date_sk = d.date_sk
+    GROUP BY 
+        year
+)
+SELECT 
+    curr.year,
+    curr.avg_salary AS current_year_salary,
+    prev.avg_salary AS previous_year_salary,
+    ROUND((curr.avg_salary - prev.avg_salary) * 100.0 / prev.avg_salary, 2) AS salary_growth_rate
+FROM 
+    yearly_salary curr
+LEFT JOIN 
+    yearly_salary prev ON curr.year = prev.year + 1;
 
+--8.c số giờ làm trung bình theo quý
+SELECT 
+    d.year,
+    d.quarter,
+    ROUND(AVG(fa.hours_worked), 2) AS avg_hours_worked
+FROM 
+    fact_attendance fa
+JOIN 
+    dim_date d ON fa.date_sk = d.date_sk
+GROUP BY 
+    d.year, d.quarter
+ORDER BY 
+    d.year, d.quarter;
+
+--8.d Biến động giờ làm thêm theo tháng
+SELECT 
+    d.year,
+    d.month,
+    SUM(fa.overtime_hours) AS total_overtime_hours
+FROM 
+    fact_attendance fa
+JOIN 
+    dim_date d ON fa.date_sk = d.date_sk
+GROUP BY 
+    d.year, d.month
+ORDER BY 
+    d.year, d.month;
+
+--9. Phân tích theo đặc điểm nhân khẩu học
+--Mục đích: Hiểu sự khác biệt giữa các nhóm nhân viên dựa trên giới tính, độ tuổi, hoặc các đặc điểm khác.
+
+--9.a Phân tích lương theo giới tính và theo độ tuổi 
+-- Tạo nhóm tuổi
+WITH employee_age_groups AS (
+    SELECT 
+        employee_sk,
+        gender,
+        CASE 
+            WHEN age BETWEEN 18 AND 25 THEN '18-25'
+            WHEN age BETWEEN 26 AND 35 THEN '26-35'
+            WHEN age BETWEEN 36 AND 45 THEN '36-45'
+            WHEN age BETWEEN 46 AND 55 THEN '46-55'
+            ELSE '56+'
+        END AS age_group
+    FROM 
+        dim_employees
+)
+-- Tính lương trung bình theo nhóm
+SELECT 
+    eag.gender,
+    eag.age_group,
+    ROUND(AVG(fs.total_salary), 2) AS avg_salary
+FROM 
+    fact_salary fs
+JOIN 
+    employee_age_groups eag ON fs.employee_sk = eag.employee_sk
+GROUP BY 
+    eag.gender, eag.age_group
+ORDER BY 
+    eag.gender, eag.age_group;
+
+--9.b Số giờ làm việc trung bình theo nhóm tuổi
+SELECT 
+    CASE 
+        WHEN age BETWEEN 18 AND 25 THEN '18-25'
+        WHEN age BETWEEN 26 AND 35 THEN '26-35'
+        WHEN age BETWEEN 36 AND 45 THEN '36-45'
+        ELSE '46+'
+    END AS age_group,
+    ROUND(AVG(fa.hours_worked), 2) AS avg_hours_worked
+FROM 
+    fact_attendance fa
+JOIN 
+    dim_employees e ON fa.employee_sk = e.employee_sk
+GROUP BY 
+    CASE 
+        WHEN age BETWEEN 18 AND 25 THEN '18-25'
+        WHEN age BETWEEN 26 AND 35 THEN '26-35'
+        WHEN age BETWEEN 36 AND 45 THEN '36-45'
+        ELSE '46+'
+    END
+ORDER BY 
+    avg_hours_worked DESC;
+
+--9.c Số ngày nghỉ phép trung bình theo giới tính
+SELECT 
+    e.gender,
+    ROUND(AVG(flb.used_leave_days), 2) AS avg_leave_days
+FROM 
+    fact_leave_balance flb
+JOIN 
+    dim_employees e ON flb.employee_sk = e.employee_sk
+GROUP BY 
+    e.gender;
+
+--9.d Phân bổ nhân viên theo độ tuổi và phòng ban
+SELECT 
+    e.department_name,
+    CASE 
+        WHEN e.age BETWEEN 18 AND 30 THEN '18-30'
+        WHEN e.age BETWEEN 31 AND 45 THEN '31-45'
+        ELSE '46+'
+    END AS age_group,
+    COUNT(*) AS employee_count
+FROM 
+    dim_employees e
+GROUP BY 
+    e.department_name,
+    CASE 
+        WHEN e.age BETWEEN 18 AND 30 THEN '18-30'
+        WHEN e.age BETWEEN 31 AND 45 THEN '31-45'
+        ELSE '46+'
+    END
+ORDER BY 
+    e.department_name,
+    age_group;
+
+--9.e Tỷ lệ khen thưởng theo giới tính
+SELECT 
+    e.gender,
+    COUNT(fd.decision_sk) AS total_rewards,
+    ROUND(COUNT(fd.decision_sk) * 100.0 / SUM(COUNT(fd.decision_sk)) OVER (), 2) AS reward_percentage
+FROM 
+    fact_decision fd
+JOIN 
+    dim_employees e ON fd.employee_sk = e.employee_sk
+WHERE 
+    fd.decision_type = 'Khen thưởng'
+GROUP BY 
+    e.gender;
+
+--9.f Phân tích giờ làm thêm theo giới tính và vị trí
+SELECT 
+    e.gender,
+    e.position_name,
+    SUM(fr.registration_duration) AS total_overtime_hours
+FROM 
+    fact_registrations fr
+JOIN 
+    dim_employees e ON fr.employee_sk = e.employee_sk
+WHERE 
+    fr.registration_type = 'Làm thêm'
+GROUP BY 
+    e.gender, e.position_name
+ORDER BY 
+    total_overtime_hours DESC;
+
+--9.g Tuổi trung bình của nhân viên theo phòng ban
+SELECT 
+    e.department_name,
+    ROUND(AVG(e.age), 0) AS avg_age
+FROM 
+    dim_employees e
+GROUP BY 
+    e.department_name
+ORDER BY 
+    avg_age DESC;
+
+--9.h Tỷ lệ nghỉ việc theo nhóm tuổi 
+SELECT 
+    CASE 
+        WHEN age BETWEEN 18 AND 30 THEN '18-30'
+        WHEN age BETWEEN 31 AND 45 THEN '31-45'
+        ELSE '46+'
+    END AS age_group,
+    COUNT(*) AS total_employees,
+    SUM(CASE WHEN employment_status = N'Đã nghỉ việc' THEN 1 ELSE 0 END) AS resigned_count,
+    ROUND(SUM(CASE WHEN employment_status = N'Đã nghỉ việc' THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate
+FROM 
+    dim_employees
+GROUP BY 
+    CASE 
+        WHEN age BETWEEN 18 AND 30 THEN '18-30'
+        WHEN age BETWEEN 31 AND 45 THEN '31-45'
+        ELSE '46+'
+    END;

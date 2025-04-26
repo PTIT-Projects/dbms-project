@@ -200,7 +200,7 @@ CREATE TABLE fact_decision (
 	department_name NVARCHAR(100),
     decision_date_sk INT,  -- Khóa ngoại tới dim_date
     decision_type NVARCHAR(50),  -- Loại quyết định (Khen thưởng, Kỷ luật)
-    decision_details NNVARCHAR(255),  -- Chi tiết quyết định
+    decision_details NVARCHAR(255),  -- Chi tiết quyết định
 	decision_effective_date DATE, --Ngày có hiệu lực
     decision_expiry_date DATE, -- Ngyà hết hiệu lực(nếu có)
     FOREIGN KEY (employee_sk) REFERENCES dim_employees(employee_sk),
