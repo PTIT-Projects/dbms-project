@@ -1,17 +1,17 @@
-Lưu ý quan trọng:
+-- Lưu ý quan trọng:
 
-Giả định: Các SP này giả định rằng cơ sở dữ liệu nhansucongty và hrms_warehouse đã tồn tại và các bảng trong hrms_warehouse đã được tạo theo lược đồ bạn cung cấp.
-Khóa Surrogate (_sk): Các SP này sẽ dựa vào thuộc tính IDENTITY đã được định nghĩa trên các cột khóa surrogate (*_sk) trong hrms_warehouse để tự động tạo giá trị khóa.
-SCD (Slowly Changing Dimensions): Đối với các bảng chiều (dim_*), tôi sẽ sử dụng MERGE statement (nếu hệ quản trị CSDL hỗ trợ, ví dụ SQL Server) để xử lý các thay đổi ở nguồn (SCD Type 1 - cập nhật ghi đè). Nếu không hỗ trợ MERGE, bạn có thể cần điều chỉnh thành logic INSERT và UPDATE riêng biệt.
-Dữ liệu trong kho: Các SP cho bảng sự kiện (fact_*) thường chỉ thực hiện INSERT các bản ghi mới. Việc xử lý dữ liệu trùng lặp hoặc thay đổi trong dữ liệu nguồn (nếu có) cần được xem xét thêm tùy theo yêu cầu nghiệp vụ cụ thể (ví dụ: có cần cập nhật fact khi dữ liệu nguồn thay đổi không, xử lý trễ dữ liệu...). Trong các SP dưới đây, tôi sẽ tập trung vào việc tải dữ liệu mới.
-Tính toán các cột dẫn xuất: Một số cột trong hrms_warehouse là cột dẫn xuất (ví dụ: hours_worked, age, trip_duration). Logic tính toán sẽ được đưa vào SP. Cần lưu ý rằng việc tính toán is_late, overtime_hours, is_early_leave trong fact_attendance phụ thuộc vào giờ làm việc quy định (ca làm việc), điều này không có trong CSDL nguồn ban đầu của bạn. Tôi sẽ để lại phần tính toán này với một giả định đơn giản hoặc ghi chú cần bổ sung logic nghiệp vụ.
-Hiệu suất: Các SP này là ví dụ cơ bản. Đối với dữ liệu lớn, bạn có thể cần xem xét các kỹ thuật tối ưu hóa như xử lý theo lô (batch processing), sử dụng bảng staging, hoặc index hiệu quả hơn.
-Thứ tự tải: Cần tải các bảng chiều trước, sau đó mới tải các bảng sự kiện để đảm bảo các khóa ngoại được tham chiếu hợp lệ. Thứ tự tải nên là: dim_date, dim_departments, dim_positions, dim_employees, sau đó là các bảng fact_*.
-Xử lý lỗi: Các SP dưới đây chưa bao gồm logic xử lý lỗi chi tiết (ví dụ: sử dụng TRY...CATCH). Bạn nên bổ sung vào môi trường sản phẩm.
-1. Stored Procedure cho dim_date
-Bảng này thường được populate một lần hoặc định kỳ hàng năm. SP này sẽ tạo dữ liệu ngày tháng cho một khoảng thời gian nhất định.
+-- Giả định: Các SP này giả định rằng cơ sở dữ liệu nhansucongty và hrms_warehouse đã tồn tại và các bảng trong hrms_warehouse đã được tạo theo lược đồ bạn cung cấp.
+-- Khóa Surrogate (_sk): Các SP này sẽ dựa vào thuộc tính IDENTITY đã được định nghĩa trên các cột khóa surrogate (*_sk) trong hrms_warehouse để tự động tạo giá trị khóa.
+-- SCD (Slowly Changing Dimensions): Đối với các bảng chiều (dim_*), tôi sẽ sử dụng MERGE statement (nếu hệ quản trị CSDL hỗ trợ, ví dụ SQL Server) để xử lý các thay đổi ở nguồn (SCD Type 1 - cập nhật ghi đè). Nếu không hỗ trợ MERGE, bạn có thể cần điều chỉnh thành logic INSERT và UPDATE riêng biệt.
+-- Dữ liệu trong kho: Các SP cho bảng sự kiện (fact_*) thường chỉ thực hiện INSERT các bản ghi mới. Việc xử lý dữ liệu trùng lặp hoặc thay đổi trong dữ liệu nguồn (nếu có) cần được xem xét thêm tùy theo yêu cầu nghiệp vụ cụ thể (ví dụ: có cần cập nhật fact khi dữ liệu nguồn thay đổi không, xử lý trễ dữ liệu...). Trong các SP dưới đây, tôi sẽ tập trung vào việc tải dữ liệu mới.
+-- Tính toán các cột dẫn xuất: Một số cột trong hrms_warehouse là cột dẫn xuất (ví dụ: hours_worked, age, trip_duration). Logic tính toán sẽ được đưa vào SP. Cần lưu ý rằng việc tính toán is_late, overtime_hours, is_early_leave trong fact_attendance phụ thuộc vào giờ làm việc quy định (ca làm việc), điều này không có trong CSDL nguồn ban đầu của bạn. Tôi sẽ để lại phần tính toán này với một giả định đơn giản hoặc ghi chú cần bổ sung logic nghiệp vụ.
+-- Hiệu suất: Các SP này là ví dụ cơ bản. Đối với dữ liệu lớn, bạn có thể cần xem xét các kỹ thuật tối ưu hóa như xử lý theo lô (batch processing), sử dụng bảng staging, hoặc index hiệu quả hơn.
+-- Thứ tự tải: Cần tải các bảng chiều trước, sau đó mới tải các bảng sự kiện để đảm bảo các khóa ngoại được tham chiếu hợp lệ. Thứ tự tải nên là: dim_date, dim_departments, dim_positions, dim_employees, sau đó là các bảng fact_*.
+-- Xử lý lỗi: Các SP dưới đây chưa bao gồm logic xử lý lỗi chi tiết (ví dụ: sử dụng TRY...CATCH). Bạn nên bổ sung vào môi trường sản phẩm.
+-- 1. Stored Procedure cho dim_date
+-- Bảng này thường được populate một lần hoặc định kỳ hàng năm. SP này sẽ tạo dữ liệu ngày tháng cho một khoảng thời gian nhất định.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -64,12 +64,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_populate_dim_date '2020-01-01', '2030-12-31';
+-- Cách chạy: EXEC sp_populate_dim_date '2020-01-01', '2030-12-31';
 
-2. Stored Procedure cho dim_departments
-Tải dữ liệu phòng ban, bao gồm cả thông tin quản lý từ bảng DepartmentManager và tên quản lý từ Employees.
+-- 2. Stored Procedure cho dim_departments
+-- Tải dữ liệu phòng ban, bao gồm cả thông tin quản lý từ bảng DepartmentManager và tên quản lý từ Employees.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -111,12 +111,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_dim_departments;
+-- Cách chạy: EXEC sp_load_dim_departments;
 
-3. Stored Procedure cho dim_positions
-Tải dữ liệu chức vụ và thông tin phòng ban liên quan.
+-- 3. Stored Procedure cho dim_positions
+-- Tải dữ liệu chức vụ và thông tin phòng ban liên quan.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -157,12 +157,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_dim_positions;
+-- Cách chạy: EXEC sp_load_dim_positions;
 
-4. Stored Procedure cho dim_employees
-Tải dữ liệu nhân viên, bao gồm thông tin phòng ban, chức vụ, hợp đồng, bảo hiểm và các cột dẫn xuất.
+-- 4. Stored Procedure cho dim_employees
+-- Tải dữ liệu nhân viên, bao gồm thông tin phòng ban, chức vụ, hợp đồng, bảo hiểm và các cột dẫn xuất.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -303,13 +303,13 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_dim_employees;
+-- Cách chạy: EXEC sp_load_dim_employees;
 
-5. Stored Procedure cho fact_attendance
-Tải dữ liệu chấm công. Cần join với dim_employees và dim_date để lấy khóa surrogate.
-Lưu ý: Việc tính toán hours_worked, is_late, overtime_hours, is_early_leave cần dựa vào quy định ca làm việc cụ thể của công ty, điều này không có trong lược đồ nguồn. Tôi sẽ đưa ra logic tính toán giờ làm việc đơn giản và ghi chú cho các trường khác.
+-- 5. Stored Procedure cho fact_attendance
+-- Tải dữ liệu chấm công. Cần join với dim_employees và dim_date để lấy khóa surrogate.
+-- Lưu ý: Việc tính toán hours_worked, is_late, overtime_hours, is_early_leave cần dựa vào quy định ca làm việc cụ thể của công ty, điều này không có trong lược đồ nguồn. Tôi sẽ đưa ra logic tính toán giờ làm việc đơn giản và ghi chú cho các trường khác.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -369,12 +369,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_attendance;
+-- Cách chạy: EXEC sp_load_fact_attendance;
 
-6. Stored Procedure cho fact_salary
-Tải dữ liệu lương. Cần join với dim_employees và dim_date.
+-- 6. Stored Procedure cho fact_salary
+-- Tải dữ liệu lương. Cần join với dim_employees và dim_date.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -424,12 +424,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_salary;
+-- Cách chạy: EXEC sp_load_fact_salary;
 
-7. Stored Procedure cho fact_leave_balance
-Tải dữ liệu số ngày nghỉ phép còn lại. Cần join với dim_employees và dim_date.
+-- 7. Stored Procedure cho fact_leave_balance
+-- Tải dữ liệu số ngày nghỉ phép còn lại. Cần join với dim_employees và dim_date.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -476,12 +476,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_leave_balance;
+-- Cách chạy: EXEC sp_load_fact_leave_balance;
 
-8. Stored Procedure cho fact_work_trips
-Tải dữ liệu công tác. Cần join với dim_employees và dim_date cho ngày bắt đầu và kết thúc.
+-- 8. Stored Procedure cho fact_work_trips
+-- Tải dữ liệu công tác. Cần join với dim_employees và dim_date cho ngày bắt đầu và kết thúc.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -535,13 +535,13 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_work_trips;
+-- Cách chạy: EXEC sp_load_fact_work_trips;
 
-9. Stored Procedure cho fact_recruitment_plan
-Tải dữ liệu kế hoạch tuyển dụng. Cần join với dim_positions, dim_departments, và dim_date.
-Lưu ý: Trường remaining_positions trong fact cần tính toán dựa trên số lượng cần tuyển và số lượng ứng viên đã được tuyển cho kế hoạch đó.
+-- 9. Stored Procedure cho fact_recruitment_plan
+-- Tải dữ liệu kế hoạch tuyển dụng. Cần join với dim_positions, dim_departments, và dim_date.
+-- Lưu ý: Trường remaining_positions trong fact cần tính toán dựa trên số lượng cần tuyển và số lượng ứng viên đã được tuyển cho kế hoạch đó.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -600,12 +600,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_recruitment_plan;
+-- Cách chạy: EXEC sp_load_fact_recruitment_plan;
 
-10. Stored Procedure cho fact_application
-Tải dữ liệu ứng viên. Cần join với fact_recruitment_plan và dim_date.
+-- 10. Stored Procedure cho fact_application
+-- Tải dữ liệu ứng viên. Cần join với fact_recruitment_plan và dim_date.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -648,13 +648,13 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_application;
+-- Cách chạy: EXEC sp_load_fact_application;
 
-11. Stored Procedure cho fact_registrations
-Tải dữ liệu các loại đăng ký. Cần join với dim_employees (cho người yêu cầu và người duyệt) và dim_date.
-Lưu ý: Tính toán registration_duration phụ thuộc vào loại đăng ký và chi tiết yêu cầu, điều này phức tạp. Tôi sẽ để logic tính toán này đơn giản hoặc ghi chú.
+-- 11. Stored Procedure cho fact_registrations
+-- Tải dữ liệu các loại đăng ký. Cần join với dim_employees (cho người yêu cầu và người duyệt) và dim_date.
+-- Lưu ý: Tính toán registration_duration phụ thuộc vào loại đăng ký và chi tiết yêu cầu, điều này phức tạp. Tôi sẽ để logic tính toán này đơn giản hoặc ghi chú.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -711,12 +711,12 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_registrations;
+-- Cách chạy: EXEC sp_load_fact_registrations;
 
-12. Stored Procedure cho fact_decision
-Tải dữ liệu các quyết định. Cần join với dim_employees và dim_date.
+-- 12. Stored Procedure cho fact_decision
+-- Tải dữ liệu các quyết định. Cần join với dim_employees và dim_date.
 
-SQL
+-- SQL
 
 USE [hrms_warehouse];
 GO
@@ -762,11 +762,11 @@ BEGIN
 
 END;
 GO
-Cách chạy: EXEC sp_load_fact_decision;
+-- Cách chạy: EXEC sp_load_fact_decision;
 
-Quy trình tải dữ liệu (ETL Process Flow):
+-- Quy trình tải dữ liệu (ETL Process Flow):
 
-Để đảm bảo tính toàn vẹn tham chiếu, nên chạy các SP theo thứ tự sau:
+-- Để đảm bảo tính toàn vẹn tham chiếu, nên chạy các SP theo thứ tự sau:
 
 EXEC sp_populate_dim_date; (Chỉ chạy lần đầu hoặc khi cần mở rộng phạm vi ngày)
 EXEC sp_load_dim_departments;
