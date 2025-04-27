@@ -1,3 +1,4 @@
+
 -- Bảng dim_date: Lưu trữ thông tin về ngày tháng để hỗ trợ phân tích theo thời gian.
 CREATE TABLE dim_date (
     date_sk INT PRIMARY KEY,
@@ -11,7 +12,7 @@ CREATE TABLE dim_date (
 -- Bảng dim_positions: Lưu trữ thông tin về các vị trí công việc.
 CREATE TABLE dim_positions (
     position_sk INT PRIMARY KEY,
-    position_id INT,  -- ID gốc từ bảng Positions
+    position_id INT,  -- ID gốc từ bảng Positi`ons
     position_name NVARCHAR(100),
 	department_sk INT, --khoá ngoại đến dim_departments
 	department_name NVARCHAR(100)
@@ -206,4 +207,5 @@ CREATE TABLE fact_decision (
     FOREIGN KEY (employee_sk) REFERENCES dim_employees(employee_sk),
     FOREIGN KEY (decision_date_sk) REFERENCES dim_date(date_sk)
 );
+
 

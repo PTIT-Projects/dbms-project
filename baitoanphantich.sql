@@ -868,20 +868,225 @@ ORDER BY
     avg_age DESC;
 
 --9.h Tỷ lệ nghỉ việc theo nhóm tuổi 
-SELECT 
-    CASE 
+SELECT
+    CASE
         WHEN age BETWEEN 18 AND 30 THEN '18-30'
         WHEN age BETWEEN 31 AND 45 THEN '31-45'
         ELSE '46+'
     END AS age_group,
     COUNT(*) AS total_employees,
-    SUM(CASE WHEN employment_status = N'Đã nghỉ việc' THEN 1 ELSE 0 END) AS resigned_count,
-    ROUND(SUM(CASE WHEN employment_status = N'Đã nghỉ việc' THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate
-FROM 
+    SUM(CASE WHEN contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,  
+    ROUND(SUM(CASE WHEN contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate 
+FROM
     dim_employees
-GROUP BY 
-    CASE 
+GROUP BY	
+    CASE
         WHEN age BETWEEN 18 AND 30 THEN '18-30'
         WHEN age BETWEEN 31 AND 45 THEN '31-45'
         ELSE '46+'
+    END;
+
+--10 . Phân tích nghỉ việc 
+--10.a Tỷ lệ nghỉ việc theo phòng ban 
+-- Giả định: Nhân viên nghỉ việc khi hợp đồng đã hết hạn và không còn hoạt động
+SELECT
+    department_name,
+    COUNT(*) AS total_employees,
+    SUM(CASE WHEN contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,
+    ROUND(SUM(CASE WHEN contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate
+FROM
+    dim_employees
+GROUP BY
+    department_name
+ORDER BY
+    resignation_rate DESC;
+
+--10.b Tỷ lệ nghỉ việc theo vị trí 
+SELECT
+    position_name,
+    COUNT(*) AS total_employees,
+    SUM(CASE WHEN contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,
+    ROUND(SUM(CASE WHEN contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate
+FROM
+    dim_employees
+GROUP BY
+    position_name
+ORDER BY
+    resignation_rate DESC;
+
+--10.c Nguyên nhân nghỉ việc liên quan đến kỷ luật
+SELECT
+    CASE
+        WHEN fd.employee_sk IS NOT NULL THEN 'Kỷ luật'
+        ELSE 'Không kỷ luật'
+    END AS discipline_status,
+    COUNT(DISTINCT de.employee_sk) AS total_employees,
+    SUM(CASE WHEN de.contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,
+    ROUND(SUM(CASE WHEN de.contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(DISTINCT de.employee_sk), 2) AS resignation_rate
+FROM
+    dim_employees de
+LEFT JOIN
+    fact_decision fd ON de.employee_sk = fd.employee_sk AND fd.decision_type = N'Kỷ luật'
+GROUP BY
+    CASE
+        WHEN fd.employee_sk IS NOT NULL THEN 'Kỷ luật'
+        ELSE 'Không kỷ luật'
+    END
+ORDER BY
+    resignation_rate DESC;
+
+--10.d xu hướng nghỉ việc theo thời gian 
+SELECT 
+    dd.year,
+    dd.month,
+    COUNT(DISTINCT e.employee_sk) AS total_employees,
+    COUNT(DISTINCT CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' 
+                   THEN e.employee_sk END) AS terminated_employees,
+    CAST(COUNT(DISTINCT CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' 
+                        THEN e.employee_sk END) AS FLOAT) / COUNT(DISTINCT e.employee_sk) * 100 AS termination_rate
+FROM dim_employees e
+LEFT JOIN fact_decision d ON e.employee_sk = d.employee_sk
+JOIN dim_date dd ON d.decision_date_sk = dd.date_sk
+WHERE dd.year >= YEAR(GETDATE()) - 5  -- Phân tích 5 năm gần nhất
+GROUP BY dd.year, dd.month
+ORDER BY dd.year, dd.month;
+
+--10.e Mối liên hệ giữa giờ làm thêm và tỷ lệ nghỉ việc
+WITH employee_overtime AS (
+    SELECT 
+        e.employee_sk,
+        AVG(fa.overtime_hours) AS avg_overtime,
+        MAX(CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' 
+            THEN 1 ELSE 0 END) AS is_terminated
+    FROM dim_employees e
+    LEFT JOIN fact_attendance fa ON e.employee_sk = fa.employee_sk
+    LEFT JOIN fact_decision d ON e.employee_sk = d.employee_sk
+    GROUP BY e.employee_sk
+)
+SELECT 
+    CASE 
+        WHEN avg_overtime = 0 THEN 'Không làm thêm'
+        WHEN avg_overtime <= 2 THEN '1-2 giờ/tuần'
+        WHEN avg_overtime <= 5 THEN '3-5 giờ/tuần'
+        WHEN avg_overtime <= 10 THEN '6-10 giờ/tuần'
+        ELSE 'Trên 10 giờ/tuần'
+    END AS overtime_category,
+    COUNT(*) AS total_employees,
+    SUM(is_terminated) AS terminated_employees,
+    CAST(SUM(is_terminated) AS FLOAT) / COUNT(*) * 100 AS termination_rate
+FROM employee_overtime
+GROUP BY 
+    CASE 
+        WHEN avg_overtime = 0 THEN 'Không làm thêm'
+        WHEN avg_overtime <= 2 THEN '1-2 giờ/tuần'
+        WHEN avg_overtime <= 5 THEN '3-5 giờ/tuần'
+        WHEN avg_overtime <= 10 THEN '6-10 giờ/tuần'
+        ELSE 'Trên 10 giờ/tuần'
+    END
+ORDER BY overtime_category;
+
+--10.f Phân tích thời gian đã làm trước khi nghỉ việc 
+SELECT 
+    CASE 
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 6 THEN 'Dưới 6 tháng'
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 12 THEN '6-12 tháng'
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 24 THEN '1-2 năm'
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 60 THEN '2-5 năm'
+        ELSE 'Trên 5 năm'
+    END AS tenure_before_termination,
+    COUNT(*) AS termination_count,
+    CAST(COUNT(*) AS FLOAT) / (SELECT COUNT(*) FROM fact_decision 
+                              WHERE decision_type = 'Kỷ luật' AND decision_details LIKE '%nghỉ việc%') * 100 AS percentage
+FROM dim_employees e
+JOIN fact_decision d ON e.employee_sk = d.employee_sk
+WHERE d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%'
+GROUP BY 
+    CASE 
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 6 THEN 'Dưới 6 tháng'
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 12 THEN '6-12 tháng'
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 24 THEN '1-2 năm'
+        WHEN DATEDIFF(MONTH, e.hire_date, d.decision_effective_date) <= 60 THEN '2-5 năm'
+        ELSE 'Trên 5 năm'
+    END
+ORDER BY tenure_before_termination;
+	
+
+--11.Phân tích tác động của các chương trình phúc lợi linh hoạt
+--Mục đích: Đánh giá hiệu quả của các chương trình phúc lợi linh hoạt (ví dụ: lựa chọn bảo hiểm, làm việc linh hoạt) đến sự hài lòng và giữ chân nhân viên.
+--11.a  Phúc lợi nào được nhân viên sử dụng nhiều nhất
+SELECT 
+    e.current_contract_type AS flexible_benefit_type,
+    e.insurance_type,
+    COUNT(DISTINCT e.employee_sk) AS employee_count,
+    CAST(COUNT(DISTINCT e.employee_sk) AS FLOAT) / 
+        (SELECT COUNT(*) FROM dim_employees) * 100 AS percentage_of_total
+FROM dim_employees e
+WHERE e.current_contract_type IN ('Linh hoạt', 'Bán thời gian', 'Tự do') -- Các loại hợp đồng linh hoạt(hãy thay tên hợp đồng vào) 
+   OR e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình', 'Cá nhân') -- Các loại bảo hiểm (hãy thay tên bảo hiểm vào)
+GROUP BY e.current_contract_type, e.insurance_type
+ORDER BY employee_count DESC;
+
+--11.b Phân tích chi tiết hiệu quả từng loại phúc lợi
+SELECT 
+    e.insurance_type,
+    e.current_contract_type,
+    COUNT(DISTINCT e.employee_sk) AS employee_count,
+    AVG(fs.total_salary) AS avg_salary,
+    AVG(fa.hours_worked) AS avg_hours_worked,
+    AVG(fa.overtime_hours) AS avg_overtime,
+    CAST(SUM(CASE WHEN fd.decision_type = 'Kỷ luật' AND fd.decision_details LIKE '%nghỉ việc%' 
+             THEN 1 ELSE 0 END) AS FLOAT) / COUNT(DISTINCT e.employee_sk) * 100 AS termination_rate,
+    AVG(flb.remaining_leave_days) AS avg_remaining_leave_days,
+    AVG(fs.total_salary) / AVG(fa.hours_worked) AS salary_per_hour
+FROM dim_employees e
+LEFT JOIN fact_salary fs ON e.employee_sk = fs.employee_sk
+LEFT JOIN fact_attendance fa ON e.employee_sk = fa.employee_sk
+LEFT JOIN fact_decision fd ON e.employee_sk = fd.employee_sk
+LEFT JOIN fact_leave_balance flb ON e.employee_sk = flb.employee_sk
+WHERE e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình', 'Cơ bản') -- tên bảo hiểm
+   OR e.current_contract_type IN ('Linh hoạt', 'Bán thời gian', 'Tự do', 'Toàn thời gian') --tên hợp đồng 
+GROUP BY e.insurance_type, e.current_contract_type
+ORDER BY termination_rate, salary_per_hour DESC;
+
+--11.c Chi phí cung cấp phúc lợi linh hoạt so với lợi ích mang lại
+WITH benefit_costs AS (
+    SELECT 
+        e.employee_sk,
+        CASE WHEN e.current_contract_type IN ('Linh hoạt', 'Bán thời gian', 'Tự do') 
+             THEN 1 ELSE 0 END AS has_flexible_contract,
+        CASE WHEN e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình') 
+             THEN 1 ELSE 0 END AS has_flexible_insurance,
+        fs.total_salary,
+        fs.allowance,
+        fs.deductions,
+        MAX(CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' 
+            THEN 1 ELSE 0 END) AS is_terminated,
+        DATEDIFF(MONTH, e.hire_date, GETDATE()) AS tenure_months
+    FROM dim_employees e
+    LEFT JOIN fact_salary fs ON e.employee_sk = fs.employee_sk
+    LEFT JOIN fact_decision d ON e.employee_sk = d.employee_sk
+    GROUP BY e.employee_sk, e.current_contract_type, e.insurance_type, 
+             fs.total_salary, fs.allowance, fs.deductions, e.hire_date
+)
+SELECT 
+    CASE 
+        WHEN has_flexible_contract = 1 OR has_flexible_insurance = 1 
+        THEN 'Có phúc lợi linh hoạt' 
+        ELSE 'Không có phúc lợi linh hoạt' 
+    END AS benefit_group,
+    COUNT(*) AS employee_count,
+    AVG(total_salary) AS avg_salary,
+    AVG(allowance) AS avg_allowance,
+    AVG(tenure_months) AS avg_tenure_months,
+    CAST(SUM(is_terminated) AS FLOAT) / COUNT(*) * 100 AS termination_rate,
+    -- Ước tính chi phí phúc lợi (giả định allowance bao gồm chi phí phúc lợi)
+    SUM(allowance) AS total_benefit_cost,
+    -- Ước tính lợi ích (giảm tỷ lệ nghỉ việc * chi phí tuyển dụng/thay thế ước tính)
+    SUM(CASE WHEN is_terminated = 0 THEN 5000000 ELSE 0 END) AS estimated_retention_benefit
+FROM benefit_costs
+GROUP BY 
+    CASE 
+        WHEN has_flexible_contract = 1 OR has_flexible_insurance = 1 
+        THEN 'Có phúc lợi linh hoạt' 
+        ELSE 'Không có phúc lợi linh hoạt' 
     END;
