@@ -4,6 +4,8 @@ import vn.ptit.hrms.dto.warehouse.EmployeeWorkSummaryDTO;
 import vn.ptit.hrms.dto.warehouse.DepartmentLateStatsDTO;
 import vn.ptit.hrms.dto.warehouse.EmployeeOvertimeDTO;
 import vn.ptit.hrms.dto.warehouse.DepartmentPerformanceDTO;
+import vn.ptit.hrms.dto.warehouse.AverageHoursByQuarterDTO;
+import vn.ptit.hrms.dto.warehouse.TotalOvertimeByMonthDTO;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -126,6 +128,62 @@ public class FactAttendanceDao {
                 dto.setAvgHoursPerDay(rs.getBigDecimal("avg_hours_per_day"));
                 dto.setLatePercentage(rs.getDouble("late_percentage"));
                 dto.setTotalOvertime(rs.getBigDecimal("total_overtime"));
+                return dto;
+            }
+        });
+    }
+
+    // 8.c số giờ làm trung bình theo quý
+    public List<AverageHoursByQuarterDTO> getAverageHoursWorkedByQuarter() {
+        String sql = """
+            SELECT 
+                d.year,
+                d.quarter,
+                ROUND(AVG(fa.hours_worked), 2) AS avg_hours_worked
+            FROM 
+                fact_attendance fa
+            JOIN 
+                dim_date d ON fa.date_sk = d.date_sk
+            GROUP BY 
+                d.year, d.quarter
+            ORDER BY 
+                d.year, d.quarter
+        """;
+        return jdbcTemplate.query(sql, new RowMapper<AverageHoursByQuarterDTO>() {
+            @Override
+            public AverageHoursByQuarterDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                AverageHoursByQuarterDTO dto = new AverageHoursByQuarterDTO();
+                dto.setYear(rs.getInt("year"));
+                dto.setQuarter(rs.getInt("quarter"));
+                dto.setAvgHoursWorked(rs.getBigDecimal("avg_hours_worked"));
+                return dto;
+            }
+        });
+    }
+
+    // 8.d Biến động giờ làm thêm theo tháng
+    public List<TotalOvertimeByMonthDTO> getTotalOvertimeByMonth() {
+        String sql = """
+            SELECT 
+                d.year,
+                d.month,
+                SUM(fa.overtime_hours) AS total_overtime_hours
+            FROM 
+                fact_attendance fa
+            JOIN 
+                dim_date d ON fa.date_sk = d.date_sk
+            GROUP BY 
+                d.year, d.month
+            ORDER BY 
+                d.year, d.month
+        """;
+        return jdbcTemplate.query(sql, new RowMapper<TotalOvertimeByMonthDTO>() {
+            @Override
+            public TotalOvertimeByMonthDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                TotalOvertimeByMonthDTO dto = new TotalOvertimeByMonthDTO();
+                dto.setYear(rs.getInt("year"));
+                dto.setMonth(rs.getInt("month"));
+                dto.setTotalOvertimeHours(rs.getBigDecimal("total_overtime_hours"));
                 return dto;
             }
         });

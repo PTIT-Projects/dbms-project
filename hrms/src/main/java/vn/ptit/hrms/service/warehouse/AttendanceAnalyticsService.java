@@ -2,10 +2,12 @@ package vn.ptit.hrms.service.warehouse;
 
 import org.springframework.stereotype.Service;
 import vn.ptit.hrms.dao.warehouse.FactAttendanceDao;
+import vn.ptit.hrms.dto.warehouse.AverageHoursByQuarterDTO;
 import vn.ptit.hrms.dto.warehouse.DepartmentLateStatsDTO;
 import vn.ptit.hrms.dto.warehouse.DepartmentPerformanceDTO;
 import vn.ptit.hrms.dto.warehouse.EmployeeOvertimeDTO;
 import vn.ptit.hrms.dto.warehouse.EmployeeWorkSummaryDTO;
+import vn.ptit.hrms.dto.warehouse.TotalOvertimeByMonthDTO;
 
 import java.util.List;
 
@@ -15,6 +17,14 @@ public class AttendanceAnalyticsService {
 
     public AttendanceAnalyticsService(FactAttendanceDao factAttendanceDao) {
         this.factAttendanceDao = factAttendanceDao;
+    }
+
+    public List<AverageHoursByQuarterDTO> getAverageHoursByQuarter() {
+        return factAttendanceDao.getAverageHoursWorkedByQuarter();
+    }
+
+    public List<TotalOvertimeByMonthDTO> getTotalOvertimeByMonth() {
+        return factAttendanceDao.getTotalOvertimeByMonth();
     }
 
     /**

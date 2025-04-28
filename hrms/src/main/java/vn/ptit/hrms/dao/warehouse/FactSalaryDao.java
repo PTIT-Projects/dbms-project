@@ -6,6 +6,8 @@ import vn.ptit.hrms.dto.warehouse.SalaryRatioByDepartmentDTO;
 import vn.ptit.hrms.dto.warehouse.SalaryRatioByEmployeeDTO;
 import vn.ptit.hrms.dto.warehouse.SalaryTrendByMonthDTO;
 import vn.ptit.hrms.dto.warehouse.SalaryByAgeGenderDTO;
+import vn.ptit.hrms.dto.warehouse.YearlyAverageSalaryDTO;
+import vn.ptit.hrms.dto.warehouse.SalaryGrowthRateDTO;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -250,6 +252,69 @@ public class FactSalaryDao {
                 dto.setAgeGroup(rs.getString("age_group"));
                 dto.setAvgSalary(rs.getBigDecimal("avg_salary"));
                 dto.setEmployeeCount(rs.getInt("employee_count"));
+                return dto;
+            }
+        });
+    }
+
+    // 8.a Lương trung bình của nhân viên qua các năm
+    public List<YearlyAverageSalaryDTO> getAverageSalaryByYear() {
+        String sql = """
+            SELECT 
+                d.year,
+                ROUND(AVG(fs.total_salary), 2) AS avg_salary
+            FROM 
+                fact_salary fs
+            JOIN 
+                dim_date d ON fs.date_sk = d.date_sk
+            GROUP BY 
+                d.year
+            ORDER BY 
+                d.year
+        """;
+        return jdbcTemplate.query(sql, new RowMapper<YearlyAverageSalaryDTO>() {
+            @Override
+            public YearlyAverageSalaryDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                YearlyAverageSalaryDTO dto = new YearlyAverageSalaryDTO();
+                dto.setYear(rs.getInt("year"));
+                dto.setAvgSalary(rs.getBigDecimal("avg_salary"));
+                return dto;
+            }
+        });
+    }
+
+    // 8.b tỷ lệ lương hàng năm
+    public List<SalaryGrowthRateDTO> getSalaryGrowthRate() {
+        String sql = """
+            WITH yearly_salary AS (
+                SELECT 
+                    year,
+                    ROUND(AVG(total_salary), 2) AS avg_salary
+                FROM 
+                    fact_salary fs
+                JOIN 
+                    dim_date d ON fs.date_sk = d.date_sk
+                GROUP BY 
+                    year
+            )
+            SELECT 
+                curr.year,
+                curr.avg_salary AS current_year_salary,
+                prev.avg_salary AS previous_year_salary,
+                ROUND((curr.avg_salary - prev.avg_salary) * 100.0 / prev.avg_salary, 2) AS salary_growth_rate
+            FROM 
+                yearly_salary curr
+            LEFT JOIN 
+                yearly_salary prev ON curr.year = prev.year + 1
+        """;
+        return jdbcTemplate.query(sql, new RowMapper<SalaryGrowthRateDTO>() {
+            @Override
+            public SalaryGrowthRateDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                SalaryGrowthRateDTO dto = new SalaryGrowthRateDTO();
+                dto.setYear(rs.getInt("year"));
+                dto.setCurrentYearSalary(rs.getBigDecimal("current_year_salary"));
+                dto.setPreviousYearSalary(rs.getBigDecimal("previous_year_salary"));
+                dto.setSalaryGrowthRate(rs.getDouble("salary_growth_rate"));
                 return dto;
             }
         });
