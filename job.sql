@@ -1,152 +1,131 @@
-USE msdb; -- SQL Server Agent Jobs được lưu trữ trong cơ sở dữ liệu msdb
+-- Script to create the SQL Server Agent Job for Daily ETL Load
+
+USE msdb; -- Important: Jobs are managed in the msdb database
 GO
 
--- Bước 1: Khai báo các biến và Bắt đầu Transaction
 DECLARE @jobId BINARY(16);
-DECLARE @ReturnCode INT;
-DECLARE @StartDateInt INT; -- Biến mới để lưu ngày bắt đầu
+DECLARE @jobName NVARCHAR(128) = N'HRMS Warehouse ETL - Daily Load';
+DECLARE @ownerLoginName NVARCHAR(128) = SUSER_SNAME(); -- Use current user or specify service account like 'NT SERVICE\SQLSERVERAGENT'
 
-SET @ReturnCode = 0;
-
--- BẮT ĐẦU TRANSACTION
-BEGIN TRANSACTION;
-
--- Tính toán ngày bắt đầu dạng YYYYMMDD
-SET @StartDateInt = CONVERT(INT, CONVERT(VARCHAR(8), GETDATE(), 112));
-
--- Đảm bảo Job Category tồn tại (Tùy chọn nhưng nên làm)
-IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Data Warehouse ETL]')
+-- Check if the job already exists
+IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = @jobName)
 BEGIN
-    EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Data Warehouse ETL]';
-    IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-END
+    PRINT 'Job "' + @jobName + '" already exists. Deleting it first.';
+    EXEC msdb.dbo.sp_delete_job @job_name = @jobName, @delete_unused_schedule = 1;
+END;
 
--- Bước 2: Xóa Job cũ nếu tồn tại (để chạy lại script dễ dàng hơn khi cần cập nhật)
-IF EXISTS (SELECT name FROM msdb.dbo.sysjobs WHERE name = N'HRMS_Warehouse_Daily_ETL')
-BEGIN
-    EXEC @ReturnCode = msdb.dbo.sp_delete_job @job_name=N'HRMS_Warehouse_Daily_ETL', @delete_history=1, @delete_unused_schedule=1;
-    IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback; -- Thêm kiểm tra lỗi sau lệnh DELETE
-END
-
--- Bước 3: Tạo Job mới
-EXEC @ReturnCode = msdb.dbo.sp_add_job @job_name=N'HRMS_Warehouse_Daily_ETL',
-    @enabled=1, -- Bật Job ngay sau khi tạo
-    @notify_level_eventlog=0, -- Không ghi vào event log khi Job bắt đầu/kết thúc
-    @notify_level_email=0, -- Không gửi email thông báo
-    @notify_level_netsend=0, -- Không gửi thông báo qua mạng
-    @notify_level_page=0, -- Không gửi thông báo qua pager
-    @delete_level=0, -- Không xóa Job khi hoàn thành
-    @description=N'Job ETL hàng ngày cập nhật dữ liệu từ nhansucongty sang hrms_warehouse.',
-    @category_name=N'[Data Warehouse ETL]', -- Gán vào category đã tạo
-    @owner_login_name=N'sa', -- !!! THAY 'sa' BẰNG LOGIN PHÙ HỢP !!!
+-- Add the job
+PRINT 'Creating Job "' + @jobName + '"...';
+EXEC msdb.dbo.sp_add_job
+    @job_name = @jobName,
+    @enabled = 1, -- Enable the job
+    @notify_level_eventlog = 0,
+    @notify_level_email = 2, -- Notify on failure
+    @notify_level_netsend = 0,
+    @notify_level_page = 0,
+    @delete_level = 0,
+    @description = N'Runs the daily ETL process to load data from nhansucongty into hrms_warehouse.',
+    @category_name = N'[Uncategorized (Local)]', -- Or choose a relevant category
+    @owner_login_name = @ownerLoginName, -- Set appropriate owner
     @job_id = @jobId OUTPUT;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
 
--- Bước 4: Thêm các Bước (Steps) vào Job - (Giữ nguyên các bước từ 1 đến 12 như trước)
--- Step 1: Populate dim_date
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'1. Populate dim_date',
-    @step_id=1, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_populate_dim_date;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+-- Add the job step to execute the master stored procedure
+PRINT 'Adding Job Step "Run Master ETL SP"...';
+EXEC msdb.dbo.sp_add_jobstep
+    @job_id = @jobId,
+    @step_name = N'Run Master ETL SP',
+    @step_id = 1,
+    @cmdexec_success_code = 0,
+    @on_success_action = 1, -- Quit the job reporting success
+    @on_success_step_id = 0,
+    @on_fail_action = 2, -- Quit the job reporting failure
+    @on_fail_step_id = 0,
+    @retry_attempts = 0, -- Number of retry attempts
+    @retry_interval = 0, -- Wait interval between retries in minutes
+    @os_run_priority = 0,
+    @subsystem = N'TSQL', -- Type of step is Transact-SQL
+    @command = N'-- Example: Run full load daily, or load recent attendance for last 7 days
+EXEC hrms_warehouse.dbo.sp_Run_ETL_hrms_warehouse @LoadRecentAttendanceDays = 7;
+',
+    @database_name = N'hrms_warehouse', -- Database context for the step
+    @flags = 0;
 
--- Step 2: Load dim_departments
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'2. Load dim_departments',
-    @step_id=2, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_dim_departments;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+-- Update the job to set the start step
+PRINT 'Setting start step for the job...';
+EXEC msdb.dbo.sp_update_job
+    @job_id = @jobId,
+    @start_step_id = 1;
 
--- Step 3: Load dim_positions
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'3. Load dim_positions',
-    @step_id=3, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_dim_positions;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+-- Add a schedule for the job (Example: Run daily at 2:00 AM)
+PRINT 'Adding schedule "Daily 02:00 AM" to the job...';
+DECLARE @scheduleId INT;
+EXEC msdb.dbo.sp_add_jobschedule
+    @job_id = @jobId,
+    @name = N'Daily 02:00 AM',
+    @enabled = 1,
+    @freq_type = 4, -- Frequency type: 4 = Daily
+    @freq_interval = 1, -- Run every 1 day
+    @freq_subday_type = 1, -- Frequency subday type: 1 = At the specified time
+    @freq_subday_interval = 0,
+    @freq_relative_interval = 0,
+    @freq_recurrence_factor = 1,
+    @active_start_date = 20250101, -- Schedule active start date (YYYYMMDD)
+    @active_end_date = 99991231, -- Schedule active end date (YYYYMMDD)
+    @active_start_time = 20000, -- Schedule active start time (HHMMSS), 02:00:00
+    @active_end_time = 235959,
+    @schedule_id = @scheduleId OUTPUT;
 
--- Step 4: Load dim_employees
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'4. Load dim_employees',
-    @step_id=4, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_dim_employees;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+-- (Optional) Add job server assignment
+PRINT 'Assigning job to the current server...';
+EXEC msdb.dbo.sp_add_jobserver
+    @job_id = @jobId,
+    @server_name = N'(local)'; -- Or your specific server name
 
--- Step 5: Load fact_attendance
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'5. Load fact_attendance',
-    @step_id=5, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_attendance;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+PRINT 'Job "' + @jobName + '" created successfully.';
+GO
 
--- Step 6: Load fact_salary
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'6. Load fact_salary',
-    @step_id=6, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_salary;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+-- ---------------------------------------------------------------------
+-- (Optional) Script to create a Job for populating dim_date (Run manually or less frequently)
+-- ---------------------------------------------------------------------
+USE msdb;
+GO
 
--- Step 7: Load fact_leave_balance
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'7. Load fact_leave_balance',
-    @step_id=7, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_leave_balance;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+DECLARE @jobId BINARY(16);
+DECLARE @jobName NVARCHAR(128) = N'HRMS Warehouse Util - Populate Dim Date';
+DECLARE @ownerLoginName NVARCHAR(128) = SUSER_SNAME();
 
--- Step 8: Load fact_work_trips
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'8. Load fact_work_trips',
-    @step_id=8, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_work_trips;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = @jobName)
+BEGIN
+    PRINT 'Job "' + @jobName + '" already exists. Deleting it first.';
+    EXEC msdb.dbo.sp_delete_job @job_name = @jobName, @delete_unused_schedule = 1;
+END;
 
--- Step 9: Load fact_recruitment_plan
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'9. Load fact_recruitment_plan',
-    @step_id=9, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_recruitment_plan;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+PRINT 'Creating Job "' + @jobName + '"...';
+EXEC msdb.dbo.sp_add_job
+    @job_name = @jobName,
+    @enabled = 0, -- Disabled by default, run manually
+    @description = N'Populates the dim_date table in hrms_warehouse. Run manually or schedule yearly/as needed.',
+    @category_name=N'[Uncategorized (Local)]',
+    @owner_login_name = @ownerLoginName,
+    @job_id = @jobId OUTPUT;
 
--- Step 10: Load fact_application
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'10. Load fact_application',
-    @step_id=10, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_application;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+PRINT 'Adding Job Step "Run Populate Dim Date SP"...';
+EXEC msdb.dbo.sp_add_jobstep
+    @job_id=@jobId,
+    @step_name=N'Run Populate Dim Date SP',
+    @subsystem=N'TSQL',
+    @command=N'-- Populate dates from 2020 to 2030
+EXEC hrms_warehouse.dbo.sp_Load_dim_date @StartDate = ''2020-01-01'', @EndDate = ''2030-12-31'';
+',
+    @database_name=N'hrms_warehouse',
+    @on_success_action = 1, -- Quit reporting success
+    @on_fail_action = 2; -- Quit reporting failure
 
--- Step 11: Load fact_registrations
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'11. Load fact_registrations',
-    @step_id=11, @cmdexec_success_code=0, @on_success_action=3, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_registrations;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+PRINT 'Setting start step for the job...';
+EXEC msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1;
 
--- Step 12: Load fact_decision (Bước cuối cùng)
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'12. Load fact_decision',
-    @step_id=12, @cmdexec_success_code=0, @on_success_action=1, @on_fail_action=2, @retry_attempts=0, @retry_interval=0, @os_run_priority=0, @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_decision;', @database_name=N'hrms_warehouse', @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
+PRINT 'Assigning job to the current server...';
+EXEC msdb.dbo.sp_add_jobserver @job_id = @jobId, @server_name = N'(local)';
 
-
--- Bước 5: Đặt Bước bắt đầu cho Job
-EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Bước 6: Thêm Lịch trình (Schedule) cho Job (Ví dụ: Chạy hàng ngày lúc 2:00 AM)
-EXEC @ReturnCode = msdb.dbo.sp_add_jobschedule @job_id=@jobId, @name=N'Daily_Run_0200',
-    @enabled=1, -- Bật lịch trình
-    @freq_type=4, -- Hàng ngày
-    @freq_interval=1, -- Mỗi ngày
-    @freq_subday_type=1, -- Theo thời gian cụ thể
-    @freq_subday_interval=0, -- Không sử dụng (khi freq_subday_type=1)
-    @freq_relative_interval=0, -- Không sử dụngS
-    @active_start_date=@StartDateInt, -- Ngày bắt đầu lịch trình (hôm nay)
-    @active_end_date=99991231, -- Ngày kết thúc lịch trình (không giới hạn)
-    @active_start_time=20000, -- Thời gian bắt đầu (02:00:00)
-    @active_end_time=235959; -- Thời gian kết thúc
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Bước 7: Thêm Target Server (Thường là Server Local)
-EXEC @ReturnCode = msdb.dbo.sp_add_jobserver @job_id = @jobId, @server_name = N'(local)';
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Kết thúc: Nếu không có lỗi, COMMIT TRANSACTION
-COMMIT TRANSACTION; -- Commit transaction đã bắt đầu ở trên
-GOTO EndSave;
-
--- Xử lý khi có lỗi
-QuitWithRollback:
-    -- Nếu có lỗi và có transaction đang mở, ROLLBACK TRANSACTION
-    IF (@@TRANCOUNT > 0) ROLLBACK TRANSACTION;
-    PRINT 'An error occurred. Rolling back changes.'; -- Thêm thông báo lỗi chi tiết hơn nếu cần
-
-EndSave:
+PRINT 'Job "' + @jobName + '" created successfully (Disabled by default).';
 GO
