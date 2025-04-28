@@ -1,23 +1,12 @@
--- Lưu ý quan trọng:
-
--- Giả định: Các SP này giả định rằng cơ sở dữ liệu nhansucongty và hrms_warehouse đã tồn tại và các bảng trong hrms_warehouse đã được tạo theo lược đồ bạn cung cấp.
--- Khóa Surrogate (_sk): Các SP này sẽ dựa vào thuộc tính IDENTITY đã được định nghĩa trên các cột khóa surrogate (*_sk) trong hrms_warehouse để tự động tạo giá trị khóa.
--- SCD (Slowly Changing Dimensions): Đối với các bảng chiều (dim_*), tôi sẽ sử dụng MERGE statement (nếu hệ quản trị CSDL hỗ trợ, ví dụ SQL Server) để xử lý các thay đổi ở nguồn (SCD Type 1 - cập nhật ghi đè). Nếu không hỗ trợ MERGE, bạn có thể cần điều chỉnh thành logic INSERT và UPDATE riêng biệt.
--- Dữ liệu trong kho: Các SP cho bảng sự kiện (fact_*) thường chỉ thực hiện INSERT các bản ghi mới. Việc xử lý dữ liệu trùng lặp hoặc thay đổi trong dữ liệu nguồn (nếu có) cần được xem xét thêm tùy theo yêu cầu nghiệp vụ cụ thể (ví dụ: có cần cập nhật fact khi dữ liệu nguồn thay đổi không, xử lý trễ dữ liệu...). Trong các SP dưới đây, tôi sẽ tập trung vào việc tải dữ liệu mới.
--- Tính toán các cột dẫn xuất: Một số cột trong hrms_warehouse là cột dẫn xuất (ví dụ: hours_worked, age, trip_duration). Logic tính toán sẽ được đưa vào SP. Cần lưu ý rằng việc tính toán is_late, overtime_hours, is_early_leave trong fact_attendance phụ thuộc vào giờ làm việc quy định (ca làm việc), điều này không có trong CSDL nguồn ban đầu của bạn. Tôi sẽ để lại phần tính toán này với một giả định đơn giản hoặc ghi chú cần bổ sung logic nghiệp vụ.
--- Hiệu suất: Các SP này là ví dụ cơ bản. Đối với dữ liệu lớn, bạn có thể cần xem xét các kỹ thuật tối ưu hóa như xử lý theo lô (batch processing), sử dụng bảng staging, hoặc index hiệu quả hơn.
--- Thứ tự tải: Cần tải các bảng chiều trước, sau đó mới tải các bảng sự kiện để đảm bảo các khóa ngoại được tham chiếu hợp lệ. Thứ tự tải nên là: dim_date, dim_departments, dim_positions, dim_employees, sau đó là các bảng fact_*.
--- Xử lý lỗi: Các SP dưới đây chưa bao gồm logic xử lý lỗi chi tiết (ví dụ: sử dụng TRY...CATCH). Bạn nên bổ sung vào môi trường sản phẩm.
--- 1. Stored Procedure cho dim_date
--- Bảng này thường được populate một lần hoặc định kỳ hàng năm. SP này sẽ tạo dữ liệu ngày tháng cho một khoảng thời gian nhất định.
-
--- SQL
-
 USE [hrms_warehouse];
 GO
 
--- DROP PROCEDURE IF EXISTS sp_populate_dim_date;
--- GO
+-- 1. Stored Procedure cho dim_date
+-- Bảng này thường được populate một lần hoặc định kỳ hàng năm. SP này sẽ tạo dữ liệu ngày tháng cho một khoảng thời gian nhất định.
+-- SQL
+
+DROP PROCEDURE IF EXISTS sp_populate_dim_date;
+GO
 
 CREATE PROCEDURE sp_populate_dim_date
     @StartDate DATE = '2020-01-01', -- Ngày bắt đầu populate
@@ -58,24 +47,19 @@ BEGIN
             target.month = source.month,
             target.day = source.day,
             target.week = source.week,
-            target.quarter = source.quarter;
-
+            target.quarter = source.quarter
+    -- THÊM DẤU CHẤM PHẨY TRƯỚC OPTION
     OPTION (MAXRECURSION 0); -- Cho phép đệ quy không giới hạn (cẩn thận với khoảng ngày quá lớn)
 
 END;
 GO
--- Cách chạy: EXEC sp_populate_dim_date '2020-01-01', '2030-12-31';
 
 -- 2. Stored Procedure cho dim_departments
 -- Tải dữ liệu phòng ban, bao gồm cả thông tin quản lý từ bảng DepartmentManager và tên quản lý từ Employees.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_dim_departments;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_dim_departments;
--- GO
 
 CREATE PROCEDURE sp_load_dim_departments
 AS
@@ -102,6 +86,7 @@ BEGIN
             -- Lưu ý: Việc cập nhật manager_sk và manager_name sẽ được thực hiện SAU khi tải dim_employees
 
     -- Cập nhật manager_sk và manager_name sau khi dim_employees đã được tải
+    -- Sử dụng LEFT JOIN để đảm bảo các phòng ban không có quản lý vẫn giữ nguyên giá trị NULL đã insert ban đầu
     UPDATE dd
     SET dd.manager_sk = de.employee_sk,
         dd.manager_name = de.full_name
@@ -111,18 +96,13 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_dim_departments;
 
 -- 3. Stored Procedure cho dim_positions
 -- Tải dữ liệu chức vụ và thông tin phòng ban liên quan.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_dim_positions;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_dim_positions;
--- GO
 
 CREATE PROCEDURE sp_load_dim_positions
 AS
@@ -149,26 +129,24 @@ BEGIN
             target.department_name = source.DepartmentName;
 
     -- Cập nhật department_sk sau khi dim_departments đã được tải
+    -- Đã sửa JOIN để kết nối đúng từ dim_positions -> source Positions -> dim_departments
     UPDATE dp
     SET dp.department_sk = dd.department_sk
     FROM dim_positions AS dp
-    JOIN [nhansucongty].[dbo].Departments AS sd ON dp.position_id = sd.PositionID -- Join với bảng nguồn để lấy DepartmentID
-    JOIN dim_departments AS dd ON sd.DepartmentID = dd.department_id; -- Join với dim_departments để lấy department_sk
+    -- Join với bảng nguồn Positions để lấy DepartmentID
+    JOIN [nhansucongty].[dbo].Positions AS sp ON dp.position_id = sp.PositionID
+    -- Sau đó join với dim_departments để lấy department_sk
+    JOIN dim_departments AS dd ON sp.DepartmentID = dd.department_id;
 
 END;
 GO
--- Cách chạy: EXEC sp_load_dim_positions;
 
 -- 4. Stored Procedure cho dim_employees
 -- Tải dữ liệu nhân viên, bao gồm thông tin phòng ban, chức vụ, hợp đồng, bảo hiểm và các cột dẫn xuất.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_dim_employees;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_dim_employees;
--- GO
 
 CREATE PROCEDURE sp_load_dim_employees
 AS
@@ -291,6 +269,7 @@ BEGIN
             target.insurance_duration = source.InsuranceDuration;
 
     -- Cập nhật department_sk, department_name, position_sk, position_name sau khi các bảng chiều khác được tải
+    -- Sử dụng LEFT JOIN để đảm bảo nhân viên không có phòng ban/chức vụ vẫn giữ NULL
     UPDATE de
     SET de.department_sk = dd.department_sk,
         de.department_name = dd.department_name,
@@ -298,24 +277,19 @@ BEGIN
         de.position_name = dp.position_name
     FROM dim_employees AS de
     JOIN [nhansucongty].[dbo].Employees AS se ON de.employee_id = se.EmployeeID -- Join với bảng nguồn Employee
-    LEFT JOIN dim_departments AS dd ON se.DepartmentID = dd.department_id -- Join với dim_departments
-    LEFT JOIN dim_positions AS dp ON se.PositionID = dp.position_id; -- Join với dim_positions
+    LEFT JOIN dim_departments AS dd ON se.DepartmentID = dd.department_id -- LEFT JOIN với dim_departments
+    LEFT JOIN dim_positions AS dp ON se.PositionID = dp.position_id; -- LEFT JOIN với dim_positions
 
 END;
 GO
--- Cách chạy: EXEC sp_load_dim_employees;
 
 -- 5. Stored Procedure cho fact_attendance
 -- Tải dữ liệu chấm công. Cần join với dim_employees và dim_date để lấy khóa surrogate.
 -- Lưu ý: Việc tính toán hours_worked, is_late, overtime_hours, is_early_leave cần dựa vào quy định ca làm việc cụ thể của công ty, điều này không có trong lược đồ nguồn. Tôi sẽ đưa ra logic tính toán giờ làm việc đơn giản và ghi chú cho các trường khác.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_attendance;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_attendance;
--- GO
 
 CREATE PROCEDURE sp_load_fact_attendance
 AS
@@ -324,6 +298,7 @@ BEGIN
 
     -- Tải dữ liệu mới từ nguồn vào bảng fact_attendance
     INSERT INTO fact_attendance (
+        -- attendance_sk (IDENTITY column, REMOVED from insert list)
         attendance_id,
         employee_sk,
         employee_name,
@@ -343,7 +318,8 @@ BEGIN
         de.employee_sk, -- Lấy khóa surrogate từ dim_employees
         de.full_name,
         de.department_name, -- Lấy tên phòng ban từ dim_employees (đã được tải)
-        dd.date_sk, -- Lấy khóa surrogate từ dim_date
+        de.position_name,
+		dd.date_sk, -- Lấy khóa surrogate từ dim_date
         a.CheckInTime,
         a.CheckOutTime,
         -- Tính toán giờ làm việc (giả sử CheckOutTime > CheckInTime cùng ngày)
@@ -369,18 +345,13 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_attendance;
 
 -- 6. Stored Procedure cho fact_salary
 -- Tải dữ liệu lương. Cần join với dim_employees và dim_date.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_salary;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_salary;
--- GO
 
 CREATE PROCEDURE sp_load_fact_salary
 AS
@@ -388,6 +359,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO fact_salary (
+        -- salary_sk (IDENTITY column, REMOVED from insert list)
         salary_id,
         employee_sk,
         employee_name,
@@ -424,18 +396,13 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_salary;
 
 -- 7. Stored Procedure cho fact_leave_balance
 -- Tải dữ liệu số ngày nghỉ phép còn lại. Cần join với dim_employees và dim_date.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_leave_balance;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_leave_balance;
--- GO
 
 CREATE PROCEDURE sp_load_fact_leave_balance
 AS
@@ -443,6 +410,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO fact_leave_balance (
+        -- leave_balance_sk (IDENTITY column, REMOVED from insert list)
         leave_balance_id,
         employee_sk,
         employee_name,
@@ -476,18 +444,13 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_leave_balance;
 
 -- 8. Stored Procedure cho fact_work_trips
 -- Tải dữ liệu công tác. Cần join với dim_employees và dim_date cho ngày bắt đầu và kết thúc.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_work_trips;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_work_trips;
--- GO
 
 CREATE PROCEDURE sp_load_fact_work_trips
 AS
@@ -495,7 +458,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO fact_work_trips (
-        work_trip_sk, -- Identity cột, không cần chèn giá trị
+        -- work_trip_sk (IDENTITY column, REMOVED from insert list)
         work_trip_id,
         employee_sk,
         employee_name,
@@ -535,19 +498,14 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_work_trips;
 
 -- 9. Stored Procedure cho fact_recruitment_plan
 -- Tải dữ liệu kế hoạch tuyển dụng. Cần join với dim_positions, dim_departments, và dim_date.
 -- Lưu ý: Trường remaining_positions trong fact cần tính toán dựa trên số lượng cần tuyển và số lượng ứng viên đã được tuyển cho kế hoạch đó.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_recruitment_plan;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_recruitment_plan;
--- GO
 
 CREATE PROCEDURE sp_load_fact_recruitment_plan
 AS
@@ -564,7 +522,7 @@ BEGIN
         GROUP BY a.PlanID
     )
     INSERT INTO fact_recruitment_plan (
-        recruitment_sk, -- Identity cột
+        -- recruitment_sk (IDENTITY column, REMOVED from insert list)
         recruitment_id,
         position_sk,
         position_name,
@@ -600,18 +558,13 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_recruitment_plan;
 
 -- 10. Stored Procedure cho fact_application
 -- Tải dữ liệu ứng viên. Cần join với fact_recruitment_plan và dim_date.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_application;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_application;
--- GO
 
 CREATE PROCEDURE sp_load_fact_application
 AS
@@ -619,7 +572,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO fact_application (
-        application_sk, -- Identity cột
+        -- application_sk (IDENTITY column, REMOVED from insert list)
         applicant_id,
         recruitment_sk, -- Khóa surrogate đến fact_recruitment_plan
         application_date_sk,
@@ -637,9 +590,9 @@ BEGIN
     FROM [nhansucongty].[dbo].Applicants AS a
     JOIN [nhansucongty].[dbo].RecruitmentPlans AS rp_source ON a.PlanID = rp_source.PlanID -- Join tạm với bảng nguồn để lấy ID kế hoạch
     JOIN fact_recruitment_plan AS frp ON rp_source.PlanID = frp.recruitment_id -- Join với fact_recruitment_plan đã tải
-    JOIN dim_date AS dd ON CAST(FORMAT(rp_source.StartDate, 'yyyyMMdd') AS INT) = dd.date_sk -- Sử dụng ngày bắt đầu kế hoạch làm ngày nộp đơn tạm thời (cần xem lại logic nếu ngày nộp đơn khác)
-     -- Lưu ý: Bảng Applicants nguồn không có cột ngày nộp đơn. Tôi đang tạm dùng StartDate của RecruitmentPlans.
-     -- Nếu ngày nộp đơn là quan trọng, bạn cần bổ sung cột này vào bảng Applicants nguồn.
+    -- Lưu ý: Bảng Applicants nguồn không có cột ngày nộp đơn. Tôi đang tạm dùng StartDate của RecruitmentPlans.
+    -- Nếu ngày nộp đơn là quan trọng, bạn cần bổ sung cột này vào bảng Applicants nguồn.
+    JOIN dim_date AS dd ON CAST(FORMAT(rp_source.StartDate, 'yyyyMMdd') AS INT) = dd.date_sk -- Sử dụng ngày bắt đầu kế hoạch làm ngày nộp đơn tạm thời
     LEFT JOIN fact_application AS fa ON a.ApplicantID = fa.applicant_id -- Kiểm tra bản ghi đã tồn tại chưa
     WHERE fa.applicant_id IS NULL; -- Chỉ chèn các bản ghi chưa có
 
@@ -648,19 +601,14 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_application;
 
 -- 11. Stored Procedure cho fact_registrations
 -- Tải dữ liệu các loại đăng ký. Cần join với dim_employees (cho người yêu cầu và người duyệt) và dim_date.
 -- Lưu ý: Tính toán registration_duration phụ thuộc vào loại đăng ký và chi tiết yêu cầu, điều này phức tạp. Tôi sẽ để logic tính toán này đơn giản hoặc ghi chú.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_registrations;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_registrations;
--- GO
 
 CREATE PROCEDURE sp_load_fact_registrations
 AS
@@ -668,7 +616,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO fact_registrations (
-        registration_sk, -- Identity cột
+        -- registration_sk (IDENTITY column, REMOVED from insert list)
         registration_id,
         employee_sk,
         employee_name,
@@ -711,18 +659,13 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_registrations;
 
 -- 12. Stored Procedure cho fact_decision
 -- Tải dữ liệu các quyết định. Cần join với dim_employees và dim_date.
-
 -- SQL
 
-USE [hrms_warehouse];
+DROP PROCEDURE IF EXISTS sp_load_fact_decision;
 GO
-
--- DROP PROCEDURE IF EXISTS sp_load_fact_decision;
--- GO
 
 CREATE PROCEDURE sp_load_fact_decision
 AS
@@ -730,7 +673,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO fact_decision (
-        decision_sk, -- Identity cột
+        -- decision_sk (IDENTITY column, REMOVED from insert list)
         decision_id,
         employee_sk,
         employee_name,
@@ -762,275 +705,5 @@ BEGIN
 
 END;
 GO
--- Cách chạy: EXEC sp_load_fact_decision;
-
--- Quy trình tải dữ liệu (ETL Process Flow):
-
--- Để đảm bảo tính toàn vẹn tham chiếu, nên chạy các SP theo thứ tự sau:
-
-EXEC sp_populate_dim_date; (Chỉ chạy lần đầu hoặc khi cần mở rộng phạm vi ngày)
-EXEC sp_load_dim_departments;
-EXEC sp_load_dim_positions;
-EXEC sp_load_dim_employees;
-EXEC sp_load_fact_attendance;
-EXEC sp_load_fact_salary;
-EXEC sp_load_fact_leave_balance;
-EXEC sp_load_fact_work_trips;
-EXEC sp_load_fact_recruitment_plan;
-EXEC sp_load_fact_application;
-EXEC sp_load_fact_registrations;
-EXEC sp_load_fact_decision;
 
 
-
---II.Job
-USE msdb; -- SQL Server Agent Jobs được lưu trữ trong cơ sở dữ liệu msdb
-GO
-
--- Bước 1: Khai báo các biến
-DECLARE @jobId BINARY(16);
-DECLARE @ReturnCode INT;
-SET @ReturnCode = 0;
-
--- Đảm bảo Job Category tồn tại (Tùy chọn nhưng nên làm)
-IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Data Warehouse ETL]')
-BEGIN
-    EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Data Warehouse ETL]';
-    IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-END
-
--- Bước 2: Xóa Job cũ nếu tồn tại (để chạy lại script dễ dàng hơn khi cần cập nhật)
-IF EXISTS (SELECT name FROM msdb.dbo.sysjobs WHERE name = N'HRMS_Warehouse_Daily_ETL')
-BEGIN
-    EXEC msdb.dbo.sp_delete_job @job_name=N'HRMS_Warehouse_Daily_ETL', @delete_history=1, @ آقdelete_unused_schedule=1;
-END
-
--- Bước 3: Tạo Job mới
-EXEC @ReturnCode = msdb.dbo.sp_add_job @job_name=N'HRMS_Warehouse_Daily_ETL',
-    @enabled=1, -- Bật Job ngay sau khi tạo
-    @notify_level_eventlog=0, -- Không ghi vào event log khi Job bắt đầu/kết thúc
-    @notify_level_email=0, -- Không gửi email thông báo
-    @notify_level_netsend=0, -- Không gửi thông báo qua mạng
-    @notify_level_page=0, -- Không gửi thông báo qua pager
-    @delete_level=0, -- Không xóa Job khi hoàn thành
-    @description=N'Job ETL hàng ngày cập nhật dữ liệu từ nhansucongty sang hrms_warehouse.',
-    @category_name=N'[Data Warehouse ETL]', -- Gán vào category đã tạo
-    @owner_login_name=N'sa', -- Thay 'sa' bằng login có quyền thực thi Job
-    @job_id = @jobId OUTPUT;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Bước 4: Thêm các Bước (Steps) vào Job
-
--- Step 1: Populate dim_date (Chạy lần đầu hoặc khi cần mở rộng khoảng ngày)
--- Có thể disable step này sau lần chạy đầu tiên hoặc lên lịch riêng
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'1. Populate dim_date',
-    @step_id=1,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL', -- Loại command là T-SQL
-    @command=N'EXEC hrms_warehouse.dbo.sp_populate_dim_date;', -- Lệnh gọi SP
-    @database_name=N'hrms_warehouse', -- Chạy trong context database hrms_warehouse
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 2: Load dim_departments
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'2. Load dim_departments',
-    @step_id=2,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_dim_departments;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 3: Load dim_positions
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'3. Load dim_positions',
-    @step_id=3,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_dim_positions;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 4: Load dim_employees
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'4. Load dim_employees',
-    @step_id=4,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_dim_employees;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 5: Load fact_attendance
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'5. Load fact_attendance',
-    @step_id=5,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_attendance;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 6: Load fact_salary
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'6. Load fact_salary',
-    @step_id=6,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_salary;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 7: Load fact_leave_balance
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'7. Load fact_leave_balance',
-    @step_id=7,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_leave_balance;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 8: Load fact_work_trips
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'8. Load fact_work_trips',
-    @step_id=8,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_work_trips;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 9: Load fact_recruitment_plan
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'9. Load fact_recruitment_plan',
-    @step_id=9,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_recruitment_plan;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 10: Load fact_application
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'10. Load fact_application',
-    @step_id=10,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_application;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 11: Load fact_registrations
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'11. Load fact_registrations',
-    @step_id=11,
-    @cmdexec_success_code=0,
-    @on_success_action=3, -- Chuyển đến Step tiếp theo
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_registrations;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Step 12: Load fact_decision (Bước cuối cùng)
-EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'12. Load fact_decision',
-    @step_id=12,
-    @cmdexec_success_code=0,
-    @on_success_action=1, -- Thoát Job và báo thành công
-    @on_fail_action=2, -- Thoát Job khi thất bại
-    @retry_attempts=0,
-    @retry_interval=0,
-    @os_run_priority=0,
-    @subsystem=N'TSQL',
-    @command=N'EXEC hrms_warehouse.dbo.sp_load_fact_decision;',
-    @database_name=N'hrms_warehouse',
-    @flags=0;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Bước 5: Đặt Bước bắt đầu cho Job
-EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1;
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Bước 6: Thêm Lịch trình (Schedule) cho Job (Ví dụ: Chạy hàng ngày lúc 2:00 AM)
-EXEC @ReturnCode = msdb.dbo.sp_add_jobschedule @job_id=@jobId, @name=N'Daily_Run_0200',
-    @enabled=1, -- Bật lịch trình
-    @freq_type=4, -- Hàng ngày
-    @freq_interval=1, -- Mỗi ngày
-    @freq_subday_type=1, -- Theo thời gian cụ thể
-    @freq_subday_interval=0, -- Không sử dụng (khi freq_subday_type=1)
-    @freq_relative_interval=0, -- Không sử dụng
-    @freq_active_start_date=YEAR(GETDATE())*10000 + MONTH(GETDATE())*100 + DAY(GETDATE()), -- Ngày bắt đầu lịch trình (hôm nay)
-    @freq_active_end_date=99991231, -- Ngày kết thúc lịch trình (không giới hạn)
-    @active_start_time=20000, -- Thời gian bắt đầu (02:00:00)
-    @active_end_time=235959; -- Thời gian kết thúc
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Bước 7: Thêm Target Server (Thường là Server Local)
-EXEC @ReturnCode = msdb.dbo.sp_add_jobserver @job_id = @jobId, @server_name = N'(local)';
-IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback;
-
--- Kết thúc: Thành công
-COMMIT WORK;
-GOTO EndSave;
-
--- Xử lý khi có lỗi
-QuitWithRollback:
-    IF (@@TRANCOUNT > 0) ROLLBACK WORK;
-
-EndSave:
-GO
