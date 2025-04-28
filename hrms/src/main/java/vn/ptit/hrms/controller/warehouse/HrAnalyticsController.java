@@ -5,7 +5,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import vn.ptit.hrms.dto.warehouse.RecruitmentPlanByDepartmentPositionDTO;
+import vn.ptit.hrms.dto.warehouse.*;
 import vn.ptit.hrms.service.warehouse.*;
 
 import java.time.Year;
@@ -22,18 +22,21 @@ public class HrAnalyticsController {
     private final LeaveAnalyticsService leaveAnalyticsService;
     private final WorkTripAnalyticsService workTripAnalyticsService;
     private final FactRecruitmentPlanService factRecruitmentPlanService;
+    private final RegistrationAnalyticsService registrationAnalyticsService;
 
     public HrAnalyticsController(
             AttendanceAnalyticsService attendanceAnalyticsService,
             SalaryAnalyticsService salaryAnalyticsService,
             LeaveAnalyticsService leaveAnalyticsService,
             WorkTripAnalyticsService workTripAnalyticsService,
-            FactRecruitmentPlanService factRecruitmentPlanService) {
+            FactRecruitmentPlanService factRecruitmentPlanService,
+            RegistrationAnalyticsService registrationAnalyticsService) {
         this.attendanceAnalyticsService = attendanceAnalyticsService;
         this.salaryAnalyticsService = salaryAnalyticsService;
         this.leaveAnalyticsService = leaveAnalyticsService;
         this.workTripAnalyticsService = workTripAnalyticsService;
         this.factRecruitmentPlanService = factRecruitmentPlanService;
+        this.registrationAnalyticsService = registrationAnalyticsService;
     }
 
     @GetMapping("/dashboard")
@@ -173,5 +176,27 @@ public class HrAnalyticsController {
         model.addAttribute("limit", limit);
         
         return "pages/analytics/recruitment";
+    }
+
+    @GetMapping("/registration")
+    public String showRegistrationAnalytics(
+            Model model,
+            @RequestParam(required = false, defaultValue = "5") int limit) {
+        
+        // Get registration data for analysis
+        model.addAttribute("departmentTypeCounts", registrationAnalyticsService.getRegistrationsByDepartmentAndType());
+        model.addAttribute("employeeTypeCounts", registrationAnalyticsService.getRegistrationsByEmployeeAndType());
+        model.addAttribute("approvalRates", registrationAnalyticsService.getRegistrationApprovalRatesByType());
+        model.addAttribute("registrationTrends", registrationAnalyticsService.getRegistrationTrendsByTime());
+        model.addAttribute("topDepartments", registrationAnalyticsService.getTopDepartmentsByRegistrationCount(limit));
+        model.addAttribute("statusCounts", registrationAnalyticsService.getRegistrationsByStatusAndType());
+        model.addAttribute("statusCountsGrouped", registrationAnalyticsService.getRegistrationsByStatusAndTypeGrouped());
+        model.addAttribute("averageOvertimeHours", registrationAnalyticsService.getAverageApprovedOvertimeHours());
+        model.addAttribute("trendsByType", registrationAnalyticsService.getRegistrationTrendsByTimeGrouped());
+        model.addAttribute("totalsByType", registrationAnalyticsService.getTotalRegistrationsByType());
+        
+        model.addAttribute("limit", limit);
+        
+        return "pages/analytics/registration";
     }
 }
