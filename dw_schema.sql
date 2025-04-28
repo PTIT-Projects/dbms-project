@@ -1,709 +1,845 @@
 USE [hrms_warehouse];
 GO
 
--- 1. Stored Procedure cho dim_date
--- Bảng này thường được populate một lần hoặc định kỳ hàng năm. SP này sẽ tạo dữ liệu ngày tháng cho một khoảng thời gian nhất định.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_populate_dim_date;
-GO
-
-CREATE PROCEDURE sp_populate_dim_date
-    @StartDate DATE = '2020-01-01', -- Ngày bắt đầu populate
-    @EndDate DATE = '2030-12-31' -- Ngày kết thúc populate
+-- =============================================
+-- SP for dim_date Population (Run once or periodically)
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_dim_date
+    @StartDate DATE = '2020-01-01',
+    @EndDate DATE = '2030-12-31'
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_dim_date...';
 
-    -- Sử dụng một CTE đệ quy để tạo chuỗi ngày
-    WITH DateSequence AS (
-        SELECT @StartDate AS DateValue
-        UNION ALL
-        SELECT DATEADD(day, 1, DateValue)
-        FROM DateSequence
-        WHERE DateValue < @EndDate
-    )
-    -- Chèn hoặc cập nhật dữ liệu vào dim_date
-    MERGE dim_date AS target
-    USING (
-        SELECT
-            CAST(FORMAT(DateValue, 'yyyyMMdd') AS INT) AS date_sk, -- Khóa surrogate dạng INT (YYYYMMDD)
-            DateValue AS date,
-            YEAR(DateValue) AS year,
-            MONTH(DateValue) AS month,
-            DAY(DateValue) AS day,
-            DATEPART(week, DateValue) AS week, -- Tuần trong năm
-            DATEPART(quarter, DateValue) AS quarter -- Quý trong năm
-        FROM DateSequence
-    ) AS source ON target.date_sk = source.date_sk
-    WHEN NOT MATCHED THEN
-        INSERT (date_sk, date, year, month, day, week, quarter)
-        VALUES (source.date_sk, source.date, source.year, source.month, source.day, source.week, source.quarter)
-    WHEN MATCHED THEN
-        -- Cập nhật các thuộc tính nếu cần (thường không cần cho bảng ngày)
-        UPDATE SET
-            target.date = source.date,
-            target.year = source.year,
-            target.month = source.month,
-            target.day = source.day,
-            target.week = source.week,
-            target.quarter = source.quarter
-    -- THÊM DẤU CHẤM PHẨY TRƯỚC OPTION
-    OPTION (MAXRECURSION 0); -- Cho phép đệ quy không giới hạn (cẩn thận với khoảng ngày quá lớn)
+    -- Ensure the table exists (optional, defensive programming)
+    IF OBJECT_ID('dbo.dim_date', 'U') IS NULL
+    BEGIN
+        PRINT 'Error: dim_date table does not exist.';
+        RETURN;
+    END;
 
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @CurrentDate DATE = @StartDate;
+
+        WHILE @CurrentDate <= @EndDate
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM dbo.dim_date WHERE date = @CurrentDate)
+            BEGIN
+                INSERT INTO dbo.dim_date (date, year, month, day, week, quarter)
+                VALUES (
+                    @CurrentDate,
+                    DATEPART(YEAR, @CurrentDate),
+                    DATEPART(MONTH, @CurrentDate),
+                    DATEPART(DAY, @CurrentDate),
+                    DATEPART(WEEK, @CurrentDate),
+                    DATEPART(QUARTER, @CurrentDate)
+                );
+            END
+            SET @CurrentDate = DATEADD(DAY, 1, @CurrentDate);
+        END
+
+        COMMIT TRANSACTION;
+        PRINT 'Successfully loaded dates into dim_date.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error loading dim_date: ' + ERROR_MESSAGE();
+        -- Consider logging the error to a table
+        THROW; -- Re-throw the error
+    END CATCH;
+
+    PRINT 'Finished sp_Load_dim_date.';
 END;
 GO
 
--- 2. Stored Procedure cho dim_departments
--- Tải dữ liệu phòng ban, bao gồm cả thông tin quản lý từ bảng DepartmentManager và tên quản lý từ Employees.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_dim_departments;
-GO
-
-CREATE PROCEDURE sp_load_dim_departments
+-- =============================================
+-- SP for dim_departments
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_dim_departments
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_dim_departments...';
 
-    MERGE dim_departments AS target
-    USING (
-        SELECT
-            d.DepartmentID,
-            d.DepartmentName,
-            dm.ManagerID -- ID quản lý từ bảng nguồn
-            -- Sẽ cần join với dim_employees để lấy manager_sk và manager_name sau khi dim_employees được tải
-        FROM [nhansucongty].[dbo].Departments AS d
-        LEFT JOIN [nhansucongty].[dbo].DepartmentManager AS dm ON d.DepartmentID = dm.DepartmentID
-    ) AS source ON target.department_id = source.DepartmentID
-    WHEN NOT MATCHED THEN
-        INSERT (department_id, department_name, manager_sk, manager_name)
-        VALUES (source.DepartmentID, source.DepartmentName, NULL, NULL) -- Tạm thời để NULL, sẽ cập nhật sau khi dim_employees có dữ liệu
-    WHEN MATCHED THEN
-        -- Cập nhật thông tin phòng ban và quản lý nếu thay đổi (SCD Type 1)
-        UPDATE SET
-            target.department_name = source.DepartmentName;
-            -- Lưu ý: Việc cập nhật manager_sk và manager_name sẽ được thực hiện SAU khi tải dim_employees
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Cập nhật manager_sk và manager_name sau khi dim_employees đã được tải
-    -- Sử dụng LEFT JOIN để đảm bảo các phòng ban không có quản lý vẫn giữ nguyên giá trị NULL đã insert ban đầu
-    UPDATE dd
-    SET dd.manager_sk = de.employee_sk,
-        dd.manager_name = de.full_name
-    FROM dim_departments AS dd
-    JOIN [nhansucongty].[dbo].DepartmentManager AS dm ON dd.department_id = dm.DepartmentID
-    JOIN dim_employees AS de ON dm.ManagerID = de.employee_id;
+        MERGE INTO hrms_warehouse.dbo.dim_departments AS Target
+        USING (
+            SELECT
+                DepartmentID,
+                DepartmentName
+            FROM nhansucongty.dbo.Departments
+        ) AS Source
+        ON Target.department_id = Source.DepartmentID -- Match based on business key
+        WHEN MATCHED AND Target.department_name <> Source.DepartmentName THEN
+            UPDATE SET
+                Target.department_name = Source.DepartmentName
+                -- Manager info will be updated in a separate step after employees are loaded
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (department_id, department_name, manager_sk, manager_name)
+            VALUES (Source.DepartmentID, Source.DepartmentName, NULL, NULL); -- Insert new departments
+        -- WHEN NOT MATCHED BY SOURCE THEN DELETE; -- Optional: Handle deletions
 
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into dim_departments.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_dim_departments: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+     PRINT 'Finished sp_Load_dim_departments.';
 END;
 GO
 
--- 3. Stored Procedure cho dim_positions
--- Tải dữ liệu chức vụ và thông tin phòng ban liên quan.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_dim_positions;
-GO
-
-CREATE PROCEDURE sp_load_dim_positions
+-- =============================================
+-- SP for dim_positions
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_dim_positions
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_dim_positions...';
 
-    MERGE dim_positions AS target
-    USING (
-        SELECT
-            p.PositionID,
-            p.PositionName,
-            d.DepartmentID, -- ID phòng ban từ nguồn
-            d.DepartmentName -- Tên phòng ban từ nguồn
-        FROM [nhansucongty].[dbo].Positions AS p
-        JOIN [nhansucongty].[dbo].Departments AS d ON p.DepartmentID = d.DepartmentID
-    ) AS source ON target.position_id = source.PositionID
-    WHEN NOT MATCHED THEN
-        INSERT (position_id, position_name, department_sk, department_name)
-        VALUES (source.PositionID, source.PositionName, NULL, source.DepartmentName) -- Tạm thời để department_sk là NULL
-    WHEN MATCHED THEN
-        -- Cập nhật thông tin chức vụ và tên phòng ban nếu thay đổi (SCD Type 1)
-        UPDATE SET
-            target.position_name = source.PositionName,
-            target.department_name = source.DepartmentName;
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Cập nhật department_sk sau khi dim_departments đã được tải
-    -- Đã sửa JOIN để kết nối đúng từ dim_positions -> source Positions -> dim_departments
-    UPDATE dp
-    SET dp.department_sk = dd.department_sk
-    FROM dim_positions AS dp
-    -- Join với bảng nguồn Positions để lấy DepartmentID
-    JOIN [nhansucongty].[dbo].Positions AS sp ON dp.position_id = sp.PositionID
-    -- Sau đó join với dim_departments để lấy department_sk
-    JOIN dim_departments AS dd ON sp.DepartmentID = dd.department_id;
+        MERGE INTO hrms_warehouse.dbo.dim_positions AS Target
+        USING (
+            SELECT
+                p.PositionID,
+                p.PositionName,
+                p.DepartmentID,
+                dd.department_sk, -- Lookup the surrogate key
+                dd.department_name -- Denormalize name
+            FROM nhansucongty.dbo.Positions p
+            INNER JOIN hrms_warehouse.dbo.dim_departments dd ON p.DepartmentID = dd.department_id -- Join to get department_sk
+        ) AS Source
+        ON Target.position_id = Source.PositionID
+        WHEN MATCHED AND (Target.position_name <> Source.PositionName
+                          OR ISNULL(Target.department_sk, -1) <> ISNULL(Source.department_sk, -1) -- Check if department changed
+                          OR Target.department_name <> Source.department_name) THEN
+            UPDATE SET
+                Target.position_name = Source.PositionName,
+                Target.department_sk = Source.department_sk,
+                Target.department_name = Source.department_name
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (position_id, position_name, department_sk, department_name)
+            VALUES (Source.PositionID, Source.PositionName, Source.department_sk, Source.department_name);
+        -- WHEN NOT MATCHED BY SOURCE THEN DELETE; -- Optional
 
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into dim_positions.';
+    END TRY
+    BEGIN CATCH
+         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_dim_positions: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_dim_positions.';
 END;
 GO
 
--- 4. Stored Procedure cho dim_employees
--- Tải dữ liệu nhân viên, bao gồm thông tin phòng ban, chức vụ, hợp đồng, bảo hiểm và các cột dẫn xuất.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_dim_employees;
-GO
-
-CREATE PROCEDURE sp_load_dim_employees
+-- =============================================
+-- SP for dim_employees
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_dim_employees
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_dim_employees...';
+    DECLARE @CurrentDate DATE = GETDATE(); -- For age/years worked calculation
 
-    -- Để xử lý hợp đồng và bảo hiểm hiện tại, ta cần tìm bản ghi mới nhất cho mỗi nhân viên
-    WITH LatestContract AS (
-        SELECT
-            ContractID,
-            EmployeeID,
-            ContractType,
-            StartDate,
-            EndDate,
-            ROW_NUMBER() OVER(PARTITION BY EmployeeID ORDER BY StartDate DESC, ContractID DESC) as rn -- Lấy hợp đồng mới nhất
-        FROM [nhansucongty].[dbo].Contracts
-        -- Có thể thêm điều kiện WHERE Status = N'Hiệu lực' nếu chỉ muốn lấy hợp đồng đang có hiệu lực
-    ),
-    LatestInsurance AS (
-        SELECT
-            InsuranceID,
-            EmployeeID,
-            InsuranceNumber,
-            InsuranceType,
-            StartDate,
-            EndDate,
-            ROW_NUMBER() OVER(PARTITION BY EmployeeID ORDER BY StartDate DESC, InsuranceID DESC) as rn -- Lấy bảo hiểm mới nhất
-        FROM [nhansucongty].[dbo].Insurance
-        -- Có thể thêm điều kiện WHERE EndDate >= GETDATE() nếu chỉ muốn lấy bảo hiểm còn hạn
-    )
-    MERGE dim_employees AS target
-    USING (
-        SELECT
-            e.EmployeeID,
-            e.FullName,
-            e.DateOfBirth,
-            -- Ánh xạ giới tính sang 1 ký tự
-            CASE
-                WHEN e.Gender = N'Nam' THEN 'M'
-                WHEN e.Gender = N'Nữ' THEN 'F'
-                ELSE 'O' -- Other/Khác
-            END AS Gender,
-            e.Address,
-            e.Phone,
-            e.Email,
-            e.DepartmentID, -- ID phòng ban nguồn
-            e.PositionID, -- ID chức vụ nguồn
-            e.HireDate,
-            -- Thông tin hợp đồng từ bản ghi mới nhất
-            lc.ContractType,
-            lc.StartDate AS ContractStartDate,
-            lc.EndDate AS ContractEndDate,
-            -- Thông tin bảo hiểm từ bản ghi mới nhất
-            li.InsuranceNumber,
-            li.InsuranceType,
-            li.StartDate AS InsuranceStartDate,
-            li.EndDate AS InsuranceEndDate,
-            -- Tính toán tuổi (giả định tính đến ngày chạy ETL)
-            DATEDIFF(year, e.DateOfBirth, GETDATE()) -
-            CASE WHEN MONTH(e.DateOfBirth) > MONTH(GETDATE()) OR (MONTH(e.DateOfBirth) = MONTH(GETDATE()) AND DAY(e.DateOfBirth) > DAY(GETDATE())) THEN 1 ELSE 0 END AS Age,
-            -- Tính toán số năm làm việc (đến ngày chạy ETL)
-            CAST(DATEDIFF(day, e.HireDate, GETDATE()) / 365.25 AS DECIMAL(5,2)) AS TotalYearsWorked,
-            -- Tính toán thời lượng hợp đồng (nếu có EndDate)
-            DATEDIFF(day, lc.StartDate, lc.EndDate) AS ContractDuration,
-             -- Tính toán thời lượng bảo hiểm (nếu có EndDate)
-            DATEDIFF(day, li.StartDate, li.EndDate) AS InsuranceDuration
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-        FROM [nhansucongty].[dbo].Employees AS e
-        LEFT JOIN LatestContract AS lc ON e.EmployeeID = lc.EmployeeID AND lc.rn = 1
-        LEFT JOIN LatestInsurance AS li ON e.EmployeeID = li.EmployeeID AND li.rn = 1
-    ) AS source ON target.employee_id = source.EmployeeID
-    WHEN NOT MATCHED THEN
-        INSERT (employee_id, full_name, date_of_birth, gender, address, phone, email, department_sk, department_name, position_sk, position_name, age, hire_date, current_contract_type, contract_start_date, contract_end_date, contract_duration, total_years_worked, insurance_number, insurance_type, insurance_start_date, insurance_end_date, insurance_duration)
-        VALUES (
-            source.EmployeeID,
-            source.FullName,
-            source.DateOfBirth,
-            source.Gender,
-            source.Address,
-            source.Phone,
-            source.Email,
-            NULL, -- department_sk (sẽ cập nhật sau)
-            NULL, -- department_name (sẽ cập nhật sau)
-            NULL, -- position_sk (sẽ cập nhật sau)
-            NULL, -- position_name (sẽ cập nhật sau)
-            source.Age,
-            source.HireDate,
-            source.ContractType,
-            source.ContractStartDate,
-            source.ContractEndDate,
-            source.ContractDuration,
-            source.TotalYearsWorked,
-            source.InsuranceNumber,
-            source.InsuranceType,
-            source.InsuranceStartDate,
-            source.InsuranceEndDate,
-            source.InsuranceDuration
+        -- Use CTEs to get the most relevant Contract and Insurance record per employee
+        -- Assumption: Latest StartDate defines the "current" record. Adjust logic if needed.
+        ;WITH LatestContract AS (
+            SELECT *, ROW_NUMBER() OVER(PARTITION BY EmployeeID ORDER BY StartDate DESC, ContractID DESC) as rn
+            FROM nhansucongty.dbo.Contracts
+            -- WHERE Status = N'Hiệu lực' -- Uncomment if only active contracts are relevant
+        ),
+        LatestInsurance AS (
+            SELECT *, ROW_NUMBER() OVER(PARTITION BY EmployeeID ORDER BY StartDate DESC, InsuranceID DESC) as rn
+            FROM nhansucongty.dbo.Insurance
         )
-    WHEN MATCHED THEN
-        -- Cập nhật thông tin nhân viên và các cột dẫn xuất (SCD Type 1)
-        UPDATE SET
-            target.full_name = source.FullName,
-            target.date_of_birth = source.DateOfBirth,
-            target.gender = source.Gender,
-            target.address = source.Address,
-            target.phone = source.Phone,
-            target.email = source.Email,
-            -- department_sk, department_name, position_sk, position_name sẽ được cập nhật sau
-            target.age = source.Age,
-            target.hire_date = source.HireDate,
-            target.current_contract_type = source.ContractType,
-            target.contract_start_date = source.ContractStartDate,
-            target.contract_end_date = source.ContractEndDate,
-            target.contract_duration = source.ContractDuration,
-            target.total_years_worked = source.TotalYearsWorked,
-            target.insurance_number = source.InsuranceNumber,
-            target.insurance_type = source.InsuranceType,
-            target.insurance_start_date = source.InsuranceStartDate,
-            target.insurance_end_date = source.InsuranceEndDate,
-            target.insurance_duration = source.InsuranceDuration;
+        MERGE INTO hrms_warehouse.dbo.dim_employees AS Target
+        USING (
+            SELECT
+                e.EmployeeID,
+                e.FullName,
+                e.DateOfBirth,
+                e.Gender,
+                e.Address,
+                e.Phone,
+                e.Email,
+                dd.department_sk,
+                dd.department_name,
+                dp.position_sk,
+                dp.position_name,
+                e.HireDate,
+                lc.ContractType AS current_contract_type,
+                lc.StartDate AS contract_start_date,
+                lc.EndDate AS contract_end_date,
+                CASE WHEN lc.StartDate IS NOT NULL AND lc.EndDate IS NOT NULL THEN DATEDIFF(DAY, lc.StartDate, lc.EndDate) ELSE NULL END AS contract_duration,
+                CAST(DATEDIFF(DAY, e.HireDate, @CurrentDate) / 365.25 AS DECIMAL(5,2)) AS total_years_worked,
+                li.InsuranceNumber AS insurance_number,
+                li.InsuranceType AS insurance_type,
+                li.StartDate AS insurance_start_date,
+                li.EndDate AS insurance_end_date,
+                CASE WHEN li.StartDate IS NOT NULL AND li.EndDate IS NOT NULL THEN DATEDIFF(DAY, li.StartDate, li.EndDate) ELSE NULL END AS insurance_duration,
+                CASE WHEN e.DateOfBirth IS NOT NULL THEN DATEDIFF(YEAR, e.DateOfBirth, @CurrentDate) ELSE NULL END as age
+            FROM nhansucongty.dbo.Employees e
+            LEFT JOIN hrms_warehouse.dbo.dim_departments dd ON e.DepartmentID = dd.department_id
+            LEFT JOIN hrms_warehouse.dbo.dim_positions dp ON e.PositionID = dp.position_id
+            LEFT JOIN LatestContract lc ON e.EmployeeID = lc.EmployeeID AND lc.rn = 1
+            LEFT JOIN LatestInsurance li ON e.EmployeeID = li.EmployeeID AND li.rn = 1
+            WHERE e.Status = N'Đang làm việc' -- Example: Load only active employees. Adjust if needed.
+        ) AS Source
+        ON Target.employee_id = Source.EmployeeID
+        WHEN MATCHED THEN
+            UPDATE SET -- Update all fields in case of changes (SCD Type 1)
+                Target.full_name = Source.FullName,
+                Target.date_of_birth = Source.DateOfBirth,
+                Target.gender = Source.Gender,
+                Target.address = Source.Address,
+                Target.phone = Source.Phone,
+                Target.email = Source.Email,
+                Target.department_sk = Source.department_sk,
+                Target.department_name = Source.department_name,
+                Target.position_sk = Source.position_sk,
+                Target.position_name = Source.position_name,
+                Target.hire_date = Source.HireDate,
+                Target.current_contract_type = Source.current_contract_type,
+                Target.contract_start_date = Source.contract_start_date,
+                Target.contract_end_date = Source.contract_end_date,
+                Target.contract_duration = Source.contract_duration,
+                Target.total_years_worked = Source.total_years_worked,
+                Target.insurance_number = Source.insurance_number,
+                Target.insurance_type = Source.insurance_type,
+                Target.insurance_start_date = Source.insurance_start_date,
+                Target.insurance_end_date = Source.insurance_end_date,
+                Target.insurance_duration = Source.insurance_duration,
+                Target.age = Source.age
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (employee_id, full_name, date_of_birth, gender, address, phone, email,
+                    department_sk, department_name, position_sk, position_name, age, hire_date,
+                    current_contract_type, contract_start_date, contract_end_date, contract_duration,
+                    total_years_worked, insurance_number, insurance_type, insurance_start_date,
+                    insurance_end_date, insurance_duration)
+            VALUES (Source.EmployeeID, Source.FullName, Source.DateOfBirth, Source.Gender, Source.Address, Source.Phone, Source.Email,
+                    Source.department_sk, Source.department_name, Source.position_sk, Source.position_name, Source.age, Source.HireDate,
+                    Source.current_contract_type, Source.contract_start_date, Source.contract_end_date, Source.contract_duration,
+                    Source.total_years_worked, Source.insurance_number, Source.insurance_type, Source.insurance_start_date,
+                    Source.insurance_end_date, Source.insurance_duration);
+        -- WHEN NOT MATCHED BY SOURCE THEN UPDATE SET Target.IsActive = 0; -- Optional: Mark missing employees as inactive
 
-    -- Cập nhật department_sk, department_name, position_sk, position_name sau khi các bảng chiều khác được tải
-    -- Sử dụng LEFT JOIN để đảm bảo nhân viên không có phòng ban/chức vụ vẫn giữ NULL
-    UPDATE de
-    SET de.department_sk = dd.department_sk,
-        de.department_name = dd.department_name,
-        de.position_sk = dp.position_sk,
-        de.position_name = dp.position_name
-    FROM dim_employees AS de
-    JOIN [nhansucongty].[dbo].Employees AS se ON de.employee_id = se.EmployeeID -- Join với bảng nguồn Employee
-    LEFT JOIN dim_departments AS dd ON se.DepartmentID = dd.department_id -- LEFT JOIN với dim_departments
-    LEFT JOIN dim_positions AS dp ON se.PositionID = dp.position_id; -- LEFT JOIN với dim_positions
-
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into dim_employees.';
+    END TRY
+    BEGIN CATCH
+         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_dim_employees: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+     PRINT 'Finished sp_Load_dim_employees.';
 END;
 GO
 
--- 5. Stored Procedure cho fact_attendance
--- Tải dữ liệu chấm công. Cần join với dim_employees và dim_date để lấy khóa surrogate.
--- Lưu ý: Việc tính toán hours_worked, is_late, overtime_hours, is_early_leave cần dựa vào quy định ca làm việc cụ thể của công ty, điều này không có trong lược đồ nguồn. Tôi sẽ đưa ra logic tính toán giờ làm việc đơn giản và ghi chú cho các trường khác.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_fact_attendance;
-GO
-
-CREATE PROCEDURE sp_load_fact_attendance
+-- =============================================
+-- SP to update Manager Info in dim_departments
+-- (Run AFTER dim_employees is loaded)
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Update_dim_departments_Manager
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Update_dim_departments_Manager...';
 
-    -- Tải dữ liệu mới từ nguồn vào bảng fact_attendance
-    INSERT INTO fact_attendance (
-        -- attendance_sk (IDENTITY column, REMOVED from insert list)
-        attendance_id,
-        employee_sk,
-        employee_name,
-        department_name,
-        position_name,
-        date_sk,
-        check_in_time,
-        check_out_time,
-        hours_worked,
-        is_late,
-        overtime_hours,
-        is_early_leave,
-        status
-    )
-    SELECT
-        a.AttendanceID,
-        de.employee_sk, -- Lấy khóa surrogate từ dim_employees
-        de.full_name,
-        de.department_name, -- Lấy tên phòng ban từ dim_employees (đã được tải)
-        de.position_name,
-		dd.date_sk, -- Lấy khóa surrogate từ dim_date
-        a.CheckInTime,
-        a.CheckOutTime,
-        -- Tính toán giờ làm việc (giả sử CheckOutTime > CheckInTime cùng ngày)
-        -- Cần xử lý các trường hợp checkin/checkout qua đêm nếu có
-        CAST(DATEDIFF(minute, a.CheckInTime, a.CheckOutTime) / 60.0 AS DECIMAL(5,2)),
-        -- Logic tính is_late, overtime_hours, is_early_leave cần dựa vào quy định ca làm việc
-        -- Ví dụ:
-        -- CASE WHEN a.CheckInTime > '08:00:00' THEN 1 ELSE 0 END, -- Giả sử giờ bắt đầu là 8:00
-        -- CASE WHEN a.CheckOutTime > '17:00:00' THEN CAST(DATEDIFF(minute, '17:00:00', a.CheckOutTime) / 60.0 AS DECIMAL(5,2)) ELSE 0 END, -- Giả sử giờ kết thúc là 17:00
-        -- CASE WHEN a.CheckOutTime < '17:00:00' THEN 1 ELSE 0 END -- Giả sử giờ kết thúc là 17:00
-        NULL, -- Placeholder cho is_late
-        NULL, -- Placeholder cho overtime_hours
-        NULL, -- Placeholder cho is_early_leave
-        a.Status
-    FROM [nhansucongty].[dbo].Attendance AS a
-    JOIN dim_employees AS de ON a.EmployeeID = de.employee_id -- Join với dim_employees
-    JOIN dim_date AS dd ON CAST(FORMAT(a.Date, 'yyyyMMdd') AS INT) = dd.date_sk -- Join với dim_date bằng khóa surrogate ngày
-    LEFT JOIN fact_attendance AS ft ON a.AttendanceID = ft.attendance_id -- Kiểm tra bản ghi đã tồn tại chưa (chỉ insert mới)
-    WHERE ft.attendance_id IS NULL; -- Chỉ chèn các bản ghi chưa có trong fact_attendance
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Ghi chú: Bạn cần bổ sung logic tính toán cho is_late, overtime_hours, is_early_leave
-    -- dựa trên giờ bắt đầu/kết thúc ca làm việc thực tế của công ty.
+        UPDATE dd
+        SET dd.manager_sk = de.employee_sk,
+            dd.manager_name = de.full_name
+        FROM hrms_warehouse.dbo.dim_departments dd
+        INNER JOIN nhansucongty.dbo.DepartmentManager dm ON dd.department_id = dm.DepartmentID
+        INNER JOIN hrms_warehouse.dbo.dim_employees de ON dm.ManagerID = de.employee_id
+        WHERE ISNULL(dd.manager_sk, -1) <> de.employee_sk OR ISNULL(dd.manager_name, '') <> de.full_name;
 
+        -- Handle cases where manager is no longer set or manager left (optional)
+        UPDATE dd
+        SET dd.manager_sk = NULL,
+            dd.manager_name = NULL
+        FROM hrms_warehouse.dbo.dim_departments dd
+        LEFT JOIN nhansucongty.dbo.DepartmentManager dm ON dd.department_id = dm.DepartmentID
+        WHERE dm.DepartmentID IS NULL AND (dd.manager_sk IS NOT NULL OR dd.manager_name IS NOT NULL);
+
+
+        COMMIT TRANSACTION;
+        PRINT 'Successfully updated manager info in dim_departments.';
+    END TRY
+    BEGIN CATCH
+         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Update_dim_departments_Manager: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Update_dim_departments_Manager.';
 END;
 GO
 
--- 6. Stored Procedure cho fact_salary
--- Tải dữ liệu lương. Cần join với dim_employees và dim_date.
--- SQL
 
-DROP PROCEDURE IF EXISTS sp_load_fact_salary;
-GO
-
-CREATE PROCEDURE sp_load_fact_salary
+-- =============================================
+-- SP for fact_attendance
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_attendance
+    @LoadRecentDays INT = NULL -- Optional: For incremental load (e.g., load last 7 days)
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_fact_attendance...';
+    DECLARE @CutoffDate DATE = CASE WHEN @LoadRecentDays IS NOT NULL THEN DATEADD(DAY, -@LoadRecentDays, GETDATE()) ELSE '1900-01-01' END;
 
-    INSERT INTO fact_salary (
-        -- salary_sk (IDENTITY column, REMOVED from insert list)
-        salary_id,
-        employee_sk,
-        employee_name,
-        department_name,
-        position_name,
-        date_sk,
-        basic_salary,
-        allowance,
-        deductions,
-        total_salary,
-        payment_status
-    )
-    SELECT
-        s.SalaryID,
-        de.employee_sk, -- Lấy khóa surrogate từ dim_employees
-        de.full_name,
-        de.department_name, -- Lấy tên phòng ban từ dim_employees
-        de.position_name, -- Lấy tên chức vụ từ dim_employees
-        dd.date_sk, -- Lấy khóa surrogate từ dim_date (cho ngày đầu tháng)
-        s.BasicSalary,
-        s.Allowance,
-        s.Deductions,
-        -- Tính tổng lương
-        s.BasicSalary + s.Allowance - s.Deductions,
-        'Chưa thanh toán' -- Giả định trạng thái ban đầu
-    FROM [nhansucongty].[dbo].Salary AS s
-    JOIN dim_employees AS de ON s.EmployeeID = de.employee_id -- Join với dim_employees
-    JOIN dim_date AS dd ON CAST(FORMAT(DATEFROMPARTS(s.Year, s.Month, 1), 'yyyyMMdd') AS INT) = dd.date_sk -- Join với dim_date (ngày đầu tháng)
-    LEFT JOIN fact_salary AS fs ON s.SalaryID = fs.salary_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE fs.salary_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Ghi chú: Trạng thái payment_status cần được cập nhật thông qua một quy trình khác
-    -- khi lương thực sự được thanh toán.
+        MERGE INTO hrms_warehouse.dbo.fact_attendance AS Target
+        USING (
+            SELECT
+                a.AttendanceID,
+                de.employee_sk,
+                de.full_name AS employee_name,
+                de.department_name,
+                de.position_name,
+                dd.date_sk,
+                a.CheckInTime,
+                a.CheckOutTime,
+                -- Basic hours worked calculation. Needs refinement based on actual shifts/rules.
+                CASE
+                    WHEN a.CheckInTime IS NOT NULL AND a.CheckOutTime IS NOT NULL
+                    THEN CAST(DATEDIFF(MINUTE, a.CheckInTime, a.CheckOutTime) / 60.0 AS DECIMAL(5,2))
+                    ELSE 0
+                END AS hours_worked,
+                -- Placeholder logic for late/early/overtime. Requires business rules.
+                CASE WHEN a.Status = N'Đi muộn' THEN 1 ELSE 0 END AS is_late,
+                CASE WHEN a.Status = N'Làm thêm giờ' THEN
+                     -- Requires calculation based on standard hours vs actual hours worked
+                     CASE WHEN a.CheckInTime IS NOT NULL AND a.CheckOutTime IS NOT NULL THEN
+                        GREATEST(0, CAST(DATEDIFF(MINUTE, a.CheckInTime, a.CheckOutTime) / 60.0 - 8.0 AS DECIMAL(5,2))) -- Assuming 8 hour standard day
+                     ELSE 0 END
+                     ELSE 0
+                END AS overtime_hours,
+                0 AS is_early_leave, -- Requires comparison to standard shift end time
+                a.Status
+            FROM nhansucongty.dbo.Attendance a
+            INNER JOIN hrms_warehouse.dbo.dim_employees de ON a.EmployeeID = de.employee_id
+            INNER JOIN hrms_warehouse.dbo.dim_date dd ON a.Date = dd.date
+            WHERE a.Date >= @CutoffDate -- Apply filter for incremental load if @LoadRecentDays is specified
+        ) AS Source
+        ON Target.attendance_id = Source.AttendanceID -- Match on source primary key
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.employee_sk = Source.employee_sk,
+                Target.employee_name = Source.employee_name,
+                Target.department_name = Source.department_name,
+                Target.position_name = Source.position_name,
+                Target.date_sk = Source.date_sk,
+                Target.check_in_time = Source.CheckInTime,
+                Target.check_out_time = Source.CheckOutTime,
+                Target.hours_worked = Source.hours_worked,
+                Target.is_late = Source.is_late,
+                Target.overtime_hours = Source.overtime_hours,
+                Target.is_early_leave = Source.is_early_leave,
+                Target.status = Source.Status
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (attendance_id, employee_sk, employee_name, department_name, position_name, date_sk,
+                    check_in_time, check_out_time, hours_worked, is_late, overtime_hours, is_early_leave, status)
+            VALUES (Source.AttendanceID, Source.employee_sk, Source.employee_name, Source.department_name, Source.position_name, Source.date_sk,
+                    Source.CheckInTime, Source.CheckOutTime, Source.hours_worked, Source.is_late, Source.overtime_hours, Source.is_early_leave, Source.Status);
+        -- WHEN NOT MATCHED BY SOURCE AND Target.date_sk IN (SELECT date_sk FROM hrms_warehouse.dbo.dim_date WHERE date >= @CutoffDate) THEN DELETE; -- Optional: Delete old records if doing full refresh for the period
 
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into fact_attendance.';
+    END TRY
+    BEGIN CATCH
+         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_attendance: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+     PRINT 'Finished sp_Load_fact_attendance.';
 END;
 GO
 
--- 7. Stored Procedure cho fact_leave_balance
--- Tải dữ liệu số ngày nghỉ phép còn lại. Cần join với dim_employees và dim_date.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_fact_leave_balance;
-GO
-
-CREATE PROCEDURE sp_load_fact_leave_balance
+-- =============================================
+-- SP for fact_salary
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_salary
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_fact_salary...';
 
-    INSERT INTO fact_leave_balance (
-        -- leave_balance_sk (IDENTITY column, REMOVED from insert list)
-        leave_balance_id,
-        employee_sk,
-        employee_name,
-        department_name,
-        position_name,
-        leave_type,
-        date_sk,
-        granularity,
-        total_leave_days,
-        used_leave_days,
-        remaining_leave_days
-    )
-    SELECT
-        lb.LeaveBalanceID,
-        de.employee_sk, -- Lấy khóa surrogate từ dim_employees
-        de.full_name,
-        de.department_name, -- Lấy tên phòng ban từ dim_employees
-        de.position_name, -- Lấy tên chức vụ từ dim_employees
-        N'Nghỉ năm', -- Mặc định là 'Nghỉ năm' theo thiết kế bảng fact
-        dd.date_sk, -- Lấy khóa surrogate từ dim_date (cho ngày đầu năm)
-        N'Năm', -- Mức độ chi tiết là 'Năm'
-        lb.TotalLeaveDays,
-        lb.UsedLeaveDays,
-        lb.RemainingLeaveDays
-    FROM [nhansucongty].[dbo].LeaveBalances AS lb
-    JOIN dim_employees AS de ON lb.EmployeeID = de.employee_id -- Join với dim_employees
-     -- Tạo ngày đầu năm để join với dim_date
-    JOIN dim_date AS dd ON CAST(FORMAT(DATEFROMPARTS(lb.Year, 1, 1), 'yyyyMMdd') AS INT) = dd.date_sk
-    LEFT JOIN fact_leave_balance AS flb ON lb.LeaveBalanceID = flb.leave_balance_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE flb.leave_balance_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
+        MERGE INTO hrms_warehouse.dbo.fact_salary AS Target
+        USING (
+            SELECT
+                s.SalaryID,
+                de.employee_sk,
+                de.full_name AS employee_name,
+                de.department_name,
+                de.position_name,
+                dd.date_sk, -- Map to the first day of the month
+                s.BasicSalary,
+                s.Allowance,
+                s.Deductions,
+                -- Use NetSalary from source if available, otherwise calculate
+                ISNULL(s.NetSalary, s.BasicSalary + s.Allowance - s.Deductions) AS total_salary,
+                'Chưa thanh toán' AS payment_status -- Default value from warehouse schema
+            FROM nhansucongty.dbo.Salary s
+            INNER JOIN hrms_warehouse.dbo.dim_employees de ON s.EmployeeID = de.employee_id
+            -- Construct the first day of the month to join with dim_date
+            INNER JOIN hrms_warehouse.dbo.dim_date dd ON dd.date = DATEFROMPARTS(s.Year, s.Month, 1)
+        ) AS Source
+        ON Target.salary_id = Source.SalaryID
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.employee_sk = Source.employee_sk,
+                Target.employee_name = Source.employee_name,
+                Target.department_name = Source.department_name,
+                Target.position_name = Source.position_name,
+                Target.date_sk = Source.date_sk,
+                Target.basic_salary = Source.BasicSalary,
+                Target.allowance = Source.Allowance,
+                Target.deductions = Source.Deductions,
+                Target.total_salary = Source.total_salary
+                -- Keep existing payment_status unless logic dictates otherwise
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (salary_id, employee_sk, employee_name, department_name, position_name, date_sk,
+                    basic_salary, allowance, deductions, total_salary, payment_status)
+            VALUES (Source.SalaryID, Source.employee_sk, Source.employee_name, Source.department_name, Source.position_name, Source.date_sk,
+                    Source.BasicSalary, Source.Allowance, Source.Deductions, Source.total_salary, Source.payment_status);
+
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into fact_salary.';
+    END TRY
+    BEGIN CATCH
+         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_salary: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_salary.';
 END;
 GO
 
--- 8. Stored Procedure cho fact_work_trips
--- Tải dữ liệu công tác. Cần join với dim_employees và dim_date cho ngày bắt đầu và kết thúc.
--- SQL
 
-DROP PROCEDURE IF EXISTS sp_load_fact_work_trips;
-GO
-
-CREATE PROCEDURE sp_load_fact_work_trips
+-- =============================================
+-- SP for fact_leave_balance
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_leave_balance
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_fact_leave_balance...';
 
-    INSERT INTO fact_work_trips (
-        -- work_trip_sk (IDENTITY column, REMOVED from insert list)
-        work_trip_id,
-        employee_sk,
-        employee_name,
-        department_name,
-        position_name,
-        start_date_sk,
-        end_date_sk,
-        trip_duration,
-        destination,
-        purpose,
-        total_cost, -- Giả định chưa có chi phí ở nguồn, để giá trị mặc định hoặc cần nguồn khác
-        status
-    )
-    SELECT
-        wt.RequestID,
-        de.employee_sk, -- Lấy khóa surrogate từ dim_employees
-        de.full_name,
-        de.department_name, -- Lấy tên phòng ban từ dim_employees
-        de.position_name, -- Lấy tên chức vụ từ dim_employees
-        dds.date_sk, -- Khóa surrogate ngày bắt đầu
-        dde.date_sk, -- Khóa surrogate ngày kết thúc
-        -- Tính toán thời lượng chuyến đi (bao gồm cả ngày bắt đầu và kết thúc)
-        DATEDIFF(day, wt.StartDate, wt.EndDate) + 1,
-        wt.Destination,
-        wt.Purpose,
-        0, -- Giả định chi phí là 0 hoặc cần lấy từ nguồn khác
-        wt.Status
-    FROM [nhansucongty].[dbo].WorkTripRequests AS wt
-    JOIN dim_employees AS de ON wt.EmployeeID = de.employee_id -- Join với dim_employees
-    JOIN dim_date AS dds ON CAST(FORMAT(wt.StartDate, 'yyyyMMdd') AS INT) = dds.date_sk -- Join với dim_date cho ngày bắt đầu
-    JOIN dim_date AS dde ON CAST(FORMAT(wt.EndDate, 'yyyyMMdd') AS INT) = dde.date_sk -- Join với dim_date cho ngày kết thúc
-    LEFT JOIN fact_work_trips AS fwt ON wt.RequestID = fwt.work_trip_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE fwt.work_trip_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-     -- Ghi chú: Trường total_cost cần được lấy từ nguồn dữ liệu chi phí công tác (nếu có)
-     -- hoặc cập nhật sau khi chi phí được quyết toán.
+        MERGE INTO hrms_warehouse.dbo.fact_leave_balance AS Target
+        USING (
+            SELECT
+                lb.LeaveBalanceID,
+                de.employee_sk,
+                de.full_name AS employee_name,
+                de.department_name,
+                de.position_name,
+                'Nghỉ năm' AS leave_type, -- Default value
+                 dd.date_sk, -- Map to the first day of the year
+                 'Năm' AS granularity, -- Default value
+                 lb.TotalLeaveDays,
+                 lb.UsedLeaveDays,
+                 -- Use Remaining from source if available, otherwise calculate
+                 ISNULL(lb.RemainingLeaveDays, lb.TotalLeaveDays - lb.UsedLeaveDays) AS remaining_leave_days
+            FROM nhansucongty.dbo.LeaveBalances lb
+            INNER JOIN hrms_warehouse.dbo.dim_employees de ON lb.EmployeeID = de.employee_id
+             -- Construct the first day of the year to join with dim_date
+            INNER JOIN hrms_warehouse.dbo.dim_date dd ON dd.date = DATEFROMPARTS(lb.Year, 1, 1)
+        ) AS Source
+        ON Target.leave_balance_id = Source.LeaveBalanceID -- Match on source key
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.employee_sk = Source.employee_sk,
+                Target.employee_name = Source.employee_name,
+                Target.department_name = Source.department_name,
+                Target.position_name = Source.position_name,
+                Target.leave_type = Source.leave_type,
+                Target.date_sk = Source.date_sk,
+                Target.granularity = Source.granularity,
+                Target.total_leave_days = Source.TotalLeaveDays,
+                Target.used_leave_days = Source.UsedLeaveDays,
+                Target.remaining_leave_days = Source.remaining_leave_days
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (leave_balance_id, employee_sk, employee_name, department_name, position_name,
+                    leave_type, date_sk, granularity, total_leave_days, used_leave_days, remaining_leave_days)
+            VALUES (Source.LeaveBalanceID, Source.employee_sk, Source.employee_name, Source.department_name, Source.position_name,
+                    Source.leave_type, Source.date_sk, Source.granularity, Source.TotalLeaveDays, Source.UsedLeaveDays, Source.remaining_leave_days);
 
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into fact_leave_balance.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_leave_balance: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_leave_balance.';
 END;
 GO
 
--- 9. Stored Procedure cho fact_recruitment_plan
--- Tải dữ liệu kế hoạch tuyển dụng. Cần join với dim_positions, dim_departments, và dim_date.
--- Lưu ý: Trường remaining_positions trong fact cần tính toán dựa trên số lượng cần tuyển và số lượng ứng viên đã được tuyển cho kế hoạch đó.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_fact_recruitment_plan;
-GO
-
-CREATE PROCEDURE sp_load_fact_recruitment_plan
+-- =============================================
+-- SP for fact_work_trips
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_work_trips
 AS
 BEGIN
     SET NOCOUNT ON;
+     PRINT 'Starting sp_Load_fact_work_trips...';
 
-    -- Tính toán số lượng ứng viên 'Đã tuyển' cho mỗi kế hoạch
-    WITH HiredApplicants AS (
-        SELECT
-            a.PlanID,
-            COUNT(a.ApplicantID) AS HiredCount
-        FROM [nhansucongty].[dbo].Applicants AS a
-        WHERE a.Status = N'Đã tuyển'
-        GROUP BY a.PlanID
-    )
-    INSERT INTO fact_recruitment_plan (
-        -- recruitment_sk (IDENTITY column, REMOVED from insert list)
-        recruitment_id,
-        position_sk,
-        position_name,
-        department_sk,
-        department_name,
-        start_date_sk,
-        end_date_sk,
-        quantity,
-        recruitment_duration,
-        remaining_positions
-    )
-    SELECT
-        rp.PlanID,
-        dp.position_sk, -- Lấy khóa surrogate từ dim_positions
-        dp.position_name,
-        dd.department_sk, -- Lấy khóa surrogate từ dim_departments
-        dd.department_name,
-        dds.date_sk, -- Khóa surrogate ngày bắt đầu
-        dde.date_sk, -- Khóa surrogate ngày kết thúc
-        rp.Quantity,
-        -- Tính toán thời lượng kế hoạch (bao gồm cả ngày bắt đầu và kết thúc)
-        DATEDIFF(day, rp.StartDate, rp.EndDate) + 1,
-        -- Tính toán số vị trí còn trống
-        rp.Quantity - ISNULL(ha.HiredCount, 0)
-    FROM [nhansucongty].[dbo].RecruitmentPlans AS rp
-    JOIN dim_positions AS dp ON rp.PositionID = dp.position_id -- Join với dim_positions
-    JOIN dim_departments AS dd ON rp.DepartmentID = dd.department_id -- Join với dim_departments
-    JOIN dim_date AS dds ON CAST(FORMAT(rp.StartDate, 'yyyyMMdd') AS INT) = dds.date_sk -- Join với dim_date cho ngày bắt đầu
-    JOIN dim_date AS dde ON CAST(FORMAT(rp.EndDate, 'yyyyMMdd') AS INT) = dde.date_sk -- Join với dim_date cho ngày kết thúc
-    LEFT JOIN HiredApplicants AS ha ON rp.PlanID = ha.PlanID -- Join với CTE để lấy số lượng đã tuyển
-    LEFT JOIN fact_recruitment_plan AS frp ON rp.PlanID = frp.recruitment_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE frp.recruitment_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
+        MERGE INTO hrms_warehouse.dbo.fact_work_trips AS Target
+        USING (
+            SELECT
+                wt.RequestID AS work_trip_id,
+                de.employee_sk,
+                de.full_name AS employee_name,
+                de.department_name,
+                de.position_name,
+                dd_start.date_sk AS start_date_sk,
+                dd_end.date_sk AS end_date_sk,
+                CASE WHEN wt.StartDate IS NOT NULL AND wt.EndDate IS NOT NULL THEN DATEDIFF(DAY, wt.StartDate, wt.EndDate) + 1 ELSE NULL END AS trip_duration, -- Include start/end day
+                wt.Destination,
+                wt.Purpose,
+                0 AS total_cost, -- Source does not have cost info
+                wt.Status
+            FROM nhansucongty.dbo.WorkTripRequests wt
+            INNER JOIN hrms_warehouse.dbo.dim_employees de ON wt.EmployeeID = de.employee_id
+            LEFT JOIN hrms_warehouse.dbo.dim_date dd_start ON wt.StartDate = dd_start.date
+            LEFT JOIN hrms_warehouse.dbo.dim_date dd_end ON wt.EndDate = dd_end.date
+        ) AS Source
+        ON Target.work_trip_id = Source.work_trip_id
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.employee_sk = Source.employee_sk,
+                Target.employee_name = Source.employee_name,
+                Target.department_name = Source.department_name,
+                Target.position_name = Source.position_name,
+                Target.start_date_sk = Source.start_date_sk,
+                Target.end_date_sk = Source.end_date_sk,
+                Target.trip_duration = Source.trip_duration,
+                Target.destination = Source.Destination,
+                Target.purpose = Source.Purpose,
+                Target.total_cost = Source.total_cost,
+                Target.status = Source.Status
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (work_trip_id, employee_sk, employee_name, department_name, position_name,
+                    start_date_sk, end_date_sk, trip_duration, destination, purpose, total_cost, status)
+            VALUES (Source.work_trip_id, Source.employee_sk, Source.employee_name, Source.department_name, Source.position_name,
+                    Source.start_date_sk, Source.end_date_sk, Source.trip_duration, Source.Destination, Source.Purpose, Source.total_cost, Source.Status);
+
+        COMMIT TRANSACTION;
+         PRINT 'Successfully merged data into fact_work_trips.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_work_trips: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_work_trips.';
 END;
 GO
 
--- 10. Stored Procedure cho fact_application
--- Tải dữ liệu ứng viên. Cần join với fact_recruitment_plan và dim_date.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_fact_application;
-GO
-
-CREATE PROCEDURE sp_load_fact_application
+-- =============================================
+-- SP for fact_recruitment_plan
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_recruitment_plan
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_fact_recruitment_plan...';
 
-    INSERT INTO fact_application (
-        -- application_sk (IDENTITY column, REMOVED from insert list)
-        applicant_id,
-        recruitment_sk, -- Khóa surrogate đến fact_recruitment_plan
-        application_date_sk,
-        position_name,
-        department_name,
-        status
-    )
-    SELECT
-        a.ApplicantID,
-        frp.recruitment_sk, -- Lấy khóa surrogate từ fact_recruitment_plan
-        dd.date_sk, -- Lấy khóa surrogate từ dim_date
-        frp.position_name, -- Lấy tên vị trí từ fact_recruitment_plan
-        frp.department_name, -- Lấy tên phòng ban từ fact_recruitment_plan
-        a.Status
-    FROM [nhansucongty].[dbo].Applicants AS a
-    JOIN [nhansucongty].[dbo].RecruitmentPlans AS rp_source ON a.PlanID = rp_source.PlanID -- Join tạm với bảng nguồn để lấy ID kế hoạch
-    JOIN fact_recruitment_plan AS frp ON rp_source.PlanID = frp.recruitment_id -- Join với fact_recruitment_plan đã tải
-    -- Lưu ý: Bảng Applicants nguồn không có cột ngày nộp đơn. Tôi đang tạm dùng StartDate của RecruitmentPlans.
-    -- Nếu ngày nộp đơn là quan trọng, bạn cần bổ sung cột này vào bảng Applicants nguồn.
-    JOIN dim_date AS dd ON CAST(FORMAT(rp_source.StartDate, 'yyyyMMdd') AS INT) = dd.date_sk -- Sử dụng ngày bắt đầu kế hoạch làm ngày nộp đơn tạm thời
-    LEFT JOIN fact_application AS fa ON a.ApplicantID = fa.applicant_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE fa.applicant_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Ghi chú: Nếu ngày nộp đơn thực tế khác với ngày bắt đầu kế hoạch, bạn cần sửa lại
-    -- logic join với dim_date để sử dụng cột ngày nộp đơn từ bảng Applicants nguồn.
+        MERGE INTO hrms_warehouse.dbo.fact_recruitment_plan AS Target
+        USING (
+            SELECT
+                rp.PlanID AS recruitment_id,
+                dp.position_sk,
+                dp.position_name,
+                dd.department_sk,
+                dd.department_name,
+                dd_start.date_sk AS start_date_sk,
+                dd_end.date_sk AS end_date_sk,
+                rp.Quantity,
+                CASE WHEN rp.StartDate IS NOT NULL AND rp.EndDate IS NOT NULL THEN DATEDIFF(DAY, rp.StartDate, rp.EndDate) + 1 ELSE NULL END AS recruitment_duration,
+                -- Remaining positions calculation is complex, depends on applications.
+                -- Defaulting to Quantity here, maybe update later based on fact_application?
+                rp.Quantity AS remaining_positions
+            FROM nhansucongty.dbo.RecruitmentPlans rp
+            LEFT JOIN hrms_warehouse.dbo.dim_positions dp ON rp.PositionID = dp.position_id
+            LEFT JOIN hrms_warehouse.dbo.dim_departments dd ON rp.DepartmentID = dd.department_id
+            LEFT JOIN hrms_warehouse.dbo.dim_date dd_start ON rp.StartDate = dd_start.date
+            LEFT JOIN hrms_warehouse.dbo.dim_date dd_end ON rp.EndDate = dd_end.date
+        ) AS Source
+        ON Target.recruitment_id = Source.recruitment_id
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.position_sk = Source.position_sk,
+                Target.position_name = Source.position_name,
+                Target.department_sk = Source.department_sk,
+                Target.department_name = Source.department_name,
+                Target.start_date_sk = Source.start_date_sk,
+                Target.end_date_sk = Source.end_date_sk,
+                Target.quantity = Source.Quantity,
+                Target.recruitment_duration = Source.recruitment_duration,
+                Target.remaining_positions = Source.remaining_positions -- Or potentially update based on applications loaded
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (recruitment_id, position_sk, position_name, department_sk, department_name,
+                    start_date_sk, end_date_sk, quantity, recruitment_duration, remaining_positions)
+            VALUES (Source.recruitment_id, Source.position_sk, Source.position_name, Source.department_sk, Source.department_name,
+                    Source.start_date_sk, Source.end_date_sk, Source.Quantity, Source.recruitment_duration, Source.remaining_positions);
 
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into fact_recruitment_plan.';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_recruitment_plan: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_recruitment_plan.';
 END;
 GO
 
--- 11. Stored Procedure cho fact_registrations
--- Tải dữ liệu các loại đăng ký. Cần join với dim_employees (cho người yêu cầu và người duyệt) và dim_date.
--- Lưu ý: Tính toán registration_duration phụ thuộc vào loại đăng ký và chi tiết yêu cầu, điều này phức tạp. Tôi sẽ để logic tính toán này đơn giản hoặc ghi chú.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_fact_registrations;
-GO
-
-CREATE PROCEDURE sp_load_fact_registrations
+-- =============================================
+-- SP for fact_application
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_application
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_fact_application...';
+    DECLARE @DefaultDate DATE = '1900-01-01'; -- Fallback if needed
 
-    INSERT INTO fact_registrations (
-        -- registration_sk (IDENTITY column, REMOVED from insert list)
-        registration_id,
-        employee_sk,
-        employee_name,
-        department_name,
-        approved_by_name,
-        registration_type,
-        request_date_sk,
-        registration_duration,
-        status,
-        approved_by_sk
-    )
-    SELECT
-        r.RegistrationID,
-        de_req.employee_sk, -- Lấy khóa surrogate cho người yêu cầu
-        de_req.full_name,
-        de_req.department_name, -- Lấy tên phòng ban của người yêu cầu
-        de_app.full_name, -- Tên người duyệt
-        r.RegistrationType,
-        dd.date_sk, -- Lấy khóa surrogate ngày yêu cầu
-        -- Tính toán thời lượng đăng ký (ví dụ đơn giản: 1 ngày cho hầu hết các loại)
-        -- Logic này cần được điều chỉnh dựa trên RegistrationType và Details
-        CASE
-            WHEN r.RegistrationType = N'Nghỉ phép' THEN -- Cần phân tích Details để biết số ngày nghỉ
-                 1 -- Giả định 1 ngày nghỉ nếu không phân tích Details
-            WHEN r.RegistrationType = N'Làm thêm giờ' THEN -- Cần phân tích Details để biết số giờ
-                 0 -- Giả định 0 nếu không phân tích Details
-            ELSE 1 -- Mặc định là 1 cho các loại khác
-        END,
-        r.Status,
-        de_app.employee_sk -- Lấy khóa surrogate cho người duyệt (NULL nếu không có)
-    FROM [nhansucongty].[dbo].Registrations AS r
-    JOIN dim_employees AS de_req ON r.EmployeeID = de_req.employee_id -- Join với dim_employees (người yêu cầu)
-    LEFT JOIN dim_employees AS de_app ON r.ApprovedBy = de_app.employee_id -- Join với dim_employees (người duyệt, có thể NULL)
-    JOIN dim_date AS dd ON CAST(FORMAT(r.RequestDate, 'yyyyMMdd') AS INT) = dd.date_sk -- Join với dim_date
-    LEFT JOIN fact_registrations AS fr ON r.RegistrationID = fr.registration_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE fr.registration_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Ghi chú: Logic tính toán registration_duration cần được cải tiến đáng kể
-    -- dựa trên cấu trúc và nội dung của trường Details trong bảng Registrations nguồn.
+        MERGE INTO hrms_warehouse.dbo.fact_application AS Target
+        USING (
+            SELECT
+                a.ApplicantID AS applicant_id,
+                frp.recruitment_sk,
+                 -- Source 'Applicants' lacks an application date. Using Plan StartDate as proxy. Needs verification!
+                ISNULL(frp.start_date_sk, d_default.date_sk) AS application_date_sk,
+                frp.position_name,
+                frp.department_name,
+                a.Status
+            FROM nhansucongty.dbo.Applicants a
+            INNER JOIN hrms_warehouse.dbo.fact_recruitment_plan frp ON a.PlanID = frp.recruitment_id
+            LEFT JOIN hrms_warehouse.dbo.dim_date d_default ON d_default.date = @DefaultDate -- Join for default date_sk if needed
+             -- WHERE a.ApplicationDate >= @CutoffDate -- Add date filter if source had application date & incremental load needed
+        ) AS Source
+        ON Target.applicant_id = Source.applicant_id -- Match on source key
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.recruitment_sk = Source.recruitment_sk,
+                Target.application_date_sk = Source.application_date_sk,
+                Target.position_name = Source.position_name,
+                Target.department_name = Source.department_name,
+                Target.status = Source.Status
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (applicant_id, recruitment_sk, application_date_sk, position_name, department_name, status)
+            VALUES (Source.applicant_id, Source.recruitment_sk, Source.application_date_sk, Source.position_name, Source.department_name, Source.Status);
 
+        COMMIT TRANSACTION;
+         PRINT 'Successfully merged data into fact_application (Warning: Used plan start date as proxy for application date).';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_application: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_application.';
 END;
 GO
 
--- 12. Stored Procedure cho fact_decision
--- Tải dữ liệu các quyết định. Cần join với dim_employees và dim_date.
--- SQL
-
-DROP PROCEDURE IF EXISTS sp_load_fact_decision;
-GO
-
-CREATE PROCEDURE sp_load_fact_decision
+-- =============================================
+-- SP for fact_registrations
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_registrations
 AS
 BEGIN
     SET NOCOUNT ON;
+    PRINT 'Starting sp_Load_fact_registrations...';
 
-    INSERT INTO fact_decision (
-        -- decision_sk (IDENTITY column, REMOVED from insert list)
-        decision_id,
-        employee_sk,
-        employee_name,
-        department_name,
-        decision_date_sk,
-        decision_type,
-        decision_details,
-        decision_effective_date, -- Cần kiểm tra nếu có cột này ở nguồn, nếu không thì NULL
-        decision_expiry_date -- Cần kiểm tra nếu có cột này ở nguồn, nếu không thì NULL
-    )
-    SELECT
-        d.DecisionID,
-        de.employee_sk, -- Lấy khóa surrogate từ dim_employees
-        de.full_name,
-        de.department_name, -- Lấy tên phòng ban từ dim_employees
-        dd.date_sk, -- Lấy khóa surrogate ngày quyết định
-        d.DecisionType,
-        d.Details, -- Sử dụng cột Details từ nguồn làm decision_details
-        NULL, -- Giả định không có cột effective_date ở nguồn
-        NULL -- Giả định không có cột expiry_date ở nguồn
-    FROM [nhansucongty].[dbo].Decisions AS d
-    JOIN dim_employees AS de ON d.EmployeeID = de.employee_id -- Join với dim_employees
-    JOIN dim_date AS dd ON CAST(FORMAT(d.DecisionDate, 'yyyyMMdd') AS INT) = dd.date_sk -- Join với dim_date
-    LEFT JOIN fact_decision AS fd ON d.DecisionID = fd.decision_id -- Kiểm tra bản ghi đã tồn tại chưa
-    WHERE fd.decision_id IS NULL; -- Chỉ chèn các bản ghi chưa có
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Ghi chú: Nếu bảng Decisions nguồn có cột ngày hiệu lực hoặc ngày hết hiệu lực,
-    -- bạn cần cập nhật SP này để ánh xạ dữ liệu đó vào decision_effective_date và decision_expiry_date.
+        MERGE INTO hrms_warehouse.dbo.fact_registrations AS Target
+        USING (
+            SELECT
+                r.RegistrationID AS registration_id,
+                de_req.employee_sk,
+                de_req.full_name AS employee_name,
+                de_req.department_name,
+                de_app.full_name AS approved_by_name,
+                r.RegistrationType,
+                dd_req.date_sk AS request_date_sk,
+                NULL AS registration_duration, -- Source does not have duration info
+                r.Status,
+                de_app.employee_sk AS approved_by_sk
+            FROM nhansucongty.dbo.Registrations r
+            INNER JOIN hrms_warehouse.dbo.dim_employees de_req ON r.EmployeeID = de_req.employee_id
+            LEFT JOIN hrms_warehouse.dbo.dim_employees de_app ON r.ApprovedBy = de_app.employee_id -- Left join as ApprovedBy can be NULL
+            LEFT JOIN hrms_warehouse.dbo.dim_date dd_req ON r.RequestDate = dd_req.date
+        ) AS Source
+        ON Target.registration_id = Source.registration_id
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.employee_sk = Source.employee_sk,
+                Target.employee_name = Source.employee_name,
+                Target.department_name = Source.department_name,
+                Target.approved_by_name = Source.approved_by_name,
+                Target.registration_type = Source.RegistrationType,
+                Target.request_date_sk = Source.request_date_sk,
+                Target.registration_duration = Source.registration_duration,
+                Target.status = Source.Status,
+                Target.approved_by_sk = Source.approved_by_sk
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (registration_id, employee_sk, employee_name, department_name, approved_by_name,
+                    registration_type, request_date_sk, registration_duration, status, approved_by_sk)
+            VALUES (Source.registration_id, Source.employee_sk, Source.employee_name, Source.department_name, Source.approved_by_name,
+                    Source.RegistrationType, Source.request_date_sk, Source.registration_duration, Source.Status, Source.approved_by_sk);
 
+        COMMIT TRANSACTION;
+         PRINT 'Successfully merged data into fact_registrations (Warning: Registration duration is NULL).';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_registrations: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_registrations.';
 END;
 GO
 
+-- =============================================
+-- SP for fact_decision
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Load_fact_decision
+AS
+BEGIN
+    SET NOCOUNT ON;
+     PRINT 'Starting sp_Load_fact_decision...';
 
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        MERGE INTO hrms_warehouse.dbo.fact_decision AS Target
+        USING (
+            SELECT
+                d.DecisionID AS decision_id,
+                de.employee_sk,
+                de.full_name AS employee_name,
+                de.department_name,
+                dd_dec.date_sk AS decision_date_sk,
+                d.DecisionType,
+                d.Details AS decision_details,
+                d.DecisionDate AS decision_effective_date, -- Using DecisionDate as EffectiveDate
+                NULL AS decision_expiry_date -- Source does not have expiry info
+            FROM nhansucongty.dbo.Decisions d
+            INNER JOIN hrms_warehouse.dbo.dim_employees de ON d.EmployeeID = de.employee_id
+            LEFT JOIN hrms_warehouse.dbo.dim_date dd_dec ON d.DecisionDate = dd_dec.date
+        ) AS Source
+        ON Target.decision_id = Source.decision_id
+        WHEN MATCHED THEN
+            UPDATE SET
+                Target.employee_sk = Source.employee_sk,
+                Target.employee_name = Source.employee_name,
+                Target.department_name = Source.department_name,
+                Target.decision_date_sk = Source.decision_date_sk,
+                Target.decision_type = Source.DecisionType,
+                Target.decision_details = Source.decision_details,
+                Target.decision_effective_date = Source.decision_effective_date,
+                Target.decision_expiry_date = Source.decision_expiry_date
+        WHEN NOT MATCHED BY Target THEN
+            INSERT (decision_id, employee_sk, employee_name, department_name, decision_date_sk,
+                    decision_type, decision_details, decision_effective_date, decision_expiry_date)
+            VALUES (Source.decision_id, Source.employee_sk, Source.employee_name, Source.department_name, Source.decision_date_sk,
+                    Source.DecisionType, Source.decision_details, Source.decision_effective_date, Source.decision_expiry_date);
+
+        COMMIT TRANSACTION;
+        PRINT 'Successfully merged data into fact_decision (Warning: Used DecisionDate as effective date, expiry date is NULL).';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        PRINT 'Error in sp_Load_fact_decision: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+    PRINT 'Finished sp_Load_fact_decision.';
+END;
+GO
+
+-- =============================================
+-- Master ETL Procedure
+-- =============================================
+CREATE OR ALTER PROCEDURE sp_Run_ETL_hrms_warehouse
+    @LoadRecentAttendanceDays INT = NULL -- Pass parameter to attendance load if needed
+AS
+BEGIN
+    SET NOCOUNT ON;
+    PRINT 'Starting Master ETL Process for hrms_warehouse at ' + CONVERT(VARCHAR, GETDATE(), 120);
+    DECLARE @StartTime DATETIME = GETDATE();
+
+    BEGIN TRY
+        -- 1. Load Dimensions (Order matters due to dependencies)
+        PRINT '--- Loading Dimensions ---';
+        EXEC sp_Load_dim_departments;
+        EXEC sp_Load_dim_positions; -- Depends on Departments
+        EXEC sp_Load_dim_employees; -- Depends on Departments, Positions
+        EXEC sp_Update_dim_departments_Manager; -- Depends on Employees, Departments
+
+        -- 2. Load Facts (Can often run in parallel if resources allow, but sequentially here)
+        PRINT '--- Loading Facts ---';
+        EXEC sp_Load_fact_attendance @LoadRecentDays = @LoadRecentAttendanceDays; -- Depends on Employees, Date
+        EXEC sp_Load_fact_salary; -- Depends on Employees, Date
+        EXEC sp_Load_fact_leave_balance; -- Depends on Employees, Date
+        EXEC sp_Load_fact_work_trips; -- Depends on Employees, Date
+        EXEC sp_Load_fact_recruitment_plan; -- Depends on Positions, Departments, Date
+        EXEC sp_Load_fact_application; -- Depends on Recruitment Plan, Date
+        EXEC sp_Load_fact_registrations; -- Depends on Employees, Date
+        EXEC sp_Load_fact_decision; -- Depends on Employees, Date
+
+        DECLARE @EndTime DATETIME = GETDATE();
+        PRINT 'Finished Master ETL Process for hrms_warehouse at ' + CONVERT(VARCHAR, GETDATE(), 120);
+        PRINT 'Total Duration: ' + CAST(DATEDIFF(SECOND, @StartTime, @EndTime) AS VARCHAR) + ' seconds.';
+
+    END TRY
+    BEGIN CATCH
+        PRINT '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!';
+        PRINT '!!! Master ETL Process FAILED at ' + CONVERT(VARCHAR, GETDATE(), 120);
+        PRINT '!!! Error: ' + ERROR_MESSAGE();
+        PRINT '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!';
+        -- Consider sending an alert/email here
+        THROW; -- Re-throw error to make SQL Agent Job aware of failure
+    END CATCH;
+END;
+GO
