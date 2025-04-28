@@ -5,11 +5,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import vn.ptit.hrms.dto.warehouse.RecruitmentPlanByDepartmentPositionDTO;
 import vn.ptit.hrms.service.warehouse.*;
 
 import java.time.Year;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -19,16 +21,19 @@ public class HrAnalyticsController {
     private final SalaryAnalyticsService salaryAnalyticsService;
     private final LeaveAnalyticsService leaveAnalyticsService;
     private final WorkTripAnalyticsService workTripAnalyticsService;
+    private final FactRecruitmentPlanService factRecruitmentPlanService;
 
     public HrAnalyticsController(
             AttendanceAnalyticsService attendanceAnalyticsService,
             SalaryAnalyticsService salaryAnalyticsService,
             LeaveAnalyticsService leaveAnalyticsService,
-            WorkTripAnalyticsService workTripAnalyticsService) {
+            WorkTripAnalyticsService workTripAnalyticsService,
+            FactRecruitmentPlanService factRecruitmentPlanService) {
         this.attendanceAnalyticsService = attendanceAnalyticsService;
         this.salaryAnalyticsService = salaryAnalyticsService;
         this.leaveAnalyticsService = leaveAnalyticsService;
         this.workTripAnalyticsService = workTripAnalyticsService;
+        this.factRecruitmentPlanService = factRecruitmentPlanService;
     }
 
     @GetMapping("/dashboard")
@@ -139,5 +144,34 @@ public class HrAnalyticsController {
         model.addAttribute("limit", limit);
         
         return "pages/analytics/worktrip";
+    }
+
+    @GetMapping("/recruitment")
+    public String showRecruitmentAnalytics(
+            Model model,
+            @RequestParam(required = false, defaultValue = "5") int limit) {
+        
+        // Get overall recruitment stats
+        RecruitmentPlanByDepartmentPositionDTO overallStats = factRecruitmentPlanService.getOverallRecruitmentStats();
+        model.addAttribute("overallStats", overallStats);
+        
+        // Get top departments with open positions
+        List<RecruitmentPlanByDepartmentPositionDTO> topDepartments = 
+            factRecruitmentPlanService.getTopDepartmentsWithOpenPositions(limit);
+        model.addAttribute("topDepartments", topDepartments);
+        
+        // Get top positions with open positions
+        List<RecruitmentPlanByDepartmentPositionDTO> topPositions = 
+            factRecruitmentPlanService.getTopPositionsWithOpenPositions(limit);
+        model.addAttribute("topPositions", topPositions);
+        
+        // Get all recruitment plans by department and position
+        List<RecruitmentPlanByDepartmentPositionDTO> allPlans = 
+            factRecruitmentPlanService.getAllRecruitmentPlansByDepartmentPosition();
+        model.addAttribute("allPlans", allPlans);
+        
+        model.addAttribute("limit", limit);
+        
+        return "pages/analytics/recruitment";
     }
 }
