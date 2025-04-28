@@ -23,6 +23,7 @@ public class HrAnalyticsController {
     private final WorkTripAnalyticsService workTripAnalyticsService;
     private final FactRecruitmentPlanService factRecruitmentPlanService;
     private final RegistrationAnalyticsService registrationAnalyticsService;
+    private final DecisionAnalyticsService decisionAnalyticsService;
 
     public HrAnalyticsController(
             AttendanceAnalyticsService attendanceAnalyticsService,
@@ -30,13 +31,15 @@ public class HrAnalyticsController {
             LeaveAnalyticsService leaveAnalyticsService,
             WorkTripAnalyticsService workTripAnalyticsService,
             FactRecruitmentPlanService factRecruitmentPlanService,
-            RegistrationAnalyticsService registrationAnalyticsService) {
+            RegistrationAnalyticsService registrationAnalyticsService,
+            DecisionAnalyticsService decisionAnalyticsService) {
         this.attendanceAnalyticsService = attendanceAnalyticsService;
         this.salaryAnalyticsService = salaryAnalyticsService;
         this.leaveAnalyticsService = leaveAnalyticsService;
         this.workTripAnalyticsService = workTripAnalyticsService;
         this.factRecruitmentPlanService = factRecruitmentPlanService;
         this.registrationAnalyticsService = registrationAnalyticsService;
+        this.decisionAnalyticsService = decisionAnalyticsService;
     }
 
     @GetMapping("/dashboard")
@@ -198,5 +201,29 @@ public class HrAnalyticsController {
         model.addAttribute("limit", limit);
         
         return "pages/analytics/registration";
+    }
+
+    @GetMapping("/decision")
+    public String showDecisionAnalytics(
+            Model model,
+            @RequestParam(required = false, defaultValue = "5") int limit) {
+        
+        // Get decision data for analysis
+        model.addAttribute("departmentTypeCounts", decisionAnalyticsService.getDecisionsByDepartmentAndType());
+        model.addAttribute("departmentTypeCountsGrouped", decisionAnalyticsService.getDecisionsByDepartmentGrouped());
+        model.addAttribute("decisionTrends", decisionAnalyticsService.getDecisionTrendsByTime());
+        model.addAttribute("trendsByType", decisionAnalyticsService.getDecisionTrendsByTimeGrouped());
+        model.addAttribute("typeRatios", decisionAnalyticsService.getDecisionTypeRatios());
+        model.addAttribute("behaviorAfterDisciplinary", decisionAnalyticsService.getEmployeeBehaviorAfterDisciplinary());
+        model.addAttribute("decisionDurations", decisionAnalyticsService.getAverageDecisionDurations());
+        model.addAttribute("topRewardedEmployees", decisionAnalyticsService.getTopRewardedEmployees(limit));
+        model.addAttribute("rewardOvertimeCorrelation", decisionAnalyticsService.getRewardOvertimeCorrelation());
+        model.addAttribute("correlationCoefficient", decisionAnalyticsService.calculateRewardOvertimeCorrelation());
+        model.addAttribute("decisionsByPosition", decisionAnalyticsService.getDecisionsByPosition());
+        model.addAttribute("totalsByType", decisionAnalyticsService.getTotalDecisionsByType());
+        
+        model.addAttribute("limit", limit);
+        
+        return "pages/analytics/decision";
     }
 }
