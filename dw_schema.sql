@@ -59,71 +59,78 @@ BEGIN
             VALUES (source.PositionID, source.PositionID, source.PositionName, source.DepartmentID, source.DepartmentName);
 
         -- 4. dim_employees: Upsert
-        MERGE dim_employees AS target
-        USING (
-            SELECT
-                e.EmployeeID, e.FullName, e.DateOfBirth, LEFT(e.Gender, 1) AS Gender, e.Address, e.Phone, e.Email,
-                e.DepartmentID, d.DepartmentName, e.PositionID, p.PositionName,
-                DATEDIFF(YEAR, e.DateOfBirth, GETDATE()) AS age, e.HireDate,
-                c.ContractType, c.StartDate, c.EndDate,
-                DATEDIFF(DAY, c.StartDate, ISNULL(c.EndDate, GETDATE())) AS contract_duration,
-                DATEDIFF(YEAR, e.HireDate, GETDATE()) AS total_years_worked,
-                i.InsuranceNumber, i.InsuranceType, i.StartDate AS insurance_start_date, i.EndDate AS insurance_end_date,
-                DATEDIFF(DAY, i.StartDate, ISNULL(i.EndDate, GETDATE())) AS insurance_duration
-            FROM nhansucongty.dbo.Employees e
-            LEFT JOIN nhansucongty.dbo.Departments d ON e.DepartmentID = d.DepartmentID
-            LEFT JOIN nhansucongty.dbo.Positions p ON e.PositionID = p.PositionID
-            OUTER APPLY (
-                SELECT TOP 1 c.* FROM nhansucongty.dbo.Contracts c
-                WHERE c.EmployeeID = e.EmployeeID
-                ORDER BY c.StartDate DESC
-            ) c
-            OUTER APPLY (
-                SELECT TOP 1 i.* FROM nhansucongty.dbo.Insurance i
-                WHERE i.EmployeeID = e.EmployeeID
-                ORDER BY i.StartDate DESC
-            ) i
-        ) AS source
-        ON target.employee_id = source.EmployeeID
-        WHEN MATCHED THEN
-            UPDATE SET
-                target.full_name = source.FullName,
-                target.date_of_birth = source.DateOfBirth,
-                target.gender = source.Gender,
-                target.address = source.Address,
-                target.phone = source.Phone,
-                target.email = source.Email,
-                target.department_sk = source.DepartmentID,
-                target.department_name = source.DepartmentName,
-                target.position_sk = source.PositionID,
-                target.position_name = source.PositionName,
-                target.age = source.age,
-                target.hire_date = source.HireDate,
-                target.current_contract_type = source.ContractType,
-                target.contract_start_date = source.StartDate,
-                target.contract_end_date = source.EndDate,
-                target.contract_duration = source.contract_duration,
-                target.total_years_worked = source.total_years_worked,
-                target.insurance_number = source.InsuranceNumber,
-                target.insurance_type = source.InsuranceType,
-                target.insurance_start_date = source.insurance_start_date,
-                target.insurance_end_date = source.insurance_end_date,
-                target.insurance_duration = source.insurance_duration
-        WHEN NOT MATCHED BY TARGET THEN
-            INSERT (
-                employee_sk, employee_id, full_name, date_of_birth, gender, address, phone, email,
-                department_sk, department_name, position_sk, position_name, age, hire_date,
-                current_contract_type, contract_start_date, contract_end_date, contract_duration,
-                total_years_worked, insurance_number, insurance_type, insurance_start_date,
-                insurance_end_date, insurance_duration
-            )
-            VALUES (
-                source.EmployeeID, source.EmployeeID, source.FullName, source.DateOfBirth, source.Gender, source.Address, source.Phone, source.Email,
-                source.DepartmentID, source.DepartmentName, source.PositionID, source.PositionName, source.age, source.HireDate,
-                source.ContractType, source.StartDate, source.EndDate, source.contract_duration,
-                source.total_years_worked, source.InsuranceNumber, source.InsuranceType, source.insurance_start_date,
-                source.insurance_end_date, source.insurance_duration
-            );
+		MERGE dim_employees AS target
+		USING (
+			SELECT
+				e.EmployeeID, e.FullName, e.DateOfBirth,
+				CASE
+					WHEN e.Gender = N'Nam' THEN 'M' 
+					WHEN e.Gender = N'Nữ' THEN 'F'  
+					ELSE 'O'                      
+				END AS Gender,
+				e.Address, e.Phone, e.Email,
+				e.DepartmentID, d.DepartmentName, e.PositionID, p.PositionName,
+				DATEDIFF(YEAR, e.DateOfBirth, GETDATE()) AS age, e.HireDate,
+				c.ContractType, c.StartDate, c.EndDate,
+				DATEDIFF(DAY, c.StartDate, ISNULL(c.EndDate, GETDATE())) AS contract_duration,
+				DATEDIFF(YEAR, e.HireDate, GETDATE()) AS total_years_worked,
+				i.InsuranceNumber, i.InsuranceType, i.StartDate AS insurance_start_date, i.EndDate AS insurance_end_date,
+				DATEDIFF(DAY, i.StartDate, ISNULL(i.EndDate, GETDATE())) AS insurance_duration
+			FROM nhansucongty.dbo.Employees e
+			LEFT JOIN nhansucongty.dbo.Departments d ON e.DepartmentID = d.DepartmentID
+			LEFT JOIN nhansucongty.dbo.Positions p ON e.PositionID = p.PositionID
+			OUTER APPLY (
+				SELECT TOP 1 c.* FROM nhansucongty.dbo.Contracts c
+				WHERE c.EmployeeID = e.EmployeeID
+				ORDER BY c.StartDate DESC
+			) c
+			OUTER APPLY (
+				SELECT TOP 1 i.* FROM nhansucongty.dbo.Insurance i
+				WHERE i.EmployeeID = e.EmployeeID
+				ORDER BY i.StartDate DESC
+			) i
+		) AS source
+		ON target.employee_id = source.EmployeeID
+		WHEN MATCHED THEN
+			UPDATE SET
+				target.full_name = source.FullName,
+				target.date_of_birth = source.DateOfBirth,
+				target.gender = source.Gender,
+				target.address = source.Address,
+				target.phone = source.Phone,
+				target.email = source.Email,
+				target.department_sk = source.DepartmentID,
+				target.department_name = source.DepartmentName,
+				target.position_sk = source.PositionID,
+				target.position_name = source.PositionName,
+				target.age = source.age,
+				target.hire_date = source.HireDate,
+				target.current_contract_type = source.ContractType,
+				target.contract_start_date = source.StartDate,
+				target.contract_end_date = source.EndDate,
+				target.contract_duration = source.contract_duration,
+				target.total_years_worked = source.total_years_worked,
+				target.insurance_number = source.InsuranceNumber,
+				target.insurance_type = source.InsuranceType,
+				target.insurance_start_date = source.insurance_start_date,
+				target.insurance_end_date = source.insurance_end_date,
+				target.insurance_duration = source.insurance_duration
+		WHEN NOT MATCHED BY TARGET THEN
+			INSERT (
+				employee_sk, employee_id, full_name, date_of_birth, gender, address, phone, email,
+				department_sk, department_name, position_sk, position_name, age, hire_date,
+				current_contract_type, contract_start_date, contract_end_date, contract_duration,
+				total_years_worked, insurance_number, insurance_type, insurance_start_date,
+				insurance_end_date, insurance_duration
+			)
+			VALUES (
+				source.EmployeeID, source.EmployeeID, source.FullName, source.DateOfBirth, source.Gender,
+				source.Address, source.Phone, source.Email,
+				source.DepartmentID, source.DepartmentName, source.PositionID, source.PositionName, source.age, source.HireDate,
+				source.ContractType, source.StartDate, source.EndDate, source.contract_duration,
+				source.total_years_worked, source.InsuranceNumber, source.InsuranceType, source.insurance_start_date,
+				source.insurance_end_date, source.insurance_duration
+			);
 
         -- 5. Update manager_sk, manager_name in dim_departments
         UPDATE d
