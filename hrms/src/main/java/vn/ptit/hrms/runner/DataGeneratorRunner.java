@@ -21,7 +21,7 @@ public class DataGeneratorRunner implements CommandLineRunner {
     public void run(String... args) {
         System.out.println("Starting data generation process...");
         // Generate fresh data
-        dataGeneratorService.generateData();
+//        dataGeneratorService.generateData();
 
         System.out.println("Data generation process completed.");
     }
