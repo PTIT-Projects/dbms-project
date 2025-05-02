@@ -254,9 +254,9 @@ BEGIN
                 e.full_name AS employee_name,
                 e.department_name,
                 e.position_name,
-                'Nghỉ năm' AS leave_type,
+                N'Nghỉ năm' AS leave_type,
                 CONVERT(INT, CONVERT(VARCHAR, DATEFROMPARTS(lb.Year, 1, 1), 112)) AS date_sk,
-                'Năm' AS granularity,
+                N'Năm' AS granularity,
                 lb.TotalLeaveDays,
                 lb.UsedLeaveDays,
                 lb.RemainingLeaveDays
@@ -304,9 +304,9 @@ BEGIN
                 wt.Purpose,
                 0 AS total_cost, -- Assuming no cost data in source
                 CASE 
-                    WHEN wt.Status = N'Đã duyệt' AND GETDATE() BETWEEN wt.StartDate AND wt.EndDate THEN 'Đang diễn ra'
-                    WHEN wt.Status = N'Đã duyệt' AND GETDATE() > wt.EndDate THEN 'Hoàn thành'
-                    WHEN wt.Status = N'Từ chối' THEN 'Đã hủy'
+                    WHEN wt.Status = N'Đã duyệt' AND GETDATE() BETWEEN wt.StartDate AND wt.EndDate THEN N'Đang diễn ra'
+                    WHEN wt.Status = N'Đã duyệt' AND GETDATE() > wt.EndDate THEN N'Hoàn thành'
+                    WHEN wt.Status = N'Từ chối' THEN N'Đã hủy'
                     ELSE wt.Status
                 END AS status
             FROM nhansucongty.dbo.WorkTripRequests wt
