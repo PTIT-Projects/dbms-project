@@ -215,7 +215,7 @@ BEGIN
                 s.Allowance,
                 s.Deductions,
                 s.NetSalary AS total_salary,
-                'Đã thanh toán' AS payment_status -- Assuming all salaries in source are paid
+                N'Đã thanh toán' AS payment_status -- Assuming all salaries in source are paid
             FROM nhansucongty.dbo.Salary s
             JOIN dim_employees e ON s.EmployeeID = e.employee_id
             WHERE CONVERT(INT, CONVERT(VARCHAR, DATEFROMPARTS(s.Year, s.Month, 1), 112)) IN (SELECT date_sk FROM dim_date)
@@ -302,7 +302,6 @@ BEGIN
                 DATEDIFF(DAY, wt.StartDate, wt.EndDate) + 1 AS trip_duration,
                 wt.Destination,
                 wt.Purpose,
-                0 AS total_cost, -- Assuming no cost data in source
                 CASE 
                     WHEN wt.Status = N'Đã duyệt' AND GETDATE() BETWEEN wt.StartDate AND wt.EndDate THEN N'Đang diễn ra'
                     WHEN wt.Status = N'Đã duyệt' AND GETDATE() > wt.EndDate THEN N'Hoàn thành'
@@ -331,12 +330,12 @@ BEGIN
         WHEN NOT MATCHED BY TARGET THEN
             INSERT (
                 work_trip_sk, work_trip_id, employee_sk, employee_name, department_name, position_name,
-                start_date_sk, end_date_sk, trip_duration, destination, purpose, total_cost, status
+                start_date_sk, end_date_sk, trip_duration, destination, purpose, status
             )
             VALUES (
                 source.work_trip_id, source.work_trip_id, source.employee_sk, source.employee_name,
                 source.department_name, source.position_name, source.start_date_sk, source.end_date_sk,
-                source.trip_duration, source.Destination, source.Purpose, source.total_cost, source.status
+                source.trip_duration, source.Destination, source.Purpose, source.status
             );
 
         -- 10. fact_recruitment_plan: ETL
