@@ -143,6 +143,10 @@ CREATE TABLE fact_work_trips (
     FOREIGN KEY (end_date_sk) REFERENCES dim_date(date_sk)
 );
 
+ALTER TABLE fact_work_trips
+DROP COLUMN total_cost;
+
+
 -- Bảng fact_recruitment_plan: Lưu trữ dữ liệu về các kế hoạch tuyển dụng.
 CREATE TABLE fact_recruitment_plan (
     recruitment_sk INT PRIMARY KEY,
