@@ -82,7 +82,7 @@
                         <tr th:each="reg : ${registrations}">
                             <td th:text="${reg.id}">1</td>
                             <td>
-                                <a th:href="@{/admin/pages/employees/{id}(id=${reg.employee.id})}"
+                                <a th:href="@{/admin/pages/employee/{id}(id=${reg.employee.id})}"
                                    th:text="${reg.employee.fullName}"
                                    class="text-primary">John Doe</a>
                             </td>
@@ -101,12 +101,12 @@
                                        class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a th:if="${reg.status.name() == 'PENDING'}"
+                                    <a sec:authorize="hasRole('ADMIN')" th:if="${reg.status.name() == 'PENDING'}"
                                        th:href="@{/admin/pages/registrations/{id}/edit(id=${reg.id})}" 
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a th:href="@{/admin/pages/registrations/{id}/delete(id=${reg.id})}"
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/pages/registrations/{id}/delete(id=${reg.id})}"
                                        class="btn btn-sm btn-outline-danger"
                                        onclick="return confirm('Are you sure you want to delete this registration?')">
                                         <i class="bi bi-trash"></i>
