@@ -244,86 +244,45 @@ SELECT TOP 10
     department_name,
     position_name,
     COUNT(*) AS total_trips,
-    SUM(trip_duration) AS total_days_on_trip,
-    SUM(total_cost) AS total_trip_cost
+    SUM(trip_duration) AS total_days_on_trip
 FROM fact_work_trips
 WHERE status = 'Hoàn thành'
 GROUP BY employee_name, department_name, position_name
 ORDER BY total_trips DESC, total_days_on_trip DESC;
+
 --4.b Điểm đến công tác phổ biến 
 SELECT TOP 10
     destination,
     COUNT(*) AS trip_count,
     COUNT(DISTINCT employee_name) AS distinct_employees,
-    SUM(total_cost) AS total_cost,
-    AVG(total_cost) AS avg_cost_per_trip,
     AVG(trip_duration) AS avg_duration
 FROM fact_work_trips
 WHERE status = 'Hoàn thành'
 GROUP BY destination
 ORDER BY trip_count DESC;
---4.c -- Tổng chi phí công tác theo phòng ban
-SELECT 
-    department_name,
-    COUNT(*) AS total_trips,
-    SUM(trip_duration) AS total_days,
-    SUM(total_cost) AS total_cost,
-    SUM(total_cost) / SUM(trip_duration) AS cost_per_day,
-    SUM(total_cost) / COUNT(DISTINCT employee_name) AS cost_per_employee
-FROM fact_work_trips
-WHERE status = 'Hoàn thành'
-GROUP BY department_name
-ORDER BY total_cost DESC;
 
 --4.d -- Phân tích theo mục đích công tác
 SELECT 
     purpose,
     COUNT(*) AS trip_count,
     COUNT(DISTINCT destination) AS distinct_destinations,
-    AVG(trip_duration) AS avg_duration,
-    SUM(total_cost) AS total_cost,
-    SUM(total_cost) / COUNT(*) AS avg_cost_per_trip
+    AVG(trip_duration) AS avg_duration
 FROM fact_work_trips
 WHERE status = 'Hoàn thành'
 GROUP BY purpose
-ORDER BY total_cost DESC;
+ORDER BY trip_count DESC;
 
 --4.e -- Xu hướng công tác theo tháng
 SELECT 
     dd.year,
     dd.month,
     COUNT(*) AS trip_count,
-    SUM(fwt.total_cost) AS monthly_cost,
     SUM(fwt.trip_duration) AS total_days
 FROM fact_work_trips fwt
 JOIN dim_date dd ON fwt.start_date_sk = dd.date_sk
 WHERE fwt.status = 'Hoàn thành'
 GROUP BY dd.year, dd.month
 ORDER BY dd.year, dd.month;
---4.f -- Chi phí công tác theo phòng ban
-SELECT 
-    department_name,
-    COUNT(DISTINCT employee_name) AS employees_with_trips,
-    SUM(total_cost) AS total_cost,
-    SUM(trip_duration) AS total_days,
-    SUM(total_cost) / SUM(trip_duration) AS cost_per_day,
-    SUM(total_cost) / COUNT(*) AS cost_per_trip
-FROM fact_work_trips
-WHERE status = 'Hoàn thành'     
-GROUP BY department_name
-ORDER BY cost_per_day DESC;
-
---4.g-- Chi phí công tác theo vị trí/chức vụ
-SELECT 
-    position_name,
-    COUNT(*) AS trip_count,
-    SUM(total_cost) AS total_cost,
-    AVG(total_cost) AS avg_cost_per_trip,
-    AVG(trip_duration) AS avg_duration
-FROM fact_work_trips
-WHERE status = 'Hoàn thành'
-GROUP BY position_name
-ORDER BY total_cost DESC;
 
 --5.Phân tích tuyển dụng 
 --  Mục đích : Đánh giá hiệu quả kế hoạch tuyển dụng, tối ưu quy trình và dự báo nhu cầu nhân sự.
