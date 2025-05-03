@@ -5,7 +5,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import vn.ptit.hrms.service.DataGeneratorService;
-
+ 
 @Component
 @ConditionalOnProperty(name = "app.data-generator.enabled", havingValue = "true")
 public class DataGeneratorRunner implements CommandLineRunner {
