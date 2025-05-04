@@ -113,7 +113,6 @@ CREATE TABLE fact_leave_balance (
 	employee_name NVARCHAR(100),
     department_name NVARCHAR(100),
     position_name NVARCHAR(100),   
-
 	leave_type NVARCHAR(50) DEFAULT 'Nghỉ năm',
 	date_sk INT,
 	granularity NVARCHAR(10) DEFAULT 'Năm',  -- 'Năm', 'Quý', 'Tháng'
@@ -136,15 +135,11 @@ CREATE TABLE fact_work_trips (
 	trip_duration INT, -- Tổng số ngày đi công tác
     destination NVARCHAR(100), -- Điểm đến của chuyến công tác
     purpose NVARCHAR(255), --Mục đích công tác (họp khách hàng, đào tạo, khảo sát...)
-    total_cost DECIMAL(10,2) DEFAULT 0, --Tổng chi phí của chuyến công tác 
     status NVARCHAR(20),   --'Hoàn thành', 'Đang diễn ra', 'Đã hủy'...
     FOREIGN KEY (employee_sk) REFERENCES dim_employees(employee_sk),
     FOREIGN KEY (start_date_sk) REFERENCES dim_date(date_sk),
     FOREIGN KEY (end_date_sk) REFERENCES dim_date(date_sk)
 );
-
-ALTER TABLE fact_work_trips
-DROP COLUMN total_cost;
 
 
 -- Bảng fact_recruitment_plan: Lưu trữ dữ liệu về các kế hoạch tuyển dụng.
@@ -211,5 +206,6 @@ CREATE TABLE fact_decision (
     FOREIGN KEY (employee_sk) REFERENCES dim_employees(employee_sk),
     FOREIGN KEY (decision_date_sk) REFERENCES dim_date(date_sk)
 );
+
 
 
