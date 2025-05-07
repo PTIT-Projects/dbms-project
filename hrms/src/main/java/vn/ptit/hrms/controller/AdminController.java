@@ -53,4 +53,9 @@ public class AdminController {
 //    public void test() {
 //        System.out.println(applicantDao.getAllApplicants());
 //    }
+
+    @GetMapping("/analytics")
+    public String redirectToAnalytics() {
+        return "redirect:http://localhost:3000";
+    }
 }

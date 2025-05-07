@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Analytics - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Leave Analytics</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                    <form th:action="@{/admin/analytics/leave}" method="get" class="d-flex">
+                        <div class="input-group">
+                            <span class="input-group-text">Max Days</span>
+                            <input type="number" name="maxRemainingDays" class="form-control form-control-sm" 
+                                   th:value="${maxRemainingDays}" min="0" max="30" step="1" style="width: 70px;">
+                            <button class="btn btn-sm btn-outline-secondary" type="submit">Apply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Leave Overview -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-info">Leave Trends by Month</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="leaveTrendByMonthChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-info">Leave Type Distribution</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4">
+                                <canvas id="leaveTypeDistributionChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Balance Alert and Quarterly Trends -->
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4 border-left-danger">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-danger">Employees with Low Leave Balance (≤ <span th:text="${maxRemainingDays}">3</span> days)</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Remaining</th>
+                                            <th>Used</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="emp : ${lowRemainingLeave}">
+                                            <td th:text="${emp.employeeName}">John Doe</td>
+                                            <td th:text="${emp.departmentName}">IT</td>
+                                            <td th:text="${emp.remainingLeaveDays}" class="text-danger font-weight-bold">2</td>
+                                            <td th:text="${emp.usedLeaveDays}">18</td>
+                                            <td th:text="${emp.totalLeaveDays}">20</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Leave Trend by Quarter</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="leaveTrendByQuarterChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Analysis by Department and Position -->
+            <div class="row mb-4">
+                <div class="col-lg-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Leave Usage by Department and Position</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-info">
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Position</th>
+                                            <th>Employee Count</th>
+                                            <th>Avg Annual Used</th>
+                                            <th>Avg Remaining</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="stat : ${leaveByDeptPosition}">
+                                            <td th:text="${stat.departmentName}">IT</td>
+                                            <td th:text="${stat.positionName}">Developer</td>
+                                            <td th:text="${stat.employeeCount}">8</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgUsedLeave, 1, 1)}">12.5</td>
+                                            <td th:text="${#numbers.formatDecimal(stat.avgRemainingLeave, 1, 1)}">5.3</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Analysis -->
+            <div class="row mb-4">
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Leave Usage by Experience Level</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="leaveByExperienceChart" height="300"></canvas>
+                            </div>
+                        </div>
+                        <div class="card-footer small text-muted">
+                            Analysis of how years of experience affects leave usage patterns
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-success">Leave Type Analysis</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Leave Type</th>
+                                            <th>Total Days</th>
+                                            <th>Employee Count</th>
+                                            <th>Avg Per Employee</th>
+                                            <th>Distribution</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="type : ${leaveTypeStats}">
+                                            <td th:text="${type.leaveType}">Annual</td>
+                                            <td th:text="${type.totalDays}">450</td>
+                                            <td th:text="${type.employeeCount}">35</td>
+                                            <td th:text="${#numbers.formatDecimal(type.avgPerEmployee, 1, 1)}">12.9</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div th:style="'width:' + ${type.percentageOfTotal} + '%'" 
+                                                         class="progress-bar" 
+                                                         th:classappend="${typeStat.index % 3 == 0 ? 'bg-info' : (typeStat.index % 3 == 1 ? 'bg-success' : 'bg-warning')}" 
+                                                         role="progressbar">
+                                                        <span th:text="${#numbers.formatDecimal(type.percentageOfTotal, 0, 0) + '%'}">45%</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Charts Initialization -->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get data from Thymeleaf
+        const leaveTrendByMonth = /*[[${leaveTrendByMonth}]]*/ [];
+        const leaveTrendByQuarter = /*[[${leaveTrendByQuarter}]]*/ [];
+        const leaveTypeStats = /*[[${leaveTypeStats}]]*/ [];
+        const leaveByExperience = /*[[${leaveByExperience}]]*/ [];
+        
+        // Leave Trend by Month Chart
+        if (leaveTrendByMonth && leaveTrendByMonth.length > 0) {
+            const trendCtx = document.getElementById('leaveTrendByMonthChart').getContext('2d');
+            
+            // Sort data by month
+            leaveTrendByMonth.sort((a, b) => a.month - b.month);
+            
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: leaveTrendByMonth.map(item => {
+                        // Convert month number to name
+                        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        return monthNames[item.month - 1];
+                    }),
+                    datasets: [{
+                        label: 'Annual Leave',
+                        data: leaveTrendByMonth.map(item => item.annualLeaveDays),
+                        borderColor: 'rgba(54, 185, 204, 1)',
+                        backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }, {
+                        label: 'Sick Leave',
+                        data: leaveTrendByMonth.map(item => item.sickLeaveDays),
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        backgroundColor: 'rgba(231, 74, 59, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }, {
+                        label: 'Other Leave',
+                        data: leaveTrendByMonth.map(item => item.otherLeaveDays),
+                        borderColor: 'rgba(246, 194, 62, 1)',
+                        backgroundColor: 'rgba(246, 194, 62, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Leave Type Distribution Chart
+        if (leaveTypeStats && leaveTypeStats.length > 0) {
+            const typeCtx = document.getElementById('leaveTypeDistributionChart').getContext('2d');
+            
+            new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: leaveTypeStats.map(item => item.leaveType),
+                    datasets: [{
+                        data: leaveTypeStats.map(item => item.totalDays),
+                        backgroundColor: [
+                            'rgba(54, 185, 204, 0.8)',
+                            'rgba(231, 74, 59, 0.8)',
+                            'rgba(246, 194, 62, 0.8)',
+                            'rgba(78, 115, 223, 0.8)',
+                            'rgba(28, 200, 138, 0.8)'
+                        ],
+                        hoverBackgroundColor: [
+                            'rgba(54, 185, 204, 1)',
+                            'rgba(231, 74, 59, 1)',
+                            'rgba(246, 194, 62, 1)',
+                            'rgba(78, 115, 223, 1)',
+                            'rgba(28, 200, 138, 1)'
+                        ],
+                        hoverBorderColor: "rgba(234, 236, 244, 1)",
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const item = leaveTypeStats[context.dataIndex];
+                                    return `${context.label}: ${context.parsed} days (${item.percentageOfTotal.toFixed(1)}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Leave Trend by Quarter Chart
+        if (leaveTrendByQuarter && leaveTrendByQuarter.length > 0) {
+            const quarterCtx = document.getElementById('leaveTrendByQuarterChart').getContext('2d');
+            
+            // Sort data by quarter
+            leaveTrendByQuarter.sort((a, b) => a.quarter - b.quarter);
+            
+            new Chart(quarterCtx, {
+                type: 'bar',
+                data: {
+                    labels: leaveTrendByQuarter.map(item => `Q${item.quarter}`),
+                    datasets: [{
+                        label: 'Annual Leave',
+                        data: leaveTrendByQuarter.map(item => item.annualLeaveDays),
+                        backgroundColor: 'rgba(54, 185, 204, 0.8)'
+                    }, {
+                        label: 'Sick Leave',
+                        data: leaveTrendByQuarter.map(item => item.sickLeaveDays),
+                        backgroundColor: 'rgba(231, 74, 59, 0.8)'
+                    }, {
+                        label: 'Other Leave',
+                        data: leaveTrendByQuarter.map(item => item.otherLeaveDays),
+                        backgroundColor: 'rgba(246, 194, 62, 0.8)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Days'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Leave by Experience Chart
+        if (leaveByExperience && leaveByExperience.length > 0) {
+            const expCtx = document.getElementById('leaveByExperienceChart').getContext('2d');
+            
+            // Sort data by experience years
+            leaveByExperience.sort((a, b) => {
+                // Extract numbers from the experience range (e.g., "0-2 years" -> 0)
+                const aYears = parseInt(a.experienceRange.split('-')[0]);
+                const bYears = parseInt(b.experienceRange.split('-')[0]);
+                return aYears - bYears;
+            });
+            
+            new Chart(expCtx, {
+                type: 'bar',
+                data: {
+                    labels: leaveByExperience.map(item => item.experienceRange),
+                    datasets: [{
+                        label: 'Annual Leave Usage',
+                        data: leaveByExperience.map(item => item.avgUsedLeave),
+                        backgroundColor: 'rgba(54, 185, 204, 0.8)',
+                        borderColor: 'rgba(54, 185, 204, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Sick Leave Usage',
+                        data: leaveByExperience.map(item => item.avgSickLeaveUsed),
+                        backgroundColor: 'rgba(231, 74, 59, 0.8)',
+                        borderColor: 'rgba(231, 74, 59, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Days'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

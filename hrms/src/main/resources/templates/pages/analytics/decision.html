@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/main}">
+
+<head>
+    <title>Decision Analytics</title>
+    <link rel="stylesheet" th:href="@{/css/analytics.css}" />
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h1 class="h3 mb-4 text-gray-800">Decision Analytics</h1>
+            
+            <!-- Statistics Cards Row -->
+            <div class="row">
+                <!-- Total Decisions -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card shadow h-100 py-2 stats-card bg-gradient-primary">
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div class="card-icon bg-primary bg-opacity-25 text-primary">
+                                    <i class="bi bi-file-text"></i>
+                                </div>
+                                <div class="metric-value" th:if="${not #lists.isEmpty(typeRatios)}" th:text="${#lists.size(decisionTrends)}">150</div>
+                                <div class="metric-value" th:if="${#lists.isEmpty(typeRatios)}">0</div>
+                                <div class="metric-label">Total Decisions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Most Common Type -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card shadow h-100 py-2 stats-card bg-gradient-success">
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div class="card-icon bg-success bg-opacity-25 text-success">
+                                    <i class="bi bi-award"></i>
+                                </div>
+                                <div class="metric-value" th:if="${not #lists.isEmpty(typeRatios)}" th:text="${typeRatios[0].type}">Reward</div>
+                                <div class="metric-value" th:if="${#lists.isEmpty(typeRatios)}">N/A</div>
+                                <div class="metric-label">Most Common Type</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Department -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card shadow h-100 py-2 stats-card bg-gradient-info">
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div class="card-icon bg-info bg-opacity-25 text-info">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                                <div class="metric-value" th:if="${not #lists.isEmpty(departmentTypeCountsGrouped)}" th:text="${departmentTypeCountsGrouped[0].department}">IT</div>
+                                <div class="metric-value" th:if="${#lists.isEmpty(departmentTypeCountsGrouped)}">N/A</div>
+                                <div class="metric-label">Top Department</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Average Duration -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card shadow h-100 py-2 stats-card bg-gradient-warning">
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div class="card-icon bg-warning bg-opacity-25 text-warning">
+                                    <i class="bi bi-calendar-range"></i>
+                                </div>
+                                <div class="metric-value" th:if="${not #lists.isEmpty(decisionDurations)}" th:text="${decisionDurations[0].averageDuration + ' days'}">30 days</div>
+                                <div class="metric-value" th:if="${#lists.isEmpty(decisionDurations)}">N/A</div>
+                                <div class="metric-label">Average Duration</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Charts Row -->
+            <div class="row">
+                <!-- Decision Trends Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Decision Trends Over Time</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="decisionTrendsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Decision Types Ratio Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Decision Types Distribution</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="decisionTypesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- More Charts Row -->
+            <div class="row">
+                <!-- Department Distribution Chart -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Decisions by Department</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="departmentDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Employee Behavior After Disciplinary -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Employee Behavior After Disciplinary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="behaviorAfterDisciplinaryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top Rewarded Employees Table -->
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">Top Rewarded Employees</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="topRewardedTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee Name</th>
+                                            <th>Department</th>
+                                            <th>Number of Rewards</th>
+                                            <th>Total Reward Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="employee : ${topRewardedEmployees}">
+                                            <td th:text="${employee.name}">John Doe</td>
+                                            <td th:text="${employee.department}">IT</td>
+                                            <td th:text="${employee.rewardCount}">5</td>
+                                            <td th:text="${employee.totalValue}">$5000</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page level custom scripts -->
+    <th:block layout:fragment="scripts">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Decision Trends Chart
+                const trendsData = /*[[${decisionTrends}]]*/ [];
+                const trendLabels = trendsData.map(item => item.period);
+                const trendValues = trendsData.map(item => item.count);
+                
+                new Chart(document.getElementById('decisionTrendsChart'), {
+                    type: 'line',
+                    data: {
+                        labels: trendLabels,
+                        datasets: [{
+                            label: 'Number of Decisions',
+                            data: trendValues,
+                            borderColor: '#4e73df',
+                            tension: 0.1,
+                            fill: false
+                        }]
+                    }
+                });
+                
+                // Decision Types Chart
+                const typeData = /*[[${typeRatios}]]*/ [];
+                const typeLabels = typeData.map(item => item.type);
+                const typeValues = typeData.map(item => item.count);
+                
+                new Chart(document.getElementById('decisionTypesChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: typeLabels,
+                        datasets: [{
+                            data: typeValues,
+                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b']
+                        }]
+                    }
+                });
+                
+                // Department Distribution Chart
+                const deptData = /*[[${departmentTypeCountsGrouped}]]*/ [];
+                const deptLabels = deptData.map(item => item.department);
+                const deptValues = deptData.map(item => item.count);
+                
+                new Chart(document.getElementById('departmentDistributionChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: deptLabels,
+                        datasets: [{
+                            label: 'Number of Decisions',
+                            data: deptValues,
+                            backgroundColor: '#4e73df'
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // Behavior After Disciplinary Chart
+                const behaviorData = /*[[${behaviorAfterDisciplinary}]]*/ [];
+                const behaviorLabels = behaviorData.map(item => item.outcome);
+                const behaviorValues = behaviorData.map(item => item.count);
+                
+                new Chart(document.getElementById('behaviorAfterDisciplinaryChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: behaviorLabels,
+                        datasets: [{
+                            data: behaviorValues,
+                            backgroundColor: ['#1cc88a', '#e74a3b', '#f6c23e']
+                        }]
+                    }
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

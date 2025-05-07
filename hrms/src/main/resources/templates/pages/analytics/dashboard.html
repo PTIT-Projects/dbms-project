@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Analytics Dashboard - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">HR Analytics Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="yearDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-calendar"></i>
+                            <span th:text="${currentYear}">2024</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="yearDropdown">
+                            <li><a class="dropdown-item" th:href="@{/admin/analytics/dashboard(year=2022)}">2022</a></li>
+                            <li><a class="dropdown-item" th:href="@{/admin/analytics/dashboard(year=2023)}">2023</a></li>
+                            <li><a class="dropdown-item" th:href="@{/admin/analytics/dashboard(year=2024)}">2024</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Navigation Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-primary">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Attendance Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Work Hours & Performance</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-clock fs-2 text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/attendance" class="btn btn-primary w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-success">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Salary Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Compensation & Trends</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-cash-stack fs-2 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/salary" class="btn btn-success w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-info">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Leave Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Time Off & Patterns</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-calendar2-minus fs-2 text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/leave" class="btn btn-info w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-warning">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Work Trip Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Travel & Expenses</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-airplane fs-2 text-warning"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/worktrip" class="btn btn-warning w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row of Analytics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-danger">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Recruitment Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Hiring & Positions</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-person-plus fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/recruitment" class="btn btn-danger w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-info">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Registration Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Leave & Overtime</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-journal-check fs-2 text-info"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/registration" class="btn btn-info w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-danger">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Decision Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rewards & Disciplinary</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-award fs-2 text-danger"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/decision" class="btn btn-danger w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100 border-left-success">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Performance Analytics</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">KPIs & Evaluations</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-graph-up fs-2 text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer p-0">
+                            <a href="/admin/analytics/performance" class="btn btn-success w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Charts Initialization -->
+<script>
+</script>
+</body>
+</html>

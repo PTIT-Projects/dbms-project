@@ -73,7 +73,7 @@
                         <tr th:each="trip : ${workTrips}">
                             <td th:text="${trip.id}">1</td>
                             <td>
-                                <a th:href="@{/admin/pages/employees/{id}(id=${trip.employee.id})}"
+                                <a th:href="@{/admin/pages/employee/{id}(id=${trip.employee.id})}"
                                    th:text="${trip.employee.fullName}"
                                    class="text-primary">John Doe</a>
                             </td>
@@ -93,12 +93,12 @@
                                        class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <a th:if="${trip.status.name() == 'PENDING'}"
+                                    <a sec:authorize="hasRole('ADMIN')" th:if="${trip.status.name() == 'PENDING'}"
                                        th:href="@{/admin/pages/work-trips/{id}/edit(id=${trip.id})}" 
                                        class="btn btn-sm btn-outline-primary">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <a th:href="@{/admin/pages/work-trips/{id}/delete(id=${trip.id})}"
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/pages/work-trips/{id}/delete(id=${trip.id})}"
                                        class="btn btn-sm btn-outline-danger"
                                        onclick="return confirm('Are you sure you want to delete this work trip request?')">
                                         <i class="bi bi-trash"></i>

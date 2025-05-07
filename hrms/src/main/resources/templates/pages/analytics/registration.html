@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Analytics - HRMS</title>
+    <div th:replace="~{fragments/header :: header-css}"></div>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div th:replace="~{fragments/header :: header-content}"></div>
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Registration Analytics</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="bi bi-printer"></i> Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics Cards -->
+            <div class="row mb-4">
+                <!-- Average Overtime Hours Card -->
+                <div class="col-xl-4 col-md-6">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Average Approved Overtime Hours
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${#numbers.formatDecimal(averageOvertimeHours, 1, 1) + ' hours'}">4.5 hours</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-clock-history fs-1 text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Registrations Card -->
+                <div class="col-xl-4 col-md-6">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Most Common Registration Type
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${totalsByType.size() > 0 ? totalsByType.keySet().stream().findFirst().orElse('None') : 'None'}">Leave Request</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-card-checklist fs-1 text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Rate Card -->
+                <div class="col-xl-4 col-md-6">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Average Approval Rate
+                                    </div>
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col-auto">
+                                            <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" th:text="${approvalRates.size() > 0 ? #numbers.formatDecimal(approvalRates.stream().mapToDouble(r -> r.approvalRatePercentage).average().orElse(0), 1, 1) + '%' : '0%'}">75.5%</div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="progress progress-sm mr-2">
+                                                <div class="progress-bar bg-info" role="progressbar" 
+                                                     th:style="${'width: ' + (approvalRates.size() > 0 ? approvalRates.stream().mapToDouble(r -> r.approvalRatePercentage).average().orElse(0) : 0) + '%'}"
+                                                     th:aria-valuenow="${approvalRates.size() > 0 ? approvalRates.stream().mapToDouble(r -> r.approvalRatePercentage).average().orElse(0) : 0}" 
+                                                     aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="bi bi-check-circle fs-1 text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <!-- Top Departments Chart -->
+                <div class="col-xl-6 col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Top Departments by Registrations</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-bar">
+                                <canvas id="topDepartmentsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Rates Chart -->
+                <div class="col-xl-6 col-lg-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Approval Rates by Registration Type</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-bar">
+                                <canvas id="approvalRatesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More Charts Row -->
+            <div class="row mb-4">
+                <!-- Registration Trends -->
+                <div class="col-xl-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Registration Trends Over Time</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="registrationTrendsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Status Tables -->
+            <div class="row mb-4">
+                <div class="col-xl-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Registration Status by Type</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>Registration Type</th>
+                                            <th>Status</th>
+                                            <th>Count</th>
+                                            <th>Percentage</th>
+                                            <th>Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="status : ${statusCounts}">
+                                            <td th:text="${status.registrationType}">Leave Request</td>
+                                            <td>
+                                                <span th:class="${'badge ' + 
+                                                    (status.status == 'Đã duyệt' ? 'bg-success' : 
+                                                    status.status == 'Từ chối' ? 'bg-danger' : 'bg-warning')}"
+                                                      th:text="${status.status}">Approved</span>
+                                            </td>
+                                            <td th:text="${status.count}">10</td>
+                                            <td th:text="${#numbers.formatDecimal(status.percentage, 1, 1) + '%'}">75%</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="progress-bar" 
+                                                         th:class="${'progress-bar ' + 
+                                                            (status.status == 'Đã duyệt' ? 'bg-success' : 
+                                                            status.status == 'Từ chối' ? 'bg-danger' : 'bg-warning')}"
+                                                         role="progressbar" 
+                                                         th:style="'width: ' + ${status.percentage} + '%'" 
+                                                         th:aria-valuenow="${status.percentage}" 
+                                                         aria-valuemin="0" aria-valuemax="100"
+                                                         th:text="${#numbers.formatDecimal(status.percentage, 1, 1) + '%'}">
+                                                        75%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail Tables Row -->
+            <div class="row mb-4">
+                <!-- Department Type Registration Table -->
+                <div class="col-xl-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Registrations by Department and Type</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-sm" width="100%" cellspacing="0">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>Department</th>
+                                            <th>Registration Type</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${departmentTypeCounts}">
+                                            <td th:text="${item.departmentName}">IT Department</td>
+                                            <td th:text="${item.registrationType}">Leave Request</td>
+                                            <td th:text="${item.totalRegistrations}">10</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Type Registration Table -->
+                <div class="col-xl-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Registrations by Employee and Type</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover table-sm" width="100%" cellspacing="0">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Registration Type</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${employeeTypeCounts}">
+                                            <td th:text="${item.employeeName}">John Doe</td>
+                                            <td th:text="${item.registrationType}">Leave Request</td>
+                                            <td th:text="${item.totalRegistrations}">5</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/scripts :: scripts}"></div>
+
+<!-- Chart Initialization Scripts -->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Top Departments Chart
+        var topDepartments = /*[[${topDepartments}]]*/ [];
+        var deptNames = topDepartments.map(dept => dept.departmentName);
+        var deptCounts = topDepartments.map(dept => dept.totalRegistrations);
+        
+        var ctx1 = document.getElementById("topDepartmentsChart").getContext('2d');
+        var topDepartmentsChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: deptNames,
+                datasets: [{
+                    label: 'Registration Count',
+                    backgroundColor: 'rgba(78, 115, 223, 0.8)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    data: deptCounts
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Approval Rates Chart
+        var approvalRates = /*[[${approvalRates}]]*/ [];
+        var regTypes = approvalRates.map(rate => rate.registrationType);
+        var approvalPercentages = approvalRates.map(rate => rate.approvalRatePercentage);
+        var rejectionPercentages = approvalRates.map(rate => 100 - rate.approvalRatePercentage);
+        
+        var ctx2 = document.getElementById("approvalRatesChart").getContext('2d');
+        var approvalRatesChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: regTypes,
+                datasets: [
+                    {
+                        label: 'Approved',
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        data: approvalPercentages
+                    },
+                    {
+                        label: 'Rejected/Pending',
+                        backgroundColor: 'rgba(220, 53, 69, 0.8)',
+                        data: rejectionPercentages
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                        max: 100,
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Registration Trends Chart
+        var registrationTrends = /*[[${registrationTrends}]]*/ [];
+        
+        // Group by year-month
+        const trendsByMonth = {};
+        const trendTypes = new Set();
+        
+        registrationTrends.forEach(trend => {
+            const monthYear = trend.month + '/' + trend.year;
+            trendTypes.add(trend.registrationType);
+            
+            if (!trendsByMonth[monthYear]) {
+                trendsByMonth[monthYear] = {};
+            }
+            
+            trendsByMonth[monthYear][trend.registrationType] = trend.totalRegistrations;
+        });
+        
+        // Prepare chart data
+        const months = Object.keys(trendsByMonth).sort((a, b) => {
+            const [monthA, yearA] = a.split('/').map(Number);
+            const [monthB, yearB] = b.split('/').map(Number);
+            return yearA === yearB ? monthA - monthB : yearA - yearB;
+        });
+        
+        const typesArray = Array.from(trendTypes);
+        const datasets = typesArray.map((type, index) => {
+            const colors = [
+                'rgba(78, 115, 223, 0.8)',
+                'rgba(40, 167, 69, 0.8)',
+                'rgba(220, 53, 69, 0.8)',
+                'rgba(255, 193, 7, 0.8)',
+                'rgba(23, 162, 184, 0.8)'
+            ];
+            
+            return {
+                label: type,
+                backgroundColor: colors[index % colors.length],
+                borderColor: colors[index % colors.length].replace('0.8', '1'),
+                data: months.map(month => trendsByMonth[month][type] || 0),
+                fill: false,
+                tension: 0.1
+            };
+        });
+        
+        var ctx3 = document.getElementById("registrationTrendsChart").getContext('2d');
+        var registrationTrendsChart = new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
