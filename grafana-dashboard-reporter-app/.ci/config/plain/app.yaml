@@ -1,0 +1,12 @@
+apiVersion: 1
+
+apps:
+  - type: mahendrapaipuri-dashboardreporter-app
+    org_id: 1
+    org_name: Main Org.
+    disabled: false
+
+    jsonData:
+      maxBrowserWorkers: 10
+      maxRenderWorkers: 10
+      timeout: 60
