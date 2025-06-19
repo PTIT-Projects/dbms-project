@@ -63,10 +63,6 @@
                             <span th:unless="${departmentManagers != null && departmentManagers[dept.id] != null && departmentManagers[dept.id].manager != null}" 
                                   class="text-muted fst-italic">Not assigned</span>
                         </td>
-<!--                        <td>-->
-<!--                            &lt;!&ndash; This would need to be populated from employee count data &ndash;&gt;-->
-<!--                            <span th:text="${dept.employeeCount != null ? dept.employeeCount : '0'}">0</span>-->
-<!--                        </td>-->
                         <td>
                             <div class="btn-group">
                                 <a th:href="@{/admin/pages/departments/{id}(id=${dept.id})}" 
