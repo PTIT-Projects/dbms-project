@@ -33,24 +33,6 @@ public class AuthController {
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             Model model) {
-//        if (!employeeService.isExistsEmployeeWithEmail("admin@gmail.com")) {
-//            Employee employee = new Employee();
-//            employee.setFullName("Admin");
-//            employee.setDateOfBirth(LocalDate.of(1995, 9, 24));
-//            employee.setGender(GenderEnum.MALE);
-//            employee.setAddress("Hà Nội");
-//            employee.setPhone("09182317241");
-//            employee.setDepartment(this.departmentService.getAllDepartments().get(0));
-//            employee.setPosition(this.positionService.getAllPositions().get(0));
-//            employee.setHireDate(LocalDate.now());
-//            employee.setStatus(EmployeeStatusEnum.ACTIVE);
-//            employee.setRoleName("ROLE_ADMIN");
-//            employee.setEmail("admin@gmail.com");
-//            employee.setPassword(this.passwordEncoder.encode("123456"));
-//            this.employeeService.createEmployee(employee);
-//
-//
-//        }
         if (error != null) {
             model.addAttribute("error", "Invalid email or password");
         }

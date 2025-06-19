@@ -1,0 +1,365 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 11,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eeka3q4ijhhxcf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH benefit_costs AS (\r\n    SELECT \r\n        e.employee_sk,\r\n        CASE WHEN e.current_contract_type IN ('Linh hoạt', 'Bán thời gian', 'Tự do') \r\n             THEN 1 ELSE 0 END AS has_flexible_contract,\r\n        CASE WHEN e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình') \r\n             THEN 1 ELSE 0 END AS has_flexible_insurance,\r\n        fs.total_salary,\r\n        fs.allowance,\r\n        fs.deductions,\r\n        MAX(CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' \r\n            THEN 1 ELSE 0 END) AS is_terminated,\r\n        DATEDIFF(MONTH, e.hire_date, GETDATE()) AS tenure_months\r\n    FROM dim_employees e\r\n    LEFT JOIN fact_salary fs ON e.employee_sk = fs.employee_sk\r\n    LEFT JOIN fact_decision d ON e.employee_sk = d.employee_sk\r\n    GROUP BY e.employee_sk, e.current_contract_type, e.insurance_type, \r\n             fs.total_salary, fs.allowance, fs.deductions, e.hire_date\r\n)\r\nSELECT \r\n    CASE \r\n        WHEN has_flexible_contract = 1 OR has_flexible_insurance = 1 \r\n        THEN 'Có phúc lợi linh hoạt' \r\n        ELSE 'Không có phúc lợi linh hoạt' \r\n    END AS benefit_group,\r\n    COUNT(*) AS employee_count,\r\n    AVG(total_salary) AS avg_salary,\r\n    AVG(allowance) AS avg_allowance,\r\n    AVG(tenure_months) AS avg_tenure_months,\r\n    CAST(SUM(is_terminated) AS FLOAT) / COUNT(*) * 100 AS termination_rate,\r\n    -- Ước tính chi phí phúc lợi (giả định allowance bao gồm chi phí phúc lợi)\r\n    SUM(allowance) AS total_benefit_cost,\r\n    -- Ước tính lợi ích (giảm tỷ lệ nghỉ việc * chi phí tuyển dụng/thay thế ước tính)\r\n    SUM(CASE WHEN is_terminated = 0 THEN 5000000 ELSE 0 END) AS estimated_retention_benefit\r\nFROM benefit_costs\r\nGROUP BY \r\n    CASE \r\n        WHEN has_flexible_contract = 1 OR has_flexible_insurance = 1 \r\n        THEN 'Có phúc lợi linh hoạt' \r\n        ELSE 'Không có phúc lợi linh hoạt' \r\n    END;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Chi phí cung cấp phúc lợi linh hoạt so với lợi ích mang lại",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eeka3q4ijhhxcf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    e.insurance_type,\r\n    e.current_contract_type,\r\n    COUNT(DISTINCT e.employee_sk) AS employee_count,\r\n    AVG(fs.total_salary) AS avg_salary,\r\n    AVG(fa.hours_worked) AS avg_hours_worked,\r\n    AVG(fa.overtime_hours) AS avg_overtime,\r\n    CAST(SUM(CASE WHEN fd.decision_type = 'Kỷ luật' AND fd.decision_details LIKE '%nghỉ việc%' \r\n             THEN 1 ELSE 0 END) AS FLOAT) / COUNT(DISTINCT e.employee_sk) * 100 AS termination_rate,\r\n    AVG(flb.remaining_leave_days) AS avg_remaining_leave_days,\r\n    AVG(fs.total_salary) / AVG(fa.hours_worked) AS salary_per_hour\r\nFROM dim_employees e\r\nLEFT JOIN fact_salary fs ON e.employee_sk = fs.employee_sk\r\nLEFT JOIN fact_attendance fa ON e.employee_sk = fa.employee_sk\r\nLEFT JOIN fact_decision fd ON e.employee_sk = fd.employee_sk\r\nLEFT JOIN fact_leave_balance flb ON e.employee_sk = flb.employee_sk\r\nWHERE e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình', 'Cơ bản') -- tên bảo hiểm\r\n   OR e.current_contract_type IN ('Linh hoạt', 'Bán thời gian', 'Tự do', 'Toàn thời gian') --tên hợp đồng \r\nGROUP BY e.insurance_type, e.current_contract_type\r\nORDER BY termination_rate, salary_per_hour DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Phân tích chi tiết hiệu quả từng loại phúc lợi",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eeka3q4ijhhxcf"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 1,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "datasource": {
+            "type": "mssql",
+            "uid": "eeka3q4ijhhxcf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    e.current_contract_type AS flexible_benefit_type,\r\n    e.insurance_type,\r\n    COUNT(DISTINCT e.employee_sk) AS employee_count,\r\n    CAST(COUNT(DISTINCT e.employee_sk) AS FLOAT) / \r\n        (SELECT COUNT(*) FROM dim_employees) * 100 AS percentage_of_total\r\nFROM dim_employees e\r\nWHERE e.current_contract_type IN ('Linh hoạt', 'Bán thời gian', 'Tự do') -- Các loại hợp đồng linh hoạt(hãy thay tên hợp đồng vào) \r\n   OR e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình', 'Cá nhân') -- Các loại bảo hiểm (hãy thay tên bảo hiểm vào)\r\nGROUP BY e.current_contract_type, e.insurance_type\r\nORDER BY employee_count DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Phúc lợi nào được nhân viên sử dụng nhiều nhất",
+      "type": "barchart"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Phân tích tác động của các chương trình phúc lợi linh hoạt",
+  "uid": "eekg8ovuhqgowf",
+  "version": 6
+}

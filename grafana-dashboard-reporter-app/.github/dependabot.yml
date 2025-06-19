@@ -1,0 +1,36 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "gomod" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    groups:
+      go-dependencies:
+        patterns:
+          - "*"
+        # Define patterns to exclude dependencies from the group (based on
+        # dependency name)
+        # There are incompatibility beteween cdproto for chromedp
+        # and golang-plugin-sdk. We prefer to bump sdk rather than
+        # chromedp
+        exclude-patterns:
+          - "github.com/chromedp/chromedp"
+          - "github.com/chromedp/cdproto"
+      
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+        # Define patterns to exclude dependencies from the group (based on
+        # dependency name)
+        exclude-patterns:
+          - "react-router-dom"

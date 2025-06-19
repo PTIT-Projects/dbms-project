@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{.Theme}}">
+<style>
+    *,
+    *::after,
+    *::before {
+        margin: 0;
+        padding: 0;
+        box-sizing: inherit;
+    }
+
+    [data-theme="light"] {
+        --color-bg: #ffffff;
+        --color-fg: #000000;
+    }
+
+    [data-theme="dark"] {
+        --color-bg: #181b1f;
+        --color-fg: #ffffff;
+    }
+
+    @page { 
+        margin: 3cm 0cm 1cm 0cm;
+        background-color: var(--color-bg);
+    }
+
+    html {
+        box-sizing: border-box;
+        font-size: 62.5%;
+    }
+
+    body {
+        font-family: "Nunito", sans-serif;
+        font-weight: 300;
+        line-height: 1.6;
+    }
+
+    @media print { 
+        body { 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        } 
+    }
+
+    body {
+        background-color: var(--color-bg);
+        color: var(--color-fg);
+    }
+
+    .container {
+        width: 95%;
+        margin: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table td,  table th {
+       border: 1px solid #CCC;
+       text-align: center;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        grid-auto-flow: row;
+        grid-column-gap: 5px;
+        grid-row-gap: 5px;
+    }
+
+    .grid-image {
+        width: 100%;
+        {{/* height: 100%; */}}
+        object-fit: cover;
+        display: block;
+    }
+
+    {{- if .IsGridLayout}} 
+        {{- range $i, $v := .Panels}} 
+    .grid-image-{{$i}} {
+        grid-column: {{add $v.GridPos.X}} / span {{$v.GridPos.W}};
+        grid-row: {{add $v.GridPos.Y}} / span {{$v.GridPos.H}};
+    }
+
+        {{end}}
+
+    {{else}}
+        {{$p := 0}}
+        {{- range $i, $v := .Panels}}
+            {{- if $v.EncodedImage.Image }}
+    .grid-image-{{$i}} {
+        grid-column: 1 / span 24;
+        grid-row: {{mult $p}} / span 30;
+    }
+            {{$p = inc $p}}
+            {{- end }}
+
+        {{- end}}
+
+    {{- end}}
+</style>
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="grid">
+            {{- range $i, $v := .Panels}}
+            {{- if $v.EncodedImage.Image }}
+            <figure class="grid-image grid-image-{{$i}}">
+                <img src="{{ print $v.EncodedImage | url }}" id="image{{$v.ID}}" alt="{{$v.Title}}" class="grid-image">
+            </figure>
+            {{- end }}
+            {{- end }}
+        </div>
+    </div>
+    {{- range $i, $v := .Panels }}
+    {{- if $v.CSVData }}
+    <div style="break-after:page"></div>
+
+    <div class="container">
+        <h2>{{$v.Title}}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        {{- range $j, $w := index $v.CSVData 0}}
+                        <th>{{$w}}</th>
+                        {{- end }}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{- range $j, $w := slice $v.CSVData 1}}
+                    <tr>
+                        {{- range $k, $x := $w}}
+                        <td>{{$x}}</td>
+                        {{- end }}
+                    </tr>
+                    {{- end }}
+                </tbody>
+            </table>
+        </div>
+        {{- end }}
+    {{- end }}
+</body>
+
+</html> 
