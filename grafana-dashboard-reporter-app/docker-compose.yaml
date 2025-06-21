@@ -76,4 +76,8 @@ services:
     shm_size: 2G
     init: true
     command: --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222 --no-sandbox --disable-gpu
-    network_mode: service:grafana
+    # Bỏ dòng network_mode: service:grafana
+    ports: # Nếu bạn cần truy cập chrome từ bên ngoài container
+      - "9222:9222" # Mở cổng debug của chrome
+    depends_on:
+      - grafana # Đảm bảo grafana khởi động trước chrome
