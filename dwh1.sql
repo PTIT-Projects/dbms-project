@@ -1,4 +1,4 @@
-
+USE [hrms_warehouse]
 -- Bảng dim_date: Lưu trữ thông tin về ngày tháng để hỗ trợ phân tích theo thời gian.
 CREATE TABLE dim_date (
     date_sk INT PRIMARY KEY,
