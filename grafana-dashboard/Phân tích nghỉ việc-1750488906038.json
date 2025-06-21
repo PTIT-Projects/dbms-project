@@ -1,0 +1,566 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 13,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "doc",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Report to PDF",
+      "tooltip": "",
+      "type": "link",
+      "url": "/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=eekg7fzbsbda8e"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "median"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "bookstore",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    dd.year,\r\n    dd.month,\r\n    COUNT(DISTINCT e.employee_sk) AS total_employees,\r\n    COUNT(DISTINCT CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' \r\n                   THEN e.employee_sk END) AS terminated_employees,\r\n    CAST(COUNT(DISTINCT CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' \r\n                        THEN e.employee_sk END) AS FLOAT) / COUNT(DISTINCT e.employee_sk) * 100 AS termination_rate\r\nFROM dim_employees e\r\nLEFT JOIN fact_decision d ON e.employee_sk = d.employee_sk\r\nJOIN dim_date dd ON d.decision_date_sk = dd.date_sk\r\nWHERE dd.year >= YEAR(GETDATE()) - 5  -- Phân tích 5 năm gần nhất\r\nGROUP BY dd.year, dd.month\r\nORDER BY dd.year, dd.month;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Xu hướng nghỉ việc theo thời gian ",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH employee_overtime AS (\r\n    SELECT \r\n        e.employee_sk,\r\n        AVG(fa.overtime_hours) AS avg_overtime,\r\n        MAX(CASE WHEN d.decision_type = 'Kỷ luật' AND d.decision_details LIKE '%nghỉ việc%' \r\n            THEN 1 ELSE 0 END) AS is_terminated\r\n    FROM dim_employees e\r\n    LEFT JOIN fact_attendance fa ON e.employee_sk = fa.employee_sk\r\n    LEFT JOIN fact_decision d ON e.employee_sk = d.employee_sk\r\n    GROUP BY e.employee_sk\r\n)\r\nSELECT \r\n    CASE \r\n        WHEN avg_overtime = 0 THEN N'Không làm thêm'\r\n        WHEN avg_overtime <= 2 THEN N'1-2 giờ/tuần'\r\n        WHEN avg_overtime <= 5 THEN N'3-5 giờ/tuần'\r\n        WHEN avg_overtime <= 10 THEN N'6-10 giờ/tuần'\r\n        ELSE N'Trên 10 giờ/tuần'\r\n    END AS overtime_category,\r\n    COUNT(*) AS total_employees,\r\n    SUM(is_terminated) AS terminated_employees,\r\n    CAST(SUM(is_terminated) AS FLOAT) / COUNT(*) * 100 AS termination_rate\r\nFROM employee_overtime\r\nGROUP BY \r\n    CASE \r\n        WHEN avg_overtime = 0 THEN N'Không làm thêm'\r\n        WHEN avg_overtime <= 2 THEN N'1-2 giờ/tuần'\r\n        WHEN avg_overtime <= 5 THEN N'3-5 giờ/tuần'\r\n        WHEN avg_overtime <= 10 THEN N'6-10 giờ/tuần'\r\n        ELSE N'Trên 10 giờ/tuần'\r\n    END\r\nORDER BY overtime_category;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Mối liên hệ giữa giờ làm thêm và tỷ lệ nghỉ việc",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "percent",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 15,
+        "xTickLabelSpacing": 100
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n    position_name,\r\n    COUNT(*) AS total_employees,\r\n    SUM(CASE WHEN contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,\r\n    ROUND(SUM(CASE WHEN contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate\r\nFROM\r\n    dim_employees\r\nGROUP BY\r\n    position_name\r\nORDER BY\r\n    resignation_rate DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Tỷ lệ nghỉ việc theo vị trí ",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n    CASE\r\n        WHEN fd.employee_sk IS NOT NULL THEN N'Kỷ luật'\r\n        ELSE N'Không kỷ luật'\r\n    END AS discipline_status,\r\n    COUNT(DISTINCT de.employee_sk) AS total_employees,\r\n    SUM(CASE WHEN de.contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,\r\n    ROUND(SUM(CASE WHEN de.contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(DISTINCT de.employee_sk), 2) AS resignation_rate\r\nFROM\r\n    dim_employees de\r\nLEFT JOIN\r\n    fact_decision fd ON de.employee_sk = fd.employee_sk AND fd.decision_type = N'Kỷ luật'\r\nGROUP BY\r\n    CASE\r\n        WHEN fd.employee_sk IS NOT NULL THEN N'Kỷ luật'\r\n        ELSE N'Không kỷ luật'\r\n    END\r\nORDER BY\r\n    resignation_rate DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Nguyên nhân nghỉ việc liên quan đến kỷ luật",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 1,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 45,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "datasource": {
+            "type": "mssql",
+            "uid": "eeka3q4ijhhxcf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n    department_name,\r\n    COUNT(*) AS total_employees,\r\n    SUM(CASE WHEN contract_end_date < GETDATE() THEN 1 ELSE 0 END) AS resigned_count,\r\n    ROUND(SUM(CASE WHEN contract_end_date < GETDATE() THEN 1.0 ELSE 0 END) * 100.0 / COUNT(*), 2) AS resignation_rate\r\nFROM\r\n    dim_employees\r\nGROUP BY\r\n    department_name\r\nORDER BY\r\n    resignation_rate DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Tỷ lệ nghỉ việc theo phòng ban",
+      "type": "barchart"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Phân tích nghỉ việc",
+  "uid": "eekg7fzbsbda8e",
+  "version": 10
+}

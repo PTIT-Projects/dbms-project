@@ -1,0 +1,265 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 12,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Report to PDF",
+      "tooltip": "",
+      "type": "link",
+      "url": "/api/plugins/mahendrapaipuri-dashboardreporter-app/resources/report?dashUid=eekg8ovuhqgowf"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xField": "insurance_type",
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "datasource": {
+            "type": "mssql",
+            "uid": "eeka3q4ijhhxcf"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    e.current_contract_type AS flexible_benefit_type,\r\n    e.insurance_type,\r\n    COUNT(DISTINCT e.employee_sk) AS employee_count,\r\n    CAST(COUNT(DISTINCT e.employee_sk) AS FLOAT) / \r\n        (SELECT COUNT(*) FROM dim_employees) * 100 AS percentage_of_total\r\nFROM dim_employees e\r\nWHERE e.current_contract_type IN (N'Linh hoạt', N'Bán thời gian', 'Tự do') -- Các loại hợp đồng linh hoạt(hãy thay tên hợp đồng vào) \r\n   OR e.insurance_type IN ('Tự chọn', 'Nâng cao', 'Gia đình', 'Cá nhân')\r\nGROUP BY e.current_contract_type, e.insurance_type\r\nORDER BY employee_count DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Phúc lợi nào được nhân viên sử dụng nhiều nhất",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "mssql",
+        "uid": "eemv53ftjlgxse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 100
+      },
+      "pluginVersion": "12.0.1",
+      "targets": [
+        {
+          "dataset": "hrms_warehouse",
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \r\n    e.insurance_type,\r\n    e.current_contract_type,\r\n    COUNT(DISTINCT e.employee_sk) AS employee_count,\r\n    AVG(fs.total_salary) AS avg_salary,\r\n    AVG(fa.hours_worked) AS avg_hours_worked,\r\n    AVG(fa.overtime_hours) AS avg_overtime,\r\n    CAST(SUM(CASE WHEN fd.decision_type = N'Kỷ luật' AND fd.decision_details LIKE N'%nghỉ việc%' \r\n             THEN 1 ELSE 0 END) AS FLOAT) / COUNT(DISTINCT e.employee_sk) * 100 AS termination_rate,\r\n    AVG(flb.remaining_leave_days) AS avg_remaining_leave_days,\r\n    AVG(fs.total_salary) / AVG(fa.hours_worked) AS salary_per_hour\r\nFROM dim_employees e\r\nLEFT JOIN fact_salary fs ON e.employee_sk = fs.employee_sk\r\nLEFT JOIN fact_attendance fa ON e.employee_sk = fa.employee_sk\r\nLEFT JOIN fact_decision fd ON e.employee_sk = fd.employee_sk\r\nLEFT JOIN fact_leave_balance flb ON e.employee_sk = flb.employee_sk\r\nWHERE e.insurance_type IN (N'Tự chọn', N'Nâng cao', N'Gia đình', N'Cơ bản') \r\n   OR e.current_contract_type IN (N'Linh hoạt', N'Bán thời gian', N'Tự do', N'Toàn thời gian') --tên hợp đồng \r\nGROUP BY e.insurance_type, e.current_contract_type\r\nORDER BY termination_rate, salary_per_hour DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Phân tích chi tiết hiệu quả từng loại phúc lợi",
+      "type": "barchart"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Phân tích tác động của các chương trình phúc lợi linh hoạt",
+  "uid": "eekg8ovuhqgowf",
+  "version": 8
+}
